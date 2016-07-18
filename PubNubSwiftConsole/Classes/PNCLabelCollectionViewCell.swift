@@ -7,3 +7,9 @@
 //
 
 import Foundation
+
+class PNCLabelCollectionViewCell: UICollectionViewCell {
+    static func reuseIdentifier() -> String {
+        return String(self.dynamicType)
+    }
+}
