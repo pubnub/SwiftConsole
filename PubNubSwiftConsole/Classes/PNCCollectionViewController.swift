@@ -11,6 +11,7 @@ import Foundation
 public class PNCCollectionViewController: PNCViewController {
     var collectionView: PNCCollectionView?
     
+    
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
