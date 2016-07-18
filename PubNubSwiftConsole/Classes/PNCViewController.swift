@@ -10,16 +10,20 @@ import Foundation
 import PubNub
 
 public class PNCViewController: UIViewController, PNObjectEventListener {
-//    required public init?(coder aDecoder: NSCoder) {
-//        self.collectionView = PNCCollectionView()
-//        super.init(coder: aDecoder)
-//    }
-//    
-//    convenience init() {
-//        self.init()
-//        
-//        // ... store or user your objectId
-//    }
+    
+    public required init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    public override func loadView() {
+        // don't call super for UIViewController direct subclass
+        let frame = UIScreen.mainScreen().bounds
+        self.view = UIView(frame: frame)
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     var client: PubNub? {
         didSet {
@@ -28,13 +32,10 @@ public class PNCViewController: UIViewController, PNObjectEventListener {
         }
     }
     
-    var collectionView: PNCCollectionView?
-    
     override public func viewDidLoad() {
         super.viewDidLoad()
         print("viewDidLoad")
         self.view.backgroundColor = UIColor.redColor()
-        self.collectionView = PNCCollectionView()
     }
     
     public func client(client: PubNub, didReceiveStatus status: PNStatus) {
