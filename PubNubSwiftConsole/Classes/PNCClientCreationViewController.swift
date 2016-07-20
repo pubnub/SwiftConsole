@@ -11,6 +11,7 @@ import Foundation
 public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource {
     
     public override func viewDidLoad() {
+        super.viewDidLoad()
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.dataSource = self
     }
@@ -24,9 +25,8 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
             let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PNCLabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as UICollectionViewCell
             return cell
         }
-        cell.title.text = "Publish Key"
-        cell.contents.text = "pub-c-63c972fb-df4e-47f7-82da-e659e28f7cb7"
+        cell.titleLabel.text = "Publish Key"
+        cell.contentsLabel.text = "pub-c-63c972fb-df4e-47f7-82da-e659e28f7cb7"
         return cell
     }
-    
 }
