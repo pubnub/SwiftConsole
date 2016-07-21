@@ -15,8 +15,8 @@ struct LabelItem {
 
 class PNCLabelCollectionViewCell: UICollectionViewCell {
     
-    let titleLabel: UILabel
-    let contentsLabel: UILabel
+    private let titleLabel: UILabel
+    private let contentsLabel: UILabel
     
     static func reuseIdentifier() -> String {
         return String(self.dynamicType)

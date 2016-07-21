@@ -10,7 +10,7 @@ import Foundation
 
 public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource {
     // MARK: Data Source
-    struct ClientDataSection {
+    private struct ClientDataSection {
         var items: [LabelItem]
         subscript(index: Int) -> LabelItem {
             return items[index]
@@ -20,7 +20,7 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
         }
     }
     
-    struct ClientDataSource {
+    private struct ClientDataSource {
         let sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
         subscript(index: Int) -> ClientDataSection {
             return sections[index]
@@ -33,7 +33,7 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
         }
     }
     
-    let dataSource = ClientDataSource()
+    private let dataSource = ClientDataSource()
     
     // MARK: View Lifecycle
     
