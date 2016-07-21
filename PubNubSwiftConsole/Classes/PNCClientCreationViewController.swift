@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource {
+public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     // MARK: Data Source
     private struct ClientDataSection {
         var items: [LabelItem]
@@ -41,6 +41,7 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
         super.viewDidLoad()
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.dataSource = self
+        collectionView.delegate = self
     }
     
     // MARK: - UICollectionViewDataSource
@@ -60,5 +61,22 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
         let indexedLabelItem = dataSource[indexPath]
         cell.updateLabels(indexedLabelItem)
         return cell
+    }
+    
+    public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+//        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? PNCLabelCollectionViewCell else { return }
+//        guard cell.contentsLabel.text != nil else { return }
+//        presentEditFieldsAlertController(cell.contentsLabel.text!)
+    }
+    
+    public func presentEditFieldsAlertController(contentFieldText: String) {
+        var alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
+        alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
+            textField.text = contentFieldText
+        })
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
+            let textField = alert.textFields![0] as UITextField
+        }))
+        self.presentViewController(alert, animated: true, completion: nil)
     }
 }
