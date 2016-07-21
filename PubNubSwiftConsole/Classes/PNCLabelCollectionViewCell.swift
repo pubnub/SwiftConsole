@@ -50,5 +50,4 @@ class PNCLabelCollectionViewCell: UICollectionViewCell {
         self.contentsLabel.text = item.contentsString
         self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
-    
 }

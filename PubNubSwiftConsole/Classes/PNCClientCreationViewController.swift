@@ -9,6 +9,7 @@
 import Foundation
 
 public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource {
+    // MARK: Data Source
     struct ClientDataSection {
         var items: [LabelItem]
         subscript(index: Int) -> LabelItem {
@@ -34,11 +35,15 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     
     let dataSource = ClientDataSource()
     
+    // MARK: View Lifecycle
+    
     public override func viewDidLoad() {
         super.viewDidLoad()
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.dataSource = self
     }
+    
+    // MARK: - UICollectionViewDataSource
     
     public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return dataSource.count
