@@ -8,6 +8,11 @@
 
 import Foundation
 
+struct LabelItem {
+    let titleString: String
+    let contentsString: String
+}
+
 class PNCLabelCollectionViewCell: UICollectionViewCell {
     
     let titleLabel: UILabel
@@ -38,6 +43,12 @@ class PNCLabelCollectionViewCell: UICollectionViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func updateLabels(item: LabelItem) {
+        self.titleLabel.text = item.titleString
+        self.contentsLabel.text = item.contentsString
+        self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
     
 }

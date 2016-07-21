@@ -9,6 +9,30 @@
 import Foundation
 
 public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource {
+    struct ClientDataSection {
+        var items: [LabelItem]
+        subscript(index: Int) -> LabelItem {
+            return items[index]
+        }
+        var count: Int {
+            return items.count
+        }
+    }
+    
+    struct ClientDataSource {
+        let sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
+        subscript(index: Int) -> ClientDataSection {
+            return sections[index]
+        }
+        subscript(indexPath: NSIndexPath) -> LabelItem {
+            return self[indexPath.section][indexPath.row]
+        }
+        var count: Int {
+            return sections.count
+        }
+    }
+    
+    let dataSource = ClientDataSource()
     
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -16,17 +40,20 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
         collectionView.dataSource = self
     }
     
+    public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+        return dataSource.count
+    }
+    
     public func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
+        return dataSource[section].count
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PNCLabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? PNCLabelCollectionViewCell else {
-            let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PNCLabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as UICollectionViewCell
-            return cell
+            fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
-        cell.titleLabel.text = "Publish Key"
-        cell.contentsLabel.text = "pub-c-63c972fb-df4e-47f7-82da-e659e28f7cb7"
+        let indexedLabelItem = dataSource[indexPath]
+        cell.updateLabels(indexedLabelItem)
         return cell
     }
 }
