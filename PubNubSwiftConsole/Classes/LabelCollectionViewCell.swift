@@ -1,5 +1,5 @@
 //
-//  PNCLabelCollectionViewCell.swift
+//  LabelCollectionViewCell.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/13/16.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-class PNCLabelCollectionViewCell: UICollectionViewCell {
+class LabelCollectionViewCell: UICollectionViewCell {
     
     let titleLabel: UILabel
     let contentsLabel: UILabel
