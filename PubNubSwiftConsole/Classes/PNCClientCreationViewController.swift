@@ -13,7 +13,13 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     private struct ClientDataSection {
         var items: [LabelItem]
         subscript(index: Int) -> LabelItem {
-            return items[index]
+            get {
+                return items[index]
+            }
+            
+            set {
+                items[index] = newValue
+            }
         }
         var count: Int {
             return items.count
@@ -21,19 +27,31 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     }
     
     private struct ClientDataSource {
-        let sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
+        var sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
         subscript(index: Int) -> ClientDataSection {
-            return sections[index]
+            get {
+                return sections[index]
+            }
+            
+            set {
+                sections[index] = newValue
+            }
         }
         subscript(indexPath: NSIndexPath) -> LabelItem {
-            return self[indexPath.section][indexPath.row]
+            get {
+                return self[indexPath.section][indexPath.row]
+            }
+            set {
+                self[indexPath.section][indexPath.row] = newValue
+            }
         }
+        
         var count: Int {
             return sections.count
         }
     }
     
-    private let dataSource = ClientDataSource()
+    private var dataSource = ClientDataSource()
     
     // MARK: View Lifecycle
     
@@ -64,18 +82,26 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     }
     
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-//        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? PNCLabelCollectionViewCell else { return }
-//        guard cell.contentsLabel.text != nil else { return }
-//        presentEditFieldsAlertController(cell.contentsLabel.text!)
+        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? PNCLabelCollectionViewCell else {
+            fatalError("Failed to create collection view cell properly, please contact support@pubnub.com")
+        }
+        
+        var selectedLabelItem = dataSource[indexPath]
+        presentEditFieldsAlertController(selectedLabelItem) { (updatedContentsString) in
+            selectedLabelItem.contentsString = updatedContentsString
+            self.dataSource[indexPath] = selectedLabelItem
+            cell.updateLabels(selectedLabelItem)
+        }
     }
     
-    public func presentEditFieldsAlertController(contentFieldText: String) {
+    func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
         var alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
         alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-            textField.text = contentFieldText
+            textField.text = selectedLabelItem.contentsString
         })
         alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
-            let textField = alert.textFields![0] as UITextField
+            let updatedContentsLabel = alert.textFields![0].text
+            completionHandler(updatedContentsLabel!)
         }))
         self.presentViewController(alert, animated: true, completion: nil)
     }
