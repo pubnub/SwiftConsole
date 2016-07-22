@@ -1,5 +1,5 @@
 //
-//  PNCCollectionView.swift
+//  CollectionView.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/13/16.
@@ -8,12 +8,12 @@
 
 import Foundation
 
-class PNCCollectionView: UICollectionView {
+class CollectionView: UICollectionView {
     
     public required override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
-        assert((layout is PNCCollectionViewFlowLayout), "How dare you use anything but PNCCollectionViewFlowLayout: \(layout)")
+        assert((layout is CollectionViewFlowLayout), "How dare you use anything but CollectionViewFlowLayout: \(layout)")
         super.init(frame: frame, collectionViewLayout: layout)
-        self.registerClass(PNCLabelCollectionViewCell.self, forCellWithReuseIdentifier: PNCLabelCollectionViewCell.reuseIdentifier())
+        self.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())
         self.backgroundColor = UIColor.redColor()
     }
     

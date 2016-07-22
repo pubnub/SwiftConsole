@@ -1,5 +1,5 @@
 //
-//  PNCClientCreationViewController.swift
+//  ClientCreationViewController.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/18/16.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource {
+public class ClientCreationViewController: CollectionViewController, UICollectionViewDataSource {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,8 +21,8 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PNCLabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? PNCLabelCollectionViewCell else {
-            let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PNCLabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as UICollectionViewCell
+        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(LabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? LabelCollectionViewCell else {
+            let cell = collectionView.dequeueReusableCellWithReuseIdentifier(LabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as UICollectionViewCell
             return cell
         }
         cell.titleLabel.text = "Publish Key"

@@ -1,5 +1,5 @@
 //
-//  PNCViewController.swift
+//  ViewController.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/13/16.
@@ -9,7 +9,7 @@
 import Foundation
 import PubNub
 
-public class PNCViewController: UIViewController, PNObjectEventListener {
+public class ViewController: UIViewController, PNObjectEventListener {
     
     public required init() {
         super.init(nibName: nil, bundle: nil)
