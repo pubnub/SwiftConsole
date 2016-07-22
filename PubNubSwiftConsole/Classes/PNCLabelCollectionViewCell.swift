@@ -10,7 +10,7 @@ import Foundation
 
 struct LabelItem {
     let titleString: String
-    let contentsString: String
+    var contentsString: String
 }
 
 class PNCLabelCollectionViewCell: UICollectionViewCell {
