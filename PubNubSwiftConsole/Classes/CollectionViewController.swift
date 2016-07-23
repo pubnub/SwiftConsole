@@ -11,15 +11,17 @@ import Foundation
 public class CollectionViewController: ViewController {
     var collectionView: CollectionView?
     
+    // MARK: Constructors
+    
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
-    
     public required init() {
         super.init()
     }
+    
+    // MARK: View Lifecycle
     
     public override func loadView() {
         super.loadView()

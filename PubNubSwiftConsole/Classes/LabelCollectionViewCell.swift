@@ -8,10 +8,15 @@
 
 import Foundation
 
+struct LabelItem {
+    let titleString: String
+    let contentsString: String
+}
+
 class LabelCollectionViewCell: UICollectionViewCell {
     
-    let titleLabel: UILabel
-    let contentsLabel: UILabel
+    private let titleLabel: UILabel
+    private let contentsLabel: UILabel
     
     static func reuseIdentifier() -> String {
         return String(self.dynamicType)
@@ -40,4 +45,9 @@ class LabelCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func updateLabels(item: LabelItem) {
+        self.titleLabel.text = item.titleString
+        self.contentsLabel.text = item.contentsString
+        self.setNeedsLayout() // make sure this occurs during the next update cycle
+    }
 }
