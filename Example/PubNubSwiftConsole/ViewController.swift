@@ -26,7 +26,7 @@ class ViewController: UIViewController {
     }
     
     func pubNubDebugViewButtonPressed(sender: UIButton!) {
-        let pubNubViewController = PubNubSwiftConsole.ClientCreationViewController()
+        let pubNubViewController = PubNubSwiftConsole.modalClientCreationViewController()
         self.presentViewController(pubNubViewController, animated: true, completion: nil)
     }
 

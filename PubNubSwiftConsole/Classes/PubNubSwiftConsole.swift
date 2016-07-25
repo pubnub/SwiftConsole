@@ -7,3 +7,8 @@
 //
 
 import Foundation
+
+public func modalClientCreationViewController() -> NavigationController {
+    let rootViewController = ClientCreationViewController()
+    return NavigationController(rootViewController: rootViewController)
+}
