@@ -8,13 +8,19 @@
 
 import Foundation
 
-
-public class ClientCreationViewController: CollectionViewController, UICollectionViewDataSource {
+public class ClientCreationViewController: CollectionViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+    
     // MARK: Data Source
     private struct ClientDataSection {
         var items: [LabelItem]
         subscript(index: Int) -> LabelItem {
-            return items[index]
+            get {
+                return items[index]
+            }
+            
+            set {
+                items[index] = newValue
+            }
         }
         var count: Int {
             return items.count
@@ -22,19 +28,31 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
     }
     
     private struct ClientDataSource {
-        let sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
+        var sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
         subscript(index: Int) -> ClientDataSection {
-            return sections[index]
+            get {
+                return sections[index]
+            }
+            
+            set {
+                sections[index] = newValue
+            }
         }
         subscript(indexPath: NSIndexPath) -> LabelItem {
-            return self[indexPath.section][indexPath.row]
+            get {
+                return self[indexPath.section][indexPath.row]
+            }
+            set {
+                self[indexPath.section][indexPath.row] = newValue
+            }
         }
+        
         var count: Int {
             return sections.count
         }
     }
     
-    private let dataSource = ClientDataSource()
+    private var dataSource = ClientDataSource()
     
     // MARK: View Lifecycle
     
@@ -42,6 +60,27 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         super.viewDidLoad()
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.dataSource = self
+        collectionView.delegate = self
+    }
+    
+    // MARK: - Actions
+    
+    func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
+        var alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
+        alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
+            textField.text = selectedLabelItem.contentsString
+        })
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
+            let updatedContentsLabel = alert.textFields![0].text
+            completionHandler(updatedContentsLabel!)
+        }))
+        alert.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294
+        self.parentViewController?.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    func closeButtonPressed(sender: UIBarButtonItem!) {
+        var navController = self.navigationController as? NavigationController
+        navController?.close()
     }
     
     // MARK: - UICollectionViewDataSource
@@ -61,5 +100,28 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         let indexedLabelItem = dataSource[indexPath]
         cell.updateLabels(indexedLabelItem)
         return cell
+    }
+    
+    // MARK: - UICollectionViewDelegate
+    
+    public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? LabelCollectionViewCell else {
+            fatalError("Failed to create collection view cell properly, please contact support@pubnub.com")
+        }
+        
+        var selectedLabelItem = dataSource[indexPath]
+        presentEditFieldsAlertController(selectedLabelItem) { (updatedContentsString) in
+            selectedLabelItem.contentsString = updatedContentsString
+            self.dataSource[indexPath] = selectedLabelItem
+            collectionView.reloadItemsAtIndexPaths([indexPath])
+        }
+    }
+    
+    // MARK: - UINavigationItem
+    public override var navigationItem: UINavigationItem {
+        let navigationItem = UINavigationItem(title: "Create PubNub Client")
+        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        navigationItem.rightBarButtonItem = closeButton
+        return navigationItem
     }
 }
