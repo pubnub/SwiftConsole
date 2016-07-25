@@ -1,5 +1,5 @@
 //
-//  PNCCollectionViewFlowLayout.swift
+//  CollectionViewFlowLayout.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/17/16.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-class PNCCollectionViewFlowLayout: UICollectionViewFlowLayout {
+class CollectionViewFlowLayout: UICollectionViewFlowLayout {
     
     public required override init() {
         let screenBounds = UIScreen.mainScreen().bounds

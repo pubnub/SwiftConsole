@@ -1,5 +1,5 @@
 //
-//  PNCLabelCollectionViewCell.swift
+//  LabelCollectionViewCell.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/13/16.
@@ -13,7 +13,7 @@ struct LabelItem {
     var contentsString: String
 }
 
-class PNCLabelCollectionViewCell: UICollectionViewCell {
+class LabelCollectionViewCell: UICollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel

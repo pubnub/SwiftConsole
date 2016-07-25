@@ -1,5 +1,5 @@
 //
-//  PNCClientCreationViewController.swift
+//  ClientCreationViewController.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/18/16.
@@ -8,7 +8,8 @@
 
 import Foundation
 
-public class PNCClientCreationViewController: PNCCollectionViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+public class ClientCreationViewController: CollectionViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+    
     // MARK: Data Source
     private struct ClientDataSection {
         var items: [LabelItem]
@@ -73,7 +74,7 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PNCLabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? PNCLabelCollectionViewCell else {
+        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(LabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? LabelCollectionViewCell else {
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
         let indexedLabelItem = dataSource[indexPath]
@@ -82,7 +83,7 @@ public class PNCClientCreationViewController: PNCCollectionViewController, UICol
     }
     
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? PNCLabelCollectionViewCell else {
+        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? LabelCollectionViewCell else {
             fatalError("Failed to create collection view cell properly, please contact support@pubnub.com")
         }
         
