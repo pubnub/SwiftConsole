@@ -91,7 +91,7 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         presentEditFieldsAlertController(selectedLabelItem) { (updatedContentsString) in
             selectedLabelItem.contentsString = updatedContentsString
             self.dataSource[indexPath] = selectedLabelItem
-            cell.updateLabels(selectedLabelItem)
+            collectionView.reloadItemsAtIndexPaths([indexPath])
         }
     }
     
