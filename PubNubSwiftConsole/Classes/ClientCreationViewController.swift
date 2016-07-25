@@ -63,6 +63,26 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         collectionView.delegate = self
     }
     
+    // MARK: - Actions
+    
+    func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
+        var alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
+        alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
+            textField.text = selectedLabelItem.contentsString
+        })
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
+            let updatedContentsLabel = alert.textFields![0].text
+            completionHandler(updatedContentsLabel!)
+        }))
+        alert.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294
+        self.parentViewController?.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    func closeButtonPressed(sender: UIBarButtonItem!) {
+        var navController = self.navigationController as? NavigationController
+        navController?.close()
+    }
+    
     // MARK: - UICollectionViewDataSource
     
     public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -82,6 +102,8 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         return cell
     }
     
+    // MARK: - UICollectionViewDelegate
+    
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? LabelCollectionViewCell else {
             fatalError("Failed to create collection view cell properly, please contact support@pubnub.com")
@@ -95,15 +117,11 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         }
     }
     
-    func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
-        var alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
-        alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-            textField.text = selectedLabelItem.contentsString
-        })
-        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
-            let updatedContentsLabel = alert.textFields![0].text
-            completionHandler(updatedContentsLabel!)
-        }))
-        self.presentViewController(alert, animated: true, completion: nil)
+    // MARK: - UINavigationItem
+    public override var navigationItem: UINavigationItem {
+        let navigationItem = UINavigationItem(title: "Create PubNub Client")
+        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        navigationItem.rightBarButtonItem = closeButton
+        return navigationItem
     }
 }
