@@ -14,16 +14,19 @@ struct LabelItem {
 }
 
 extension UIAlertController {
+    enum LabelItemAction: String {
+        case OK, Cancel
+    }
     class func labelCellContentsUpdateAlertController(selectedLabelItem: LabelItem, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
         let alertController = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
         alertController.addTextFieldWithConfigurationHandler({ (textField) -> Void in
             textField.text = selectedLabelItem.contentsString
         })
-        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
+        alertController.addAction(UIAlertAction(title: LabelItemAction.OK.rawValue, style: .Default, handler: { (action) -> Void in
             var updatedContentsString = alertController.textFields?[0].text
             completionHandler(action, updatedContentsString)
         }))
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .Default, handler: { (action) in
+        alertController.addAction(UIAlertAction(title: LabelItemAction.Cancel.rawValue, style: .Default, handler: { (action) in
             completionHandler(action, nil)
         }))
         alertController.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294

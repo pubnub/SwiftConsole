@@ -97,12 +97,18 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         }
         
         var selectedLabelItem = dataSource[indexPath]
+
         let alertController = UIAlertController.labelCellContentsUpdateAlertController(selectedLabelItem) { (action, updatedContentsString) in
-            if (action.title == "OK") { // eventually hard code this into an enum
-                if let unwrappedUpdatedContentsString = updatedContentsString {
-                    selectedLabelItem.contentsString = unwrappedUpdatedContentsString
-                    self.dataSource[indexPath] = selectedLabelItem
-                    collectionView.reloadItemsAtIndexPaths([indexPath])
+            if let actionTitle = action.title, let alertAction = UIAlertController.LabelItemAction(rawValue: actionTitle) {
+                switch (alertAction) {
+                case .OK:
+                    if let unwrappedUpdatedContentsString = updatedContentsString {
+                        selectedLabelItem.contentsString = unwrappedUpdatedContentsString
+                        self.dataSource[indexPath] = selectedLabelItem
+                        collectionView.reloadItemsAtIndexPaths([indexPath])
+                    }
+                default:
+                return
                 }
             }
         }
