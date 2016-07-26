@@ -15,7 +15,7 @@ public class NavigationController: UINavigationController {
         // Do any additional setup after loading the view.
     }
     
-    func close(sender: UIBarButtonItem!) {
+    public func close(sender: UIBarButtonItem!) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
 
