@@ -48,4 +48,22 @@ public class ViewController: UIViewController, PNObjectEventListener {
     public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
         print("presence")
     }
+    
+    // MARK: - UINavigationItem
+    
+    func closeButtonPressed(sender: UIBarButtonItem!) {
+        var navController = self.navigationController as? NavigationController
+        navController?.close(sender)
+    }
+    
+    public var navBarTitle: String {
+        return "PubNub"
+    }
+    
+    public override var navigationItem: UINavigationItem {
+        let navigationItem = UINavigationItem(title: self.navBarTitle)
+        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        navigationItem.rightBarButtonItem = closeButton
+        return navigationItem
+    }
 }

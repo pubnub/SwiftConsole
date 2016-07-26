@@ -78,11 +78,6 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         self.parentViewController?.presentViewController(alert, animated: true, completion: nil)
     }
     
-    func closeButtonPressed(sender: UIBarButtonItem!) {
-        var navController = self.navigationController as? NavigationController
-        navController?.close(sender)
-    }
-    
     // MARK: - UICollectionViewDataSource
     
     public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -129,10 +124,8 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
     }
     
     // MARK: - UINavigationItem
-    public override var navigationItem: UINavigationItem {
-        let navigationItem = UINavigationItem(title: "Create PubNub Client")
-        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
-        navigationItem.rightBarButtonItem = closeButton
-        return navigationItem
+    
+    public override var navBarTitle: String {
+        return "PubNub Client Creation"
     }
 }
