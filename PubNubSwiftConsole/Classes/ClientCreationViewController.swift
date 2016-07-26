@@ -9,12 +9,13 @@
 import Foundation
 import PubNub
 
-public class ClientCreationViewController: CollectionViewController {
+public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - View Lifecycle
     
     public override func viewDidLoad() {
         super.viewDidLoad()
+        self.delegate = self
         let section = BasicSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36"), LabelItem(titleString: "Sub Key", contentsString: "demo-36"), LabelItem(titleString: "Origin", contentsString: "pubsub.pubnub.com")])
         self.dataSource = BasicDataSource(sections: [section])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
@@ -28,29 +29,24 @@ public class ClientCreationViewController: CollectionViewController {
         return nil
     }
     
-    // MARK: - UICollectionViewDelegate
+    // MARK: - CollectionViewDelegate
     
-    public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-
-        guard var selectedLabelItem = self.dataSource[indexPath] as? LabelItem else {
-            fatalError("Please contact support@pubnub.com")
-        }
-
-        let alertController = UIAlertController.labelCellContentsUpdateAlertController(selectedLabelItem) { (action, updatedContentsString) in
-            if let actionTitle = action.title, let alertAction = UIAlertController.LabelItemAction(rawValue: actionTitle) {
-                switch (alertAction) {
-                case .OK:
-                    if let unwrappedUpdatedContentsString = updatedContentsString {
-                        selectedLabelItem.contentsString = unwrappedUpdatedContentsString
-                        self.dataSource[indexPath] = selectedLabelItem
-                        collectionView.reloadItemsAtIndexPaths([indexPath])
-                    }
-                default:
-                return
+    public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?) {
+        if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
+            switch (alertDecision) {
+            case .OK:
+                guard var selectedLabelItem = self.dataSource[indexPath] as? LabelItem else {
+                    fatalError("Please contact support@pubnub.com")
                 }
+                if let unwrappedUpdatedContentsString = updatedString  {
+                    selectedLabelItem.contentsString = unwrappedUpdatedContentsString
+                    dataSource[indexPath] = selectedLabelItem
+                    collectionView.reloadItemsAtIndexPaths([indexPath])
+                }
+            default:
+                return
             }
         }
-        self.parentViewController?.presentViewController(alertController, animated: true, completion: nil)
     }
     
     // MARK: - UINavigationItem
