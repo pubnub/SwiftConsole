@@ -11,7 +11,7 @@ import PubNub
 
 public class ClientCreationViewController: CollectionViewController {
     
-    // MARK: View Lifecycle
+    // MARK: - View Lifecycle
     
     public override func viewDidLoad() {
         super.viewDidLoad()
