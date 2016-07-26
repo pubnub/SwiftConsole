@@ -26,52 +26,55 @@ public protocol DataSource {
     subscript(indexPath: NSIndexPath) -> Item {get set}
 }
 
-public class BasicSection: ItemSection {
-    public var items: [Item]
-    public required init(items: [Item]) {
-        self.items = items
-    }
-    public subscript(index: Int) -> Item {
-        get {
-            return items[index]
-        }
-        set {
-            items[index] = newValue
-        }
-    }
-    public var count: Int {
-        return items.count
-    }
-}
-
-public class BasicDataSource: DataSource {
-    public var sections: [ItemSection]
-    public required init(sections: [ItemSection]) {
-        self.sections = sections
-    }
-    public subscript(section: Int) -> ItemSection {
-        get {
-            return sections[section]
-        }
-        
-        set {
-            sections[section] = newValue
-        }
-    }
-    public subscript(indexPath: NSIndexPath) -> Item {
-        get {
-            return self[indexPath.section][indexPath.row]
-        }
-        set {
-            self[indexPath.section][indexPath.row] = newValue
-        }
-    }
-    public var count: Int {
-        return sections.count
-    }
-}
-
 public class CollectionViewController: ViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+    
+    // MARK: - Data Source
+    public class BasicSection: ItemSection {
+        public var items: [Item]
+        public required init(items: [Item]) {
+            self.items = items
+        }
+        public subscript(index: Int) -> Item {
+            get {
+                return items[index]
+            }
+            set {
+                items[index] = newValue
+            }
+        }
+        public var count: Int {
+            return items.count
+        }
+    }
+    
+    public class BasicDataSource: DataSource {
+        public var sections: [ItemSection]
+        public required init(sections: [ItemSection]) {
+            self.sections = sections
+        }
+        public subscript(section: Int) -> ItemSection {
+            get {
+                return sections[section]
+            }
+            
+            set {
+                sections[section] = newValue
+            }
+        }
+        public subscript(indexPath: NSIndexPath) -> Item {
+            get {
+                return self[indexPath.section][indexPath.row]
+            }
+            set {
+                self[indexPath.section][indexPath.row] = newValue
+            }
+        }
+        public var count: Int {
+            return sections.count
+        }
+    }
+    
+    // MARK: - Properties
     var collectionView: CollectionView?
     
     // start with an empty data source, replace in subclasses
@@ -80,7 +83,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
         return BasicDataSource(sections: sections)
     }()
     
-    // MARK: Constructors
+    // MARK: - Constructors
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -88,6 +91,20 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
     
     public required init() {
         super.init()
+    }
+    
+    // MARK: - View Lifecycle
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        let layout = CollectionViewFlowLayout()
+        self.collectionView = CollectionView(frame: self.view.frame, collectionViewLayout: layout)
+        guard let pubNubCollectionView = self.collectionView else {
+            fatalError("We expected to have a collection view by now. Please contact support@pubnub.com")
+        }
+        pubNubCollectionView.delegate = self
+        pubNubCollectionView.dataSource = self
+        self.view.addSubview(pubNubCollectionView)
     }
     
     // MARK: - UICollectionViewDataSource
@@ -108,18 +125,5 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
         cell.updateCell(indexedItem)
         return cell
     }
-    
-    // MARK: View Lifecycle
-    
-    public override func loadView() {
-        super.loadView()
-        let layout = CollectionViewFlowLayout()
-        self.collectionView = CollectionView(frame: self.view.frame, collectionViewLayout: layout)
-        guard let pubNubCollectionView = self.collectionView else {
-            fatalError("We expected to have a collection view by now. Please contact support@pubnub.com")
-        }
-        pubNubCollectionView.delegate = self
-        pubNubCollectionView.dataSource = self
-        self.view.addSubview(pubNubCollectionView)
-    }
+
 }
