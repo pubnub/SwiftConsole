@@ -66,7 +66,7 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
     // MARK: - Actions
     
     func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
-        var alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
+        let alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
         alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
             textField.text = selectedLabelItem.contentsString
         })
