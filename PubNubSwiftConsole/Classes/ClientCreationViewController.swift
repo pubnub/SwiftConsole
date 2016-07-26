@@ -28,7 +28,7 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
     }
     
     private struct ClientDataSource {
-        var sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36")])]
+        var sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36"), LabelItem(titleString: "Sub Key", contentsString: "demo-36"), LabelItem(titleString: "Origin", contentsString: "pubsub.pubnub.com")])]
         subscript(index: Int) -> ClientDataSection {
             get {
                 return sections[index]
