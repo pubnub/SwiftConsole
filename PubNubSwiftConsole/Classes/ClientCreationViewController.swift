@@ -28,19 +28,6 @@ public class ClientCreationViewController: CollectionViewController {
         return nil
     }
     
-    func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
-        let alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
-        alert.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-            textField.text = selectedLabelItem.contentsString
-        })
-        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action) -> Void in
-            let updatedContentsLabel = alert.textFields![0].text
-            completionHandler(updatedContentsLabel!)
-        }))
-        alert.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294
-        self.parentViewController?.presentViewController(alert, animated: true, completion: nil)
-    }
-    
     // MARK: - UICollectionViewDelegate
     
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
