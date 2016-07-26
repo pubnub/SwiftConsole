@@ -8,59 +8,17 @@
 
 import Foundation
 
-public class ClientCreationViewController: CollectionViewController, UICollectionViewDataSource, UICollectionViewDelegate {
-    
-    // MARK: Data Source
-    private struct ClientDataSection {
-        var items: [LabelItem]
-        subscript(index: Int) -> LabelItem {
-            get {
-                return items[index]
-            }
-            
-            set {
-                items[index] = newValue
-            }
-        }
-        var count: Int {
-            return items.count
-        }
-    }
-    
-    private struct ClientDataSource {
-        var sections = [ClientDataSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36"), LabelItem(titleString: "Sub Key", contentsString: "demo-36"), LabelItem(titleString: "Origin", contentsString: "pubsub.pubnub.com")])]
-        subscript(index: Int) -> ClientDataSection {
-            get {
-                return sections[index]
-            }
-            
-            set {
-                sections[index] = newValue
-            }
-        }
-        subscript(indexPath: NSIndexPath) -> LabelItem {
-            get {
-                return self[indexPath.section][indexPath.row]
-            }
-            set {
-                self[indexPath.section][indexPath.row] = newValue
-            }
-        }
-        
-        var count: Int {
-            return sections.count
-        }
-    }
-    
-    private var dataSource = ClientDataSource()
+public class ClientCreationViewController: CollectionViewController {
     
     // MARK: View Lifecycle
     
     public override func viewDidLoad() {
         super.viewDidLoad()
+        let section = BasicSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36"), LabelItem(titleString: "Sub Key", contentsString: "demo-36"), LabelItem(titleString: "Origin", contentsString: "pubsub.pubnub.com")])
+        self.dataSource = BasicDataSource(sections: [section])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.dataSource = self
-        collectionView.delegate = self
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())
+        collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - Actions
@@ -78,33 +36,13 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         self.parentViewController?.presentViewController(alert, animated: true, completion: nil)
     }
     
-    // MARK: - UICollectionViewDataSource
-    
-    public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return dataSource.count
-    }
-    
-    public func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataSource[section].count
-    }
-    
-    public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(LabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? LabelCollectionViewCell else {
-            fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
-        }
-        let indexedLabelItem = dataSource[indexPath]
-        cell.updateLabels(indexedLabelItem)
-        return cell
-    }
-    
     // MARK: - UICollectionViewDelegate
     
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? LabelCollectionViewCell else {
-            fatalError("Failed to create collection view cell properly, please contact support@pubnub.com")
+
+        guard var selectedLabelItem = self.dataSource[indexPath] as? LabelItem else {
+            fatalError("Please contact support@pubnub.com")
         }
-        
-        var selectedLabelItem = dataSource[indexPath]
 
         let alertController = UIAlertController.labelCellContentsUpdateAlertController(selectedLabelItem) { (action, updatedContentsString) in
             if let actionTitle = action.title, let alertAction = UIAlertController.LabelItemAction(rawValue: actionTitle) {

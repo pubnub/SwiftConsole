@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct LabelItem {
+struct LabelItem: Item {
     let titleString: String
     var contentsString: String
 }
@@ -66,5 +66,12 @@ class LabelCollectionViewCell: CollectionViewCell {
         self.titleLabel.text = item.titleString
         self.contentsLabel.text = item.contentsString
         self.setNeedsLayout() // make sure this occurs during the next update cycle
+    }
+    
+    override func updateCell(item: Item) {
+        guard let labelItem = item as? LabelItem else {
+            fatalError("init(coder:) has not been implemented")
+        }
+        updateLabels(labelItem)
     }
 }

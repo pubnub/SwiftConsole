@@ -14,6 +14,8 @@ public class ConsoleViewController: CollectionViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())
     }
 
     public override func didReceiveMemoryWarning() {
