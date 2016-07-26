@@ -34,7 +34,6 @@ public class ViewController: UIViewController, PNObjectEventListener {
     
     override public func viewDidLoad() {
         super.viewDidLoad()
-        print("viewDidLoad")
         self.view.backgroundColor = UIColor.redColor()
     }
     
