@@ -34,14 +34,10 @@ extension UIAlertController {
     }
 }
 
-class LabelCollectionViewCell: UICollectionViewCell {
+class LabelCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
-    
-    static func reuseIdentifier() -> String {
-        return String(self.dynamicType)
-    }
     
     override init(frame: CGRect) {
         titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height/3))
