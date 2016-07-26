@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import PubNub
 
 public class ClientCreationViewController: CollectionViewController {
     
@@ -22,6 +23,10 @@ public class ClientCreationViewController: CollectionViewController {
     }
     
     // MARK: - Actions
+    
+    func createPubNubClient() -> PubNub? {
+        return nil
+    }
     
     func presentEditFieldsAlertController(selectedLabelItem: LabelItem, completionHandler: ((String) -> ())) {
         let alert = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)

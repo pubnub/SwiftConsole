@@ -7,26 +7,40 @@
 //
 
 import UIKit
+import PubNub
 
 public class ConsoleViewController: CollectionViewController {
-
-    public override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-        guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())
+    
+    // MARK: - Constructors
+    public required init(client: PubNub) {
+        super.init()
+        self.client = client
+    }
+    
+    public required init() {
+        super.init()
+        self.client?.addListener(self)
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
-    public override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    // MARK: View Lifecycle
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        let section = BasicSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36"), LabelItem(titleString: "Sub Key", contentsString: "demo-36")])
+        self.dataSource = BasicDataSource(sections: [section])
+        guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())
+        collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - UINavigationItem
     
     public override var navBarTitle: String {
-        return "PubNub Client Creation"
+        return "PubNub Console"
     }
 
 }
