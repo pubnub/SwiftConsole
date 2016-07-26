@@ -30,7 +30,7 @@ public class ConsoleViewController: CollectionViewController {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        let section = BasicSection(items: [LabelItem(titleString: "Pub Key", contentsString: "demo-36"), LabelItem(titleString: "Sub Key", contentsString: "demo-36")])
+        let section = BasicSection(items: [LabelItem(titleString: "Channels", contentsString: "a"), LabelItem(titleString: "Sub Key", contentsString: "demo-36")])
         self.dataSource = BasicDataSource(sections: [section])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())

@@ -7,17 +7,21 @@
 //
 
 import UIKit
+import PubNub
 import PubNubSwiftConsole
 
 class ViewController: UIViewController {
     
-    @IBOutlet weak var pubNubDebugViewButton: UIButton!
+    @IBOutlet weak var clientCreationButton: UIButton!
+    @IBOutlet weak var consoleButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        pubNubDebugViewButton.setTitle("PubNub Debug", forState: .Normal)
-        pubNubDebugViewButton.addTarget(self, action: #selector(self.pubNubDebugViewButtonPressed(_:)), forControlEvents: .TouchUpInside)
+        clientCreationButton.setTitle("PubNub Client Creation", forState: .Normal)
+        clientCreationButton.addTarget(self, action: #selector(self.clientCreationButtonPressed(_:)), forControlEvents: .TouchUpInside)
+        consoleButton.setTitle("PubNub Console", forState: .Normal)
+        consoleButton.addTarget(self, action: #selector(self.consoleButtonPressed(_:)), forControlEvents: .TouchUpInside)
     }
 
     override func didReceiveMemoryWarning() {
@@ -25,9 +29,16 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    func pubNubDebugViewButtonPressed(sender: UIButton!) {
-        let pubNubViewController = PubNubSwiftConsole.modalClientCreationViewController()
-        self.presentViewController(pubNubViewController, animated: true, completion: nil)
+    func clientCreationButtonPressed(sender: UIButton!) {
+        let clientCreationViewController = PubNubSwiftConsole.modalClientCreationViewController()
+        self.presentViewController(clientCreationViewController, animated: true, completion: nil)
+    }
+    
+    func consoleButtonPressed(sender: UIButton!) {
+        let config = PNConfiguration(publishKey: "demo-36", subscribeKey: "demo-36")
+        let client = PubNub.clientWithConfiguration(config)
+        let consoleViewController = PubNubSwiftConsole.modalConsoleViewController(client)
+        self.presentViewController(consoleViewController, animated: true, completion: nil)
     }
 
 }
