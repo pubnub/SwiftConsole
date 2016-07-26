@@ -110,11 +110,22 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
         }
         
         var selectedLabelItem = dataSource[indexPath]
-        presentEditFieldsAlertController(selectedLabelItem) { (updatedContentsString) in
-            selectedLabelItem.contentsString = updatedContentsString
-            self.dataSource[indexPath] = selectedLabelItem
-            collectionView.reloadItemsAtIndexPaths([indexPath])
+
+        let alertController = UIAlertController.labelCellContentsUpdateAlertController(selectedLabelItem) { (action, updatedContentsString) in
+            if let actionTitle = action.title, let alertAction = UIAlertController.LabelItemAction(rawValue: actionTitle) {
+                switch (alertAction) {
+                case .OK:
+                    if let unwrappedUpdatedContentsString = updatedContentsString {
+                        selectedLabelItem.contentsString = unwrappedUpdatedContentsString
+                        self.dataSource[indexPath] = selectedLabelItem
+                        collectionView.reloadItemsAtIndexPaths([indexPath])
+                    }
+                default:
+                return
+                }
+            }
         }
+        self.parentViewController?.presentViewController(alertController, animated: true, completion: nil)
     }
     
     // MARK: - UINavigationItem
