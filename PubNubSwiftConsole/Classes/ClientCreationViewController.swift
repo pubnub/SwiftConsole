@@ -80,7 +80,7 @@ public class ClientCreationViewController: CollectionViewController, UICollectio
     
     func closeButtonPressed(sender: UIBarButtonItem!) {
         var navController = self.navigationController as? NavigationController
-        navController?.close()
+        navController?.close(sender)
     }
     
     // MARK: - UICollectionViewDataSource
