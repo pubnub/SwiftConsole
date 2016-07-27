@@ -58,6 +58,8 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     override public func prepareForReuse() {
         super.prepareForReuse()
         self.button.center = self.contentView.center
+        // this is called for reload, which probably means the caching is pointless
+        // TODO: clean this up
         targetSelector = nil
     }
     
