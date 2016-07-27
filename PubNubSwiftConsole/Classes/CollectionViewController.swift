@@ -9,8 +9,9 @@
 import Foundation
 
 public protocol Item {
-    var alertControllerTitle: String {get}
-    var alertControllerTextFieldValue: String {get}
+    var alertControllerTitle: String? {get}
+    var alertControllerTextFieldValue: String? {get}
+    var reuseIdentifier: String {get}
 }
 
 public protocol ItemSection {
@@ -33,9 +34,10 @@ extension UIAlertController {
         case OK, Cancel
     }
     class func itemCellContentsUpdateTextFieldAlertController(selectedItem: Item, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
-        let alertController = UIAlertController(title: selectedItem.alertControllerTitle, message: nil, preferredStyle: .Alert)
+        // TODO: use optionals correctly instead of forced unwrapping
+        let alertController = UIAlertController(title: selectedItem.alertControllerTitle!, message: nil, preferredStyle: .Alert)
         alertController.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-            textField.text = selectedItem.alertControllerTextFieldValue
+            textField.text = selectedItem.alertControllerTextFieldValue!
         })
         alertController.addAction(UIAlertAction(title: ItemAction.OK.rawValue, style: .Default, handler: { (action) -> Void in
             var updatedContentsString = alertController.textFields?[0].text
@@ -147,10 +149,10 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(LabelCollectionViewCell.reuseIdentifier(), forIndexPath: indexPath) as? CollectionViewCell else {
+        let indexedItem = dataSource[indexPath]
+        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(indexedItem.reuseIdentifier, forIndexPath: indexPath) as? CollectionViewCell else {
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
-        let indexedItem = dataSource[indexPath]
         cell.updateCell(indexedItem)
         return cell
     }

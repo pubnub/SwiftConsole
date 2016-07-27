@@ -11,14 +11,18 @@ import Foundation
 protocol LabelItem: Item {
     var titleString: String {get}
     var contentsString: String {get set}
-    var alertControllerTitle: String {get}
-    var alertControllerTextFieldValue: String {get}
+//    var alertControllerTitle: String {get}
+//    var alertControllerTextFieldValue: String {get}
 }
 
 class LabelCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
+    
+    override class var reuseIdentifier: String {
+        return String(self.dynamicType)
+    }
     
     override init(frame: CGRect) {
         titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height/3))

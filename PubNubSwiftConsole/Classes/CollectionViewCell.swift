@@ -9,7 +9,7 @@
 import UIKit
 
 public class CollectionViewCell: UICollectionViewCell {
-    static func reuseIdentifier() -> String {
+    class var reuseIdentifier: String {
         return String(self.dynamicType)
     }
     

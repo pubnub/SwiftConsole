@@ -51,12 +51,35 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
             return clientCreationType.rawValue
         }
         var contentsString: String
-        var alertControllerTitle: String {
+        var alertControllerTitle: String? {
             return titleString
         }
-        var alertControllerTextFieldValue: String {
+        var alertControllerTextFieldValue: String? {
             return contentsString
         }
+        var reuseIdentifier: String {
+            return LabelCollectionViewCell.reuseIdentifier
+        }
+        
+    }
+    
+    struct ClientCreationButtonItem: ButtonItem {
+        var title: String {
+            return "Create Client"
+        }
+        
+        var targetSelector: TargetSelector
+        var alertControllerTextFieldValue: String? {
+            return nil
+        }
+        var alertControllerTitle: String? {
+            return nil
+        }
+        
+        var reuseIdentifier: String {
+            return ButtonCollectionViewCell.reuseIdentifier
+        }
+        
         
     }
     
@@ -65,16 +88,28 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        let section = BasicSection(items: [ClientCreationLabelItem(clientCreationType: .PublishKey), ClientCreationLabelItem(clientCreationType: .PublishKey), ClientCreationLabelItem(clientCreationType: .Origin)])
-        self.dataSource = BasicDataSource(sections: [section])
+        let buttonItem = ClientCreationButtonItem(targetSelector: (self, #selector(self.clientCreationButtonPressed(_:))))
+        let buttonSection = BasicSection(items: [buttonItem])
+        let configSection = BasicSection(items: [ClientCreationLabelItem(clientCreationType: .PublishKey), ClientCreationLabelItem(clientCreationType: .SubscribeKey), ClientCreationLabelItem(clientCreationType: .Origin)])
+        self.dataSource = BasicDataSource(sections: [configSection, buttonSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier())
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - Actions
     
-    func createPubNubClient() -> PubNub {
+    func clientCreationButtonPressed(sender: UIButton!) {
+        guard let client = createPubNubClient() else {
+            return
+        }
+        let consoleViewController = ConsoleViewController(client: client)
+        self.navigationController?.pushViewController(consoleViewController, animated: true)
+    }
+    
+    // TODO: add error handling, resetting state?
+    func createPubNubClient() -> PubNub? {
         // we know there is only 1 section
         // TODO: make this into a constant or something
         guard let section = dataSource[0] as? BasicSection else {
