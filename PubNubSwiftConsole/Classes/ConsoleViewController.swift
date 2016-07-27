@@ -180,7 +180,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             (status.operation == .SubscribeOperation) ||
             (status.operation == .UnsubscribeOperation)
             ){
-            updateSubscribables()
+            updateSubscribables() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
         }
     }
     
