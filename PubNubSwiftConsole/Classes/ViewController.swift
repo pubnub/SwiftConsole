@@ -38,18 +38,6 @@ public class ViewController: UIViewController, PNObjectEventListener {
         self.view.backgroundColor = UIColor.redColor()
     }
     
-    public func client(client: PubNub, didReceiveStatus status: PNStatus) {
-        print("status")
-    }
-    
-    public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
-        print("message")
-    }
-    
-    public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
-        print("presence")
-    }
-    
     // MARK: - UINavigationItem
     
     func closeButtonPressed(sender: UIBarButtonItem!) {

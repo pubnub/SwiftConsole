@@ -90,6 +90,21 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
+    // MARK: - PNObjectEventListener
+    
+    public func client(client: PubNub, didReceiveStatus status: PNStatus) {
+        print("status")
+        
+    }
+    
+    public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
+        print("message")
+    }
+    
+    public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
+        print("presence")
+    }
+    
     // MARK: - UINavigationItem
     
     public override var navBarTitle: String {
