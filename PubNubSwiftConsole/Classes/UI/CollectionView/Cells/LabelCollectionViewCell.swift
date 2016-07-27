@@ -8,38 +8,17 @@
 
 import Foundation
 
-struct LabelItem {
-    let titleString: String
-    var contentsString: String
+protocol LabelItem: Item {
+    var titleString: String {get}
+    var contentsString: String {get set}
 }
 
-extension UIAlertController {
-    enum LabelItemAction: String {
-        case OK, Cancel
-    }
-    class func labelCellContentsUpdateAlertController(selectedLabelItem: LabelItem, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
-        let alertController = UIAlertController(title: "Edit publish key", message: nil, preferredStyle: .Alert)
-        alertController.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-            textField.text = selectedLabelItem.contentsString
-        })
-        alertController.addAction(UIAlertAction(title: LabelItemAction.OK.rawValue, style: .Default, handler: { (action) -> Void in
-            var updatedContentsString = alertController.textFields?[0].text
-            completionHandler(action, updatedContentsString)
-        }))
-        alertController.addAction(UIAlertAction(title: LabelItemAction.Cancel.rawValue, style: .Default, handler: { (action) in
-            completionHandler(action, nil)
-        }))
-        alertController.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294
-        return alertController
-    }
-}
-
-class LabelCollectionViewCell: UICollectionViewCell {
+class LabelCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
     
-    static func reuseIdentifier() -> String {
+    override class var reuseIdentifier: String {
         return String(self.dynamicType)
     }
     
@@ -70,5 +49,12 @@ class LabelCollectionViewCell: UICollectionViewCell {
         self.titleLabel.text = item.titleString
         self.contentsLabel.text = item.contentsString
         self.setNeedsLayout() // make sure this occurs during the next update cycle
+    }
+    
+    override func updateCell(item: Item) {
+        guard let labelItem = item as? LabelItem else {
+            fatalError("init(coder:) has not been implemented")
+        }
+        updateLabels(labelItem)
     }
 }

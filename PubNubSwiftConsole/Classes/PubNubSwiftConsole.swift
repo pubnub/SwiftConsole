@@ -7,8 +7,14 @@
 //
 
 import Foundation
+import PubNub
 
 public func modalClientCreationViewController() -> NavigationController {
     let rootViewController = ClientCreationViewController()
+    return NavigationController(rootViewController: rootViewController)
+}
+
+public func modalConsoleViewController(client: PubNub) -> NavigationController {
+    let rootViewController = ConsoleViewController(client: client)
     return NavigationController(rootViewController: rootViewController)
 }
