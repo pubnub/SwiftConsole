@@ -71,6 +71,24 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
     }
     
+    struct ConsoleButtonItem: ButtonItem {
+        var title: String {
+            return "Subscribe"
+        }
+        
+        var targetSelector: TargetSelector
+        var alertControllerTextFieldValue: String? {
+            return nil
+        }
+        var alertControllerTitle: String? {
+            return nil
+        }
+        
+        var reuseIdentifier: String {
+            return ButtonCollectionViewCell.reuseIdentifier
+        }
+    }
+    
     // MARK: - Constructors
     public required init(client: PubNub) {
         super.init()
@@ -95,10 +113,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             fatalError()
         }
-        let section = BasicSection(items: [ConsoleLabelItem(consoleType: .Channels, client: currentClient), ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)])
-        self.dataSource = BasicDataSource(sections: [section])
+        let labelSection = BasicSection(items: [ConsoleLabelItem(consoleType: .Channels, client: currentClient), ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)])
+        let buttonItem = ConsoleButtonItem(targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
+        let buttonSection = BasicSection(items: [buttonItem])
+        self.dataSource = BasicDataSource(sections: [labelSection, buttonSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         
         // TODO: clean this up later, it's just for debug
@@ -106,6 +127,19 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
 //        dispatch_after(delayTime, dispatch_get_main_queue()) {
 //            self.client?.subscribeToChannels(["d"], withPresence: true)
 //        }
+    }
+    
+    // MARK: - Actions
+    func subscribeButtonPressed(sender: UIButton!) {
+        // TODO: clean this up
+//        self.client?.unsubscribeFromAll() // bad idea to stack this?
+        // this is hard-coded, need to fix that
+        guard let channelsItem = dataSource[0][0] as? ConsoleLabelItem else {
+            fatalError()
+        }// this is hard-coded, need to fix that
+        let channels = [channelsItem.contentsString]
+        self.client?.subscribeToChannels(channels, withPresence: true)
+        
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -148,6 +182,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             ){
             updateSubscribables()
         }
+    }
+    
+    public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
+        print(message.debugDescription)
     }
     
     // MARK: - UINavigationItem
