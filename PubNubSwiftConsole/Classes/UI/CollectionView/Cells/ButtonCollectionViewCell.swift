@@ -47,6 +47,7 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         super.init(frame: frame)
         self.button.setTitle("Create Client", forState: .Normal)
         self.button.sizeToFit()
+        self.button.center = self.contentView.center
         self.contentView.addSubview(self.button)
     }
     
