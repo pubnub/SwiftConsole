@@ -130,13 +130,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - Update from Client
     
     public func updateSubscribables() {
-        print("updateSubscribables")
         guard let currentClient = self.client else {
             return
         }
-        var section = dataSource[0] // this is hard coded for now
-        section[ConsoleItemType.Channels.dataSourceIndex] = ConsoleLabelItem(consoleType: .Channels, client: currentClient)
-        section[ConsoleItemType.ChannelGroups.dataSourceIndex] = ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)
+        dataSource[ConsoleItemType.Channels.indexPath] = ConsoleLabelItem(consoleType: .Channels, client: currentClient)
+        dataSource[ConsoleItemType.ChannelGroups.indexPath] = ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)
         self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
     }
     
