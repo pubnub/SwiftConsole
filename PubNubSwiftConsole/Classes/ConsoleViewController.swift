@@ -27,6 +27,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         var indexPath: NSIndexPath {
             return NSIndexPath(forItem: dataSourceIndex, inSection: 0) // this is hardcoded for now
         }
+        
         func subscribablesArray(client: PubNub) -> [String] {
             switch self {
             case .Channels:
@@ -85,7 +86,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: View Lifecycle
+    // MARK: - View Lifecycle
     
     public override func viewDidLoad() {
         super.viewDidLoad()
