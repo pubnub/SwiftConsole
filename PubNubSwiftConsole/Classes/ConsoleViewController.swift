@@ -16,7 +16,29 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     enum ConsoleItemType: String {
         case Channels = "Channels"
         case ChannelGroups = "Channel Groups"
+        var dataSourceIndex: Int {
+            switch self {
+            case .Channels:
+                return 0
+            case .ChannelGroups:
+                return 1
+            }
+        }
+        var indexPath: NSIndexPath {
+            return NSIndexPath(forItem: dataSourceIndex, inSection: 0) // this is hardcoded for now
+        }
+        func subscribablesArray(client: PubNub) -> [String] {
+            switch self {
+            case .Channels:
+                return client.channels()
+            case .ChannelGroups:
+                return client.channelGroups()
+            }
+        }
         
+        func subscribablesString(client: PubNub) -> String {
+            return subscribablesArray(client).reduce("", combine: +)
+        }
     }
     
     struct ConsoleLabelItem: LabelItem {
@@ -26,10 +48,15 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.contentsString = contentsString
         }
         
+        init(consoleType: ConsoleItemType, client: PubNub) {
+            self.init(consoleType: consoleType, contentsString: consoleType.subscribablesString(client))
+        }
+        
         var titleString: String {
             return consoleType.rawValue
         }
         var contentsString: String
+        
         var alertControllerTitle: String? {
             return titleString
         }
@@ -63,11 +90,21 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        let section = BasicSection(items: [ConsoleLabelItem(consoleType: .Channels, contentsString: "a"), ConsoleLabelItem(consoleType: .ChannelGroups, contentsString: "a")])
+        // TODO: fix the forced unwrap of the client
+        guard let currentClient = self.client else {
+            fatalError()
+        }
+        let section = BasicSection(items: [ConsoleLabelItem(consoleType: .Channels, client: currentClient), ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)])
         self.dataSource = BasicDataSource(sections: [section])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
+        
+        // TODO: clean this up later, it's just for debug
+//        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(10 * Double(NSEC_PER_SEC)))
+//        dispatch_after(delayTime, dispatch_get_main_queue()) {
+//            self.client?.subscribeToChannels(["d"], withPresence: true)
+//        }
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -90,19 +127,28 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
+    // MARK: - Update from Client
+    
+    public func updateSubscribables() {
+        print("updateSubscribables")
+        guard let currentClient = self.client else {
+            return
+        }
+        var section = dataSource[0] // this is hard coded for now
+        section[ConsoleItemType.Channels.dataSourceIndex] = ConsoleLabelItem(consoleType: .Channels, client: currentClient)
+        section[ConsoleItemType.ChannelGroups.dataSourceIndex] = ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)
+        self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+    }
+    
     // MARK: - PNObjectEventListener
     
     public func client(client: PubNub, didReceiveStatus status: PNStatus) {
-        print("status")
-        
-    }
-    
-    public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
-        print("message")
-    }
-    
-    public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
-        print("presence")
+        if (
+            (status.operation == .SubscribeOperation) ||
+            (status.operation == .UnsubscribeOperation)
+            ){
+            updateSubscribables()
+        }
     }
     
     // MARK: - UINavigationItem

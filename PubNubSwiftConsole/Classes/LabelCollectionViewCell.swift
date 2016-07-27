@@ -11,8 +11,6 @@ import Foundation
 protocol LabelItem: Item {
     var titleString: String {get}
     var contentsString: String {get set}
-//    var alertControllerTitle: String {get}
-//    var alertControllerTextFieldValue: String {get}
 }
 
 class LabelCollectionViewCell: CollectionViewCell {

@@ -27,7 +27,6 @@ public class ViewController: UIViewController, PNObjectEventListener {
     
     var client: PubNub? {
         didSet {
-            print("client didSet")
             oldValue?.removeListener(self)
             client?.addListener(self)
         }
