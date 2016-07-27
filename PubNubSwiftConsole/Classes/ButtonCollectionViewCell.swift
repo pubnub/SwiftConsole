@@ -30,18 +30,6 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         return String(self.dynamicType)
     }
     
-//    private var buttonTargetSelector: TargetSelector? {
-//        willSet {
-//            self.button.removeAllTargets()
-//        }
-//        didSet {
-//            guard let updatedTargetSelector = buttonTargetSelector, let target = updatedTargetSelector.target else {
-//                return
-//            }
-//            self.button.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, forControlEvents: .TouchUpInside)
-//        }
-//    }
-    
     override init(frame: CGRect) {
         self.button = UIButton(type: .System)
         super.init(frame: frame)
@@ -57,25 +45,13 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     override public func prepareForReuse() {
         super.prepareForReuse()
         self.button.center = self.contentView.center
-//        self.buttonTargetSelector = nil
         self.button.removeAllTargets()
     }
     
     func updateButton(item: ButtonItem) {
-//        if button.titleForState(.Normal) != item.title {
-//            self.button.setTitle(item.title, forState: .Normal)
-//        }
         self.button.setTitle(item.title, forState: .Normal)
         self.button.sizeToFit()
         self.button.addTarget(item.targetSelector.target, action: item.targetSelector.selector, forControlEvents: .TouchUpInside)
-        
-//        guard let currentButtonTargetSelector = self.buttonTargetSelector
-//        if buttonTargetSelector != item.targetSelector {
-//            
-//        }
-//        if item.targetSelector.selector == self.buttonTargetSelector.selector {
-//            print("what")
-//        }
         self.setNeedsLayout() // now let's update layout
     }
     
