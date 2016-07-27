@@ -13,10 +13,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - DataSource
     
-    enum ConsoleItemType: String {
+    enum ConsoleLabelSectionItemType: String {
         case Channels = "Channels"
         case ChannelGroups = "Channel Groups"
-        var dataSourceIndex: Int {
+        var section: Int {
+            return 0
+        }
+        var row: Int {
             switch self {
             case .Channels:
                 return 0
@@ -25,7 +28,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
         }
         var indexPath: NSIndexPath {
-            return NSIndexPath(forItem: dataSourceIndex, inSection: 0) // this is hardcoded for now
+            return NSIndexPath(forItem: row, inSection: section) // this is hardcoded for now
         }
         
         func subscribablesArray(client: PubNub) -> [String] {
@@ -43,18 +46,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     struct ConsoleLabelItem: LabelItem {
-        let consoleType: ConsoleItemType
-        init(consoleType: ConsoleItemType, contentsString: String) {
-            self.consoleType = consoleType
+        let labelSectionItemType: ConsoleLabelSectionItemType
+        init(labelSectionType: ConsoleLabelSectionItemType, contentsString: String) {
+            self.labelSectionItemType = labelSectionType
             self.contentsString = contentsString
         }
         
-        init(consoleType: ConsoleItemType, client: PubNub) {
-            self.init(consoleType: consoleType, contentsString: consoleType.subscribablesString(client))
+        init(labelSectionType: ConsoleLabelSectionItemType, client: PubNub) {
+            self.init(labelSectionType: labelSectionType, contentsString: labelSectionType.subscribablesString(client))
         }
         
         var titleString: String {
-            return consoleType.rawValue
+            return labelSectionItemType.rawValue
         }
         var contentsString: String
         
@@ -72,9 +75,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     struct ConsoleButtonItem: ButtonItem {
+        init(selected: Bool, targetSelector: TargetSelector) {
+            self.selected = selected
+            self.targetSelector = targetSelector
+        }
+        init(targetSelector: TargetSelector) {
+            self.init(selected: false, targetSelector: targetSelector)
+        }
         var title: String {
             return "Subscribe"
         }
+        
+        var selectedTitle: String? {
+            return "Unsubscribe"
+        }
+        
+        var selected: Bool = false
+        
         
         var targetSelector: TargetSelector
         var alertControllerTextFieldValue: String? {
@@ -86,6 +103,16 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var reuseIdentifier: String {
             return ButtonCollectionViewCell.reuseIdentifier
+        }
+        
+        static var section: Int {
+            return 1
+        }
+        static var row: Int {
+            return 0
+        }
+        static var indexPath: NSIndexPath {
+            return NSIndexPath(forItem: row, inSection: section) // this is hardcoded for now
         }
     }
     
@@ -113,7 +140,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             fatalError()
         }
-        let labelSection = BasicSection(items: [ConsoleLabelItem(consoleType: .Channels, client: currentClient), ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)])
+        let labelSection = BasicSection(items: [ConsoleLabelItem(labelSectionType: .Channels, client: currentClient), ConsoleLabelItem(labelSectionType: .ChannelGroups, client: currentClient)])
         let buttonItem = ConsoleButtonItem(targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let buttonSection = BasicSection(items: [buttonItem])
         self.dataSource = BasicDataSource(sections: [labelSection, buttonSection])
@@ -133,6 +160,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     func subscribeButtonPressed(sender: UIButton!) {
         // TODO: clean this up
 //        self.client?.unsubscribeFromAll() // bad idea to stack this?
+        // selected means is subscribing
+        if sender.selected {
+            client?.unsubscribeFromAll()
+            return
+        }
         // this is hard-coded, need to fix that
         guard let channelsItem = dataSource[0][0] as? ConsoleLabelItem else {
             fatalError()
@@ -148,6 +180,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
             switch (alertDecision) {
             case .OK:
+                client?.unsubscribeFromAll() // unsubscribe whenever a subscribable is changed
                 guard var selectedLabelItem = self.dataSource[indexPath] as? LabelItem else {
                     fatalError("Please contact support@pubnub.com")
                 }
@@ -164,23 +197,40 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - Update from Client
     
-    public func updateSubscribables() {
+    public func updateSubscribableLabelCells() {
         guard let currentClient = self.client else {
             return
         }
-        dataSource[ConsoleItemType.Channels.indexPath] = ConsoleLabelItem(consoleType: .Channels, client: currentClient)
-        dataSource[ConsoleItemType.ChannelGroups.indexPath] = ConsoleLabelItem(consoleType: .ChannelGroups, client: currentClient)
-        self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+        dataSource[ConsoleLabelSectionItemType.Channels.indexPath] = ConsoleLabelItem(labelSectionType: .Channels, client: currentClient)
+        dataSource[ConsoleLabelSectionItemType.ChannelGroups.indexPath] = ConsoleLabelItem(labelSectionType: .ChannelGroups, client: currentClient)
+        self.collectionView?.reloadItemsAtIndexPaths([ConsoleLabelSectionItemType.Channels.indexPath, ConsoleLabelSectionItemType.ChannelGroups.indexPath])
+    }
+    
+    public func updateSubscribeButtonState() {
+        guard let currentClient = self.client else {
+            return
+        }
+        let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
+        guard var subscribeButtonItem = dataSource[ConsoleButtonItem.indexPath] as? ConsoleButtonItem else {
+            fatalError()
+        }
+        subscribeButtonItem.selected = subscribing
+        dataSource[ConsoleButtonItem.indexPath] = subscribeButtonItem
+        self.collectionView?.reloadItemsAtIndexPaths([ConsoleButtonItem.indexPath])
+        
+        
     }
     
     // MARK: - PNObjectEventListener
     
     public func client(client: PubNub, didReceiveStatus status: PNStatus) {
+        print(status.debugDescription)
         if (
             (status.operation == .SubscribeOperation) ||
             (status.operation == .UnsubscribeOperation)
             ){
-            updateSubscribables() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
+            updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
+            updateSubscribeButtonState()
         }
     }
     

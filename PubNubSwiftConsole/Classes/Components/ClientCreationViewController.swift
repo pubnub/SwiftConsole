@@ -67,7 +67,17 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         var title: String {
             return "Create Client"
         }
-        
+        var selectedTitle: String? {
+            return nil
+        }
+        init(selected: Bool, targetSelector: TargetSelector) {
+            self.selected = selected
+            self.targetSelector = targetSelector
+        }
+        init(targetSelector: TargetSelector) {
+            self.init(selected: false, targetSelector: targetSelector)
+        }
+        var selected: Bool = false
         var targetSelector: TargetSelector
         var alertControllerTextFieldValue: String? {
             return nil

@@ -161,8 +161,8 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
     
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
-        guard var selectedItem = self.dataSource[indexPath] as? Item else {
-            fatalError("Please contact support@pubnub.com")
+        guard var selectedItem = self.dataSource[indexPath] as? LabelItem else {
+            return
         }
         
         let alertController = UIAlertController.itemCellContentsUpdateTextFieldAlertController(selectedItem) { (action, updatedTextFieldString) in

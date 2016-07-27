@@ -12,7 +12,9 @@ typealias TargetSelector = (target: AnyObject?, selector: Selector)
 
 protocol ButtonItem: Item {
     var title: String {get}
+    var selectedTitle: String? {get}
     var targetSelector: TargetSelector {get set}
+    var selected: Bool {get set}
 }
 
 extension UIControl {
@@ -25,6 +27,16 @@ extension UIControl {
 
 public class ButtonCollectionViewCell: CollectionViewCell {
     private let button: UIButton
+    private var targetSelector: TargetSelector? {
+        willSet {
+            button.removeAllTargets()
+        }
+        didSet {
+            if let updatedTargetSelector = targetSelector {
+                button.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, forControlEvents: .TouchUpInside)
+            }
+        }
+    }
     
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
@@ -45,14 +57,24 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     override public func prepareForReuse() {
         super.prepareForReuse()
         self.button.center = self.contentView.center
-        self.button.removeAllTargets()
+        targetSelector = nil
     }
     
     func updateButton(item: ButtonItem) {
-        self.button.setTitle(item.title, forState: .Normal)
-        self.button.sizeToFit()
-        self.button.addTarget(item.targetSelector.target, action: item.targetSelector.selector, forControlEvents: .TouchUpInside)
-        self.setNeedsLayout() // now let's update layout
+        button.setTitle(item.title, forState: .Normal)
+        if let selectedTitle = item.selectedTitle {
+            button.setTitle(selectedTitle, forState: .Selected)
+        }
+        // only update the target selector if it's new
+        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
+            targetSelector = item.targetSelector
+        } else {
+            // if there is no current target selector, then update our internal one (which sets it as well)
+            targetSelector = item.targetSelector
+        }
+        button.selected = item.selected
+        button.sizeToFit()
+        setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
