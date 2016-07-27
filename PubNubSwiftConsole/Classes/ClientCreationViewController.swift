@@ -76,24 +76,21 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     
     func createPubNubClient() -> PubNub {
         // we know there is only 1 section
+        // TODO: make this into a constant or something
         guard let section = dataSource[0] as? BasicSection else {
             fatalError()
         }
-        // TODO: create a local function to unify all 3 of these calls
-        guard let publishItem = section[ClientCreationItemType.PublishKey.dataSourceIndex] as? ClientCreationLabelItem where publishItem.titleString == ClientCreationItemType.PublishKey.rawValue else {
-            fatalError("oops, dataSourceIndex is probably out of whack")
-        }
-        let pubKey = publishItem.contentsString
         
-        guard let subscribeItem = section[ClientCreationItemType.SubscribeKey.dataSourceIndex] as? ClientCreationLabelItem where subscribeItem.titleString == ClientCreationItemType.SubscribeKey.rawValue else {
-            fatalError("oops, dataSourceIndex is probably out of whack")
+        func stringForItem(itemType: ClientCreationItemType) -> String {
+            guard let item = section[itemType.dataSourceIndex] as? ClientCreationLabelItem where item.titleString == itemType.rawValue else {
+                fatalError("oops, dataSourceIndex is probably out of whack")
+            }
+            return item.contentsString
         }
-        let subKey = subscribeItem.contentsString
         
-        guard let originItem = section[ClientCreationItemType.Origin.dataSourceIndex] as? ClientCreationLabelItem where originItem.titleString == ClientCreationItemType.Origin.rawValue else {
-            fatalError("oops, dataSourceIndex is probably out of whack")
-        }
-        let origin = originItem.contentsString
+        let pubKey = stringForItem(ClientCreationItemType.PublishKey)
+        let subKey = stringForItem(ClientCreationItemType.SubscribeKey)
+        let origin = stringForItem(ClientCreationItemType.Origin)
         
         let config = PNConfiguration(publishKey: pubKey, subscribeKey: subKey)
         config.origin = origin
