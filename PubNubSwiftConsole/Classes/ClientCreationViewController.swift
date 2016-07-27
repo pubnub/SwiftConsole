@@ -79,6 +79,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         guard let section = dataSource[0] as? BasicSection else {
             fatalError()
         }
+        // TODO: create a local function to unify all 3 of these calls
         guard let publishItem = section[ClientCreationItemType.PublishKey.dataSourceIndex] as? ClientCreationLabelItem where publishItem.titleString == ClientCreationItemType.PublishKey.rawValue else {
             fatalError("oops, dataSourceIndex is probably out of whack")
         }
