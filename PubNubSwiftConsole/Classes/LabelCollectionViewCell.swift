@@ -8,16 +8,11 @@
 
 import Foundation
 
-struct LabelItem: Item {
-    let titleString: String
-    var contentsString: String
-    var alertControllerTitle: String {
-        return titleString
-    }
-    var alertControllerTextFieldValue: String {
-        return contentsString
-    }
-    
+protocol LabelItem: Item {
+    var titleString: String {get}
+    var contentsString: String {get set}
+    var alertControllerTitle: String {get}
+    var alertControllerTextFieldValue: String {get}
 }
 
 class LabelCollectionViewCell: CollectionViewCell {

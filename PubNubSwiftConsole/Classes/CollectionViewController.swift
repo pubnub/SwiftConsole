@@ -107,7 +107,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
     weak public var delegate: CollectionViewControllerDelegate?
     
     // start with an empty data source, replace in subclasses
-    public var dataSource: BasicDataSource = {
+    public var dataSource: DataSource = {
         let sections = [ItemSection]()
         return BasicDataSource(sections: sections)
     }()
