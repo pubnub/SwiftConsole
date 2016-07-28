@@ -92,7 +92,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var selected: Bool = false
         
-        
         var targetSelector: TargetSelector
         var alertControllerTextFieldValue: String? {
             return nil

@@ -8,19 +8,25 @@
 
 import Foundation
 
-class CollectionViewFlowLayout: UICollectionViewFlowLayout {
+class CollectionViewFlowLayout: UICollectionViewFlowLayout, UICollectionViewDelegateFlowLayout {  
+    
+    weak var delegate: UICollectionViewDelegateFlowLayout?
     
     public required override init() {
         let screenBounds = UIScreen.mainScreen().bounds
         let screenWidth = screenBounds.size.width
         super.init()
         self.sectionInset = UIEdgeInsets(top: 40, left: 1, bottom: 10, right: 1)
-        self.itemSize = CGSize(width: (screenWidth/2) - 2, height: (screenWidth/2) - 2)
+        //self.itemSize = CGSize(width: (screenWidth/2) - 2, height: (screenWidth/2) - 2)
         self.minimumInteritemSpacing = 1
         self.minimumLineSpacing = 1
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+        return CGSize(width: 100, height: 100)
     }
 }
