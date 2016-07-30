@@ -80,6 +80,10 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         case Origin
         case ClientCreationButton
         
+        var selectedTitle: String? {
+            return nil
+        }
+        
         var title: String {
             switch self {
             case .PublishKey:
@@ -104,9 +108,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         
         var defaultValue: String {
             switch self {
-            case .PublishKey:
-                return "demo-36"
-            case .SubscribeKey:
+            case .PublishKey, .SubscribeKey:
                 return "demo-36"
             case .Origin:
                 return "pubsub.pubnub.com"

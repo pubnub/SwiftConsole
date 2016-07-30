@@ -34,6 +34,7 @@ protocol ItemSectionType {
 protocol ItemType {
     var sectionType: ItemSectionType {get}
     var title: String {get}
+    var selectedTitle: String? {get}
     var defaultValue: String {get}
     var section: Int {get}
     var item: Int {get}
