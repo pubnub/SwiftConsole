@@ -9,8 +9,6 @@
 import Foundation
 
 public protocol Item {
-    var alertControllerTitle: String? {get}
-    var alertControllerTextFieldValue: String? {get}
     var reuseIdentifier: String {get}
 }
 
@@ -29,25 +27,62 @@ public protocol DataSource {
     subscript(indexPath: NSIndexPath) -> Item {get set}
 }
 
-extension UIAlertController {
-    enum ItemAction: String {
-        case OK, Cancel
+protocol ItemSectionType {
+    var rawValue: Int {get}
+}
+
+protocol ItemType {
+    var sectionType: ItemSectionType {get}
+    var title: String {get}
+    var defaultValue: String {get}
+    var section: Int {get}
+    var item: Int {get}
+    var indexPath: NSIndexPath {get}
+}
+
+extension ItemType {
+    var indexPath: NSIndexPath {
+        return NSIndexPath(forItem: item, inSection: section)
     }
-    class func itemCellContentsUpdateTextFieldAlertController(selectedItem: Item, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
-        // TODO: use optionals correctly instead of forced unwrapping
-        let alertController = UIAlertController(title: selectedItem.alertControllerTitle!, message: nil, preferredStyle: .Alert)
-        alertController.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-            textField.text = selectedItem.alertControllerTextFieldValue!
-        })
-        alertController.addAction(UIAlertAction(title: ItemAction.OK.rawValue, style: .Default, handler: { (action) -> Void in
-            var updatedContentsString = alertController.textFields?[0].text
-            completionHandler(action, updatedContentsString)
-        }))
-        alertController.addAction(UIAlertAction(title: ItemAction.Cancel.rawValue, style: .Default, handler: { (action) in
-            completionHandler(action, nil)
-        }))
-        alertController.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294
-        return alertController
+    var section: Int {
+        return sectionType.rawValue
+    }
+}
+
+extension ItemSection {
+    public subscript(index: Int) -> Item {
+        get {
+            return items[index]
+        }
+        set {
+            items[index] = newValue
+        }
+    }
+    public var count: Int {
+        return items.count
+    }
+}
+
+extension DataSource {
+    public subscript(section: Int) -> ItemSection {
+        get {
+            return sections[section]
+        }
+        
+        set {
+            sections[section] = newValue
+        }
+    }
+    public subscript(indexPath: NSIndexPath) -> Item {
+        get {
+            return self[indexPath.section][indexPath.row]
+        }
+        set {
+            self[indexPath.section][indexPath.row] = newValue
+        }
+    }
+    public var count: Int {
+        return sections.count
     }
 }
 
@@ -57,62 +92,24 @@ extension UIAlertController {
 
 public class CollectionViewController: ViewController, UICollectionViewDelegate, UICollectionViewDataSource {
     
-    // MARK: - Data Source
-    public class BasicSection: ItemSection {
-        public var items: [Item]
-        public required init(items: [Item]) {
-            self.items = items
-        }
-        public subscript(index: Int) -> Item {
-            get {
-                return items[index]
-            }
-            set {
-                items[index] = newValue
+    struct BasicDataSource: DataSource {
+        struct BasicSection: ItemSection {
+            var items: [Item]
+            init(items: [Item]) {
+                self.items = items
             }
         }
-        public var count: Int {
-            return items.count
-        }
-    }
-    
-    public class BasicDataSource: DataSource {
-        public var sections: [ItemSection]
-        public required init(sections: [ItemSection]) {
+        var sections: [ItemSection]
+        init(sections: [ItemSection]) {
             self.sections = sections
-        }
-        public subscript(section: Int) -> ItemSection {
-            get {
-                return sections[section]
-            }
-            
-            set {
-                sections[section] = newValue
-            }
-        }
-        public subscript(indexPath: NSIndexPath) -> Item {
-            get {
-                return self[indexPath.section][indexPath.row]
-            }
-            set {
-                self[indexPath.section][indexPath.row] = newValue
-            }
-        }
-        public var count: Int {
-            return sections.count
         }
     }
     
     // MARK: - Properties
     var collectionView: CollectionView?
+    var dataSource: DataSource?
     
     weak public var delegate: CollectionViewControllerDelegate?
-    
-    // start with an empty data source, replace in subclasses
-    public var dataSource: DataSource = {
-        let sections = [ItemSection]()
-        return BasicDataSource(sections: sections)
-    }()
     
     // MARK: - Constructors
     
@@ -141,15 +138,24 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
     // MARK: - UICollectionViewDataSource
     
     public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return dataSource.count
+        guard let currentDataSource = dataSource else {
+            return 0
+        }
+        return currentDataSource.count
     }
     
     public func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataSource[section].count
+        guard let currentDataSource = dataSource else {
+            return 0
+        }
+        return currentDataSource[section].count
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let indexedItem = dataSource[indexPath]
+        guard var currentDataSource = dataSource else {
+            fatalError()
+        }
+        let indexedItem = currentDataSource[indexPath]
         guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(indexedItem.reuseIdentifier, forIndexPath: indexPath) as? CollectionViewCell else {
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
@@ -160,16 +166,27 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
     // MARK: - UICollectionViewDelegate
     
     public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        
-        guard var selectedItem = self.dataSource[indexPath] as? LabelItem else {
+
+        guard let currentCollectionView = self.collectionView else {
             return
         }
-        
-        let alertController = UIAlertController.itemCellContentsUpdateTextFieldAlertController(selectedItem) { (action, updatedTextFieldString) in
-            self.delegate?.collectionView!(self.collectionView!, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
+        guard var selectedItem = dataSource?[indexPath] as? LabelItem else {
+            return
+        }
+        let alertController = UIAlertController.updateItemWithAlertController(selectedItem) { (action, updatedTextFieldString) in
+            if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
+                switch (alertDecision) {
+                case .OK:
+                    self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                default:
+                    return
+                }
+            }
+            self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
+            currentCollectionView.reloadItemsAtIndexPaths([indexPath])
         }
         
-        self.parentViewController?.presentViewController(alertController, animated: true, completion: nil)
+        self.presentViewController(alertController, animated: true, completion: nil)
     }
-
+    
 }
