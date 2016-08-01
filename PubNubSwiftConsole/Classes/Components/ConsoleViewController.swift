@@ -18,9 +18,26 @@ extension PubNub {
     }
 }
 
+//extension Stack where ElementType: PNResult {
+//    
+//}
+
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
+    
+    struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
+        let itemType: ItemType
+        init(itemType: ConsoleItemType) {
+            self.itemType = itemType
+        }
+        init(status: PNStatus) {
+            self.init(itemType: .SubscribeStatus)
+        }
+        var reuseIdentifier: String {
+            return SubscribeStatusCollectionViewCell.reuseIdentifier
+        }
+    }
     
     struct ConsoleLabelItem: LabelItem {
         let itemType: ItemType
@@ -66,14 +83,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0
-        case SubscribeLoopButtons = 1
+        case Subscribables = 0, SubscribeLoopButtons, Console
     }
     
     enum ConsoleItemType: ItemType {
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case SubscribeStatus
         
         func contents(client: PubNub) -> String {
             switch self {
@@ -94,6 +111,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return "Channel Groups"
             case .SubscribeButton:
                 return "Subscribe"
+            default:
+                return ""
             }
         }
         
@@ -112,6 +131,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
                 return ConsoleSectionType.SubscribeLoopButtons
+            case .SubscribeStatus:
+                return ConsoleSectionType.Console
             }
         }
         
@@ -130,6 +151,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 1
             case .SubscribeButton:
                 return 0
+            case .SubscribeStatus:
+                return 0
+//                guard let currentDataSource = .dataSource else {
+//                    fatalError()
+//                }
+                
             }
         }
     }
@@ -161,7 +188,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
         let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
-        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection])
+        let subscribeStatusSection = BasicDataSource.ScrollingSection()
+        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, subscribeStatusSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)

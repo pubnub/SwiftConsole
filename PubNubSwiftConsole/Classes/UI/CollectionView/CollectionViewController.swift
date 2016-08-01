@@ -44,7 +44,7 @@ public protocol ItemSection {
     init(items: [Item])
     var items: [Item] {get set}
     var count: Int {get}
-    subscript(row: Int) -> Item {get set}
+    subscript(index: Int) -> Item {get set}
 }
 
 public protocol DataSource {
@@ -92,6 +92,11 @@ extension DataSource {
     }
 }
 
+protocol Stack: ItemSection {
+    associatedtype ElementType
+    mutating func push(item: ElementType)
+}
+
 @objc public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
 }
@@ -103,6 +108,18 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
             var items: [Item]
             init(items: [Item]) {
                 self.items = items
+            }
+        }
+        struct ScrollingSection: Stack {
+            var items: [Item]
+            init(items: [Item]) {
+                self.items = items
+            }
+            init() {
+                self.init(items: [])
+            }
+            mutating func push(item: Item) {
+                self.items.insert(item, atIndex: 0)
             }
         }
         var sections: [ItemSection]
