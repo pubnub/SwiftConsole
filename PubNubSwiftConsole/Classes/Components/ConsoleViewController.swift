@@ -115,6 +115,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
+    
+    
     // MARK: - Constructors
     public required init(client: PubNub) {
         super.init()
