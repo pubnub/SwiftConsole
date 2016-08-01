@@ -10,7 +10,6 @@ import Foundation
 
 class CollectionViewFlowLayout: UICollectionViewFlowLayout, UICollectionViewDelegateFlowLayout {  
     
-    weak var delegate: UICollectionViewDelegateFlowLayout?
     let screenBounds: CGRect
     let screenWidth: CGFloat
     
