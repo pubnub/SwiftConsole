@@ -26,7 +26,7 @@ extension ButtonItem {
         return itemType.title
     }
     var selectedTitle: String? {
-        return nil
+        return itemType.selectedTitle
     }
 }
 

@@ -29,6 +29,9 @@ extension ItemType {
     var section: Int {
         return sectionType.rawValue
     }
+    var selectedTitle: String? {
+        return title
+    }
 }
 
 public protocol Item {

@@ -46,9 +46,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     struct ConsoleButtonItem: ButtonItem {
         let itemType: ItemType
-        var selectedTitle: String? {
-            return itemType.selectedTitle
-        }
         init(itemType: ConsoleItemType, selected: Bool, targetSelector: TargetSelector) {
             self.itemType = itemType
             self.selected = selected
