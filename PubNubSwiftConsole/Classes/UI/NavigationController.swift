@@ -9,6 +9,20 @@
 import UIKit
 
 public class NavigationController: UINavigationController {
+    
+    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+    
+    public override init(rootViewController: UIViewController) {
+        super.init(rootViewController: rootViewController)
+        self.modalTransitionStyle = .CoverVertical
+        self.modalPresentationStyle = .OverFullScreen
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError()
+    }
 
     override public func viewDidLoad() {
         super.viewDidLoad()

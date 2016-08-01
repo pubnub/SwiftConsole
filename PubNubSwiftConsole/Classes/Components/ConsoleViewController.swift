@@ -9,65 +9,35 @@
 import UIKit
 import PubNub
 
+extension PubNub {
+    func channelsString() -> String {
+        return self.channels().reduce("", combine: +)
+    }
+    func channelGroupsString() -> String {
+        return self.channelGroups().reduce("", combine: +)
+    }
+}
+
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
     
-    enum ConsoleLabelSectionItemType: String {
-        case Channels = "Channels"
-        case ChannelGroups = "Channel Groups"
-        var section: Int {
-            return 0
-        }
-        var row: Int {
-            switch self {
-            case .Channels:
-                return 0
-            case .ChannelGroups:
-                return 1
-            }
-        }
-        var indexPath: NSIndexPath {
-            return NSIndexPath(forItem: row, inSection: section) // this is hardcoded for now
-        }
-        
-        func subscribablesArray(client: PubNub) -> [String] {
-            switch self {
-            case .Channels:
-                return client.channels()
-            case .ChannelGroups:
-                return client.channelGroups()
-            }
-        }
-        
-        func subscribablesString(client: PubNub) -> String {
-            return subscribablesArray(client).reduce("", combine: +)
-        }
-    }
-    
     struct ConsoleLabelItem: LabelItem {
-        let labelSectionItemType: ConsoleLabelSectionItemType
-        init(labelSectionType: ConsoleLabelSectionItemType, contentsString: String) {
-            self.labelSectionItemType = labelSectionType
-            self.contentsString = contentsString
+        let itemType: ItemType
+        init(itemType: ConsoleItemType) {
+            self.init(itemType: itemType, contents: itemType.defaultValue)
         }
         
-        init(labelSectionType: ConsoleLabelSectionItemType, client: PubNub) {
-            self.init(labelSectionType: labelSectionType, contentsString: labelSectionType.subscribablesString(client))
+        init(itemType: ConsoleItemType, contents: String) {
+            self.itemType = itemType
+            self.contents = contents
         }
         
-        var titleString: String {
-            return labelSectionItemType.rawValue
-        }
-        var contentsString: String
-        
-        var alertControllerTitle: String? {
-            return titleString
-        }
-        var alertControllerTextFieldValue: String? {
-            return contentsString
+        init(itemType: ConsoleItemType, client: PubNub) {
+            self.init(itemType: itemType, contents: itemType.contents(client))
         }
         
+        var contents: String
         var reuseIdentifier: String {
             return LabelCollectionViewCell.reuseIdentifier
         }
@@ -75,47 +45,92 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     struct ConsoleButtonItem: ButtonItem {
-        init(selected: Bool, targetSelector: TargetSelector) {
+        let itemType: ItemType
+        init(itemType: ConsoleItemType, selected: Bool, targetSelector: TargetSelector) {
+            self.itemType = itemType
             self.selected = selected
             self.targetSelector = targetSelector
         }
-        init(targetSelector: TargetSelector) {
-            self.init(selected: false, targetSelector: targetSelector)
-        }
-        var title: String {
-            return "Subscribe"
-        }
-        
-        var selectedTitle: String? {
-            return "Unsubscribe"
+        init(itemType: ConsoleItemType, targetSelector: TargetSelector) {
+            self.init(itemType: itemType, selected: false, targetSelector: targetSelector)
         }
         
         var selected: Bool = false
-        
         var targetSelector: TargetSelector
-        var alertControllerTextFieldValue: String? {
-            return nil
-        }
-        var alertControllerTitle: String? {
-            return nil
-        }
         
         var reuseIdentifier: String {
             return ButtonCollectionViewCell.reuseIdentifier
         }
-        
-        static var section: Int {
-            return 1
-        }
-        static var row: Int {
-            return 0
-        }
-        static var indexPath: NSIndexPath {
-            return NSIndexPath(forItem: row, inSection: section) // this is hardcoded for now
-        }
     }
     
+    enum ConsoleSectionType: Int, ItemSectionType {
+        case Subscribables = 0
+        case SubscribeLoopButtons = 1
+    }
     
+    enum ConsoleItemType: ItemType {
+        case Channels
+        case ChannelGroups
+        case SubscribeButton
+        
+        func contents(client: PubNub) -> String {
+            switch self {
+            case .Channels:
+                return client.channelsString()
+            case .ChannelGroups:
+                return client.channelGroupsString()
+            default:
+                return ""
+            }
+        }
+        
+        var title: String {
+            switch self {
+            case .Channels:
+                return "Channels"
+            case .ChannelGroups:
+                return "Channel Groups"
+            case .SubscribeButton:
+                return "Subscribe"
+            }
+        }
+        
+        var selectedTitle: String? {
+            switch self {
+            case .SubscribeButton:
+                return "Unsubscribe"
+            default:
+                return nil
+            }
+        }
+        
+        var sectionType: ItemSectionType {
+            switch self {
+            case .Channels, .ChannelGroups:
+                return ConsoleSectionType.Subscribables
+            case .SubscribeButton:
+                return ConsoleSectionType.SubscribeLoopButtons
+            }
+        }
+        
+        var defaultValue: String {
+            switch self {
+            default:
+                return ""
+            }
+        }
+        
+        var item: Int {
+            switch self {
+            case .Channels:
+                return 0
+            case .ChannelGroups:
+                return 1
+            case .SubscribeButton:
+                return 0
+            }
+        }
+    }
     
     // MARK: - Constructors
     public required init(client: PubNub) {
@@ -139,12 +154,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         self.delegate = self
         // TODO: fix the forced unwrap of the client
         guard let currentClient = self.client else {
-            fatalError()
+            return
         }
-        let labelSection = BasicSection(items: [ConsoleLabelItem(labelSectionType: .Channels, client: currentClient), ConsoleLabelItem(labelSectionType: .ChannelGroups, client: currentClient)])
-        let buttonItem = ConsoleButtonItem(targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
-        let buttonSection = BasicSection(items: [buttonItem])
-        self.dataSource = BasicDataSource(sections: [labelSection, buttonSection])
+        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
+        let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
+        let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
+        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
@@ -160,17 +175,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - Actions
     func subscribeButtonPressed(sender: UIButton!) {
         // TODO: clean this up
-//        self.client?.unsubscribeFromAll() // bad idea to stack this?
-        // selected means is subscribing
         if sender.selected {
             client?.unsubscribeFromAll()
             return
         }
-        // this is hard-coded, need to fix that
-        guard let channelsItem = dataSource[0][0] as? ConsoleLabelItem else {
-            fatalError()
-        }// this is hard-coded, need to fix that
-        let channels = [channelsItem.contentsString]
+        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels.indexPath] as? ConsoleLabelItem else {
+            return
+        }
+        let channels = [channelsItem.contents]
         self.client?.subscribeToChannels(channels, withPresence: true)
         
     }
@@ -182,14 +194,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             switch (alertDecision) {
             case .OK:
                 client?.unsubscribeFromAll() // unsubscribe whenever a subscribable is changed
-                guard var selectedLabelItem = self.dataSource[indexPath] as? LabelItem else {
-                    fatalError("Please contact support@pubnub.com")
-                }
-                if let unwrappedUpdatedContentsString = updatedString  {
-                    selectedLabelItem.contentsString = unwrappedUpdatedContentsString
-                    dataSource[indexPath] = selectedLabelItem
-                    collectionView.reloadItemsAtIndexPaths([indexPath])
-                }
             default:
                 return
             }
@@ -199,12 +203,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - Update from Client
     
     public func updateSubscribableLabelCells() {
-        guard let currentClient = self.client else {
+        guard let currentClient = self.client, let currentDataSource = dataSource else {
             return
         }
-        dataSource[ConsoleLabelSectionItemType.Channels.indexPath] = ConsoleLabelItem(labelSectionType: .Channels, client: currentClient)
-        dataSource[ConsoleLabelSectionItemType.ChannelGroups.indexPath] = ConsoleLabelItem(labelSectionType: .ChannelGroups, client: currentClient)
-        self.collectionView?.reloadItemsAtIndexPaths([ConsoleLabelSectionItemType.Channels.indexPath, ConsoleLabelSectionItemType.ChannelGroups.indexPath])
+        self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: client?.channelsString())
+        self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: client?.channelGroupsString())
+        self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
     }
     
     public func updateSubscribeButtonState() {
@@ -212,13 +216,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return
         }
         let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
-        guard var subscribeButtonItem = dataSource[ConsoleButtonItem.indexPath] as? ConsoleButtonItem else {
-            fatalError()
-        }
-        subscribeButtonItem.selected = subscribing
-        dataSource[ConsoleButtonItem.indexPath] = subscribeButtonItem
-        self.collectionView?.reloadItemsAtIndexPaths([ConsoleButtonItem.indexPath])
-        
+        let indexPath = ConsoleItemType.SubscribeButton.indexPath
+        self.dataSource?.updateSelected(indexPath, selected: subscribing)
+        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
         
     }
     
