@@ -11,10 +11,42 @@ import UIKit
 typealias TargetSelector = (target: AnyObject?, selector: Selector)
 
 protocol ButtonItem: Item {
-    var title: String {get}
     var selectedTitle: String? {get}
     var targetSelector: TargetSelector {get set}
     var selected: Bool {get set}
+    mutating func updateSelected(selected: Bool)
+}
+
+extension ButtonItem {
+    mutating func updateSelected(selected: Bool) {
+        self.selected = selected
+    }
+    var title: String {
+        return itemType.title
+    }
+    var selectedTitle: String? {
+        return itemType.selectedTitle
+    }
+}
+
+extension ItemSection {
+    mutating func updateSelected(item: Int, selected: Bool) {
+        guard var buttonItem = self[item] as? ButtonItem else {
+            fatalError("Please contact support@pubnub.com")
+        }
+        buttonItem.updateSelected(selected)
+        self[item] = buttonItem
+    }
+}
+
+extension DataSource {
+    mutating func updateSelected(indexPath: NSIndexPath, selected: Bool) {
+        guard var buttonItem = self[indexPath] as? ButtonItem else {
+            fatalError("Please contact support@pubnub.com")
+        }
+        buttonItem.updateSelected(selected)
+        self[indexPath] = buttonItem
+    }
 }
 
 extension UIControl {
