@@ -61,8 +61,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         var reuseIdentifier: String {
             return ButtonCollectionViewCell.reuseIdentifier
         }
-        
-        
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
@@ -133,7 +131,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
         }
     }
- 
+    
     // MARK: - Constructors
     public required init(client: PubNub) {
         super.init()
