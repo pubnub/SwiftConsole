@@ -8,30 +8,11 @@
 
 import Foundation
 
-public protocol Item {
-    var reuseIdentifier: String {get}
-}
-
-public protocol ItemSection {
-    init(items: [Item])
-    var items: [Item] {get set}
-    var count: Int {get}
-    subscript(row: Int) -> Item {get set}
-}
-
-public protocol DataSource {
-    init(sections: [ItemSection])
-    var sections: [ItemSection] {get set}
-    var count: Int {get}
-    subscript(section: Int) -> ItemSection {get set}
-    subscript(indexPath: NSIndexPath) -> Item {get set}
-}
-
-protocol ItemSectionType {
+public protocol ItemSectionType {
     var rawValue: Int {get}
 }
 
-protocol ItemType {
+public protocol ItemType {
     var sectionType: ItemSectionType {get}
     var title: String {get}
     var selectedTitle: String? {get}
@@ -48,6 +29,26 @@ extension ItemType {
     var section: Int {
         return sectionType.rawValue
     }
+}
+
+public protocol Item {
+    var reuseIdentifier: String {get}
+    var itemType: ItemType {get}
+}
+
+public protocol ItemSection {
+    init(items: [Item])
+    var items: [Item] {get set}
+    var count: Int {get}
+    subscript(row: Int) -> Item {get set}
+}
+
+public protocol DataSource {
+    init(sections: [ItemSection])
+    var sections: [ItemSection] {get set}
+    var count: Int {get}
+    subscript(section: Int) -> ItemSection {get set}
+    subscript(indexPath: NSIndexPath) -> Item {get set}
 }
 
 extension ItemSection {

@@ -22,6 +22,12 @@ extension ButtonItem {
     mutating func updateSelected(selected: Bool) {
         self.selected = selected
     }
+    var title: String {
+        return itemType.title
+    }
+    var selectedTitle: String? {
+        return nil
+    }
 }
 
 extension ItemSection {

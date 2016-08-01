@@ -21,6 +21,18 @@ extension LabelItem {
     mutating func updateContentsString(updatedContents: String?) {
         self.contentsString = updatedContents ?? defaultString
     }
+    var defaultString: String {
+        return itemType.defaultValue
+    }
+    var titleString: String {
+        return itemType.title
+    }
+    var alertControllerTitle: String? {
+        return titleString
+    }
+    var alertControllerTextFieldValue: String? {
+        return contentsString
+    }
 }
 
 extension ItemSection {

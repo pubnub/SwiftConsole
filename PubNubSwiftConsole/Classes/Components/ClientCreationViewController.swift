@@ -22,20 +22,8 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
             self.contentsString = contentsString
         }
         
-        let itemType: ClientCreationItemType
-        var defaultString: String {
-            return itemType.defaultValue
-        }
-        var titleString: String {
-            return itemType.title
-        }
+        let itemType: ItemType
         var contentsString: String
-        var alertControllerTitle: String? {
-            return titleString
-        }
-        var alertControllerTextFieldValue: String? {
-            return contentsString
-        }
         var reuseIdentifier: String {
             return LabelCollectionViewCell.reuseIdentifier
         }
@@ -43,13 +31,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     }
     
     struct ClientCreationButtonItem: ButtonItem {
-        let itemType: ClientCreationItemType
-        var title: String {
-            return itemType.title
-        }
-        var selectedTitle: String? {
-            return nil
-        }
+        let itemType: ItemType
         init(itemType: ClientCreationItemType, selected: Bool, targetSelector: TargetSelector) {
             self.itemType = itemType
             self.selected = selected
@@ -58,7 +40,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         init(itemType: ClientCreationItemType, targetSelector: TargetSelector) {
             self.init(itemType: itemType, selected: false, targetSelector: targetSelector)
         }
-        
         var selected: Bool = false
         var targetSelector: TargetSelector
         
@@ -164,7 +145,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
             guard let item = dataSource?[itemType.indexPath] as? ClientCreationLabelItem where item.titleString == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
-            return item.titleString
+            return item.contentsString
         }
 
         let pubKey = stringForItem(.PublishKey)

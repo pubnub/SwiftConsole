@@ -23,6 +23,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - DataSource
     
     struct ConsoleLabelItem: LabelItem {
+        let itemType: ItemType
         init(itemType: ConsoleItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -36,20 +37,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.init(itemType: itemType, contentsString: itemType.contents(client))
         }
         
-        let itemType: ConsoleItemType
-        var defaultString: String {
-            return itemType.defaultValue
-        }
-        var titleString: String {
-            return itemType.title
-        }
         var contentsString: String
-        var alertControllerTitle: String? {
-            return titleString
-        }
-        var alertControllerTextFieldValue: String? {
-            return contentsString
-        }
         var reuseIdentifier: String {
             return LabelCollectionViewCell.reuseIdentifier
         }
@@ -57,10 +45,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     struct ConsoleButtonItem: ButtonItem {
-        let itemType: ConsoleItemType
-        var title: String {
-            return itemType.title
-        }
+        let itemType: ItemType
         var selectedTitle: String? {
             return itemType.selectedTitle
         }
