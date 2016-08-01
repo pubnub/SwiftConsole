@@ -19,11 +19,11 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         
         init(itemType: ClientCreationItemType, contentsString: String) {
             self.itemType = itemType
-            self.contentsString = contentsString
+            self.contents = contentsString
         }
         
         let itemType: ItemType
-        var contentsString: String
+        var contents: String
         var reuseIdentifier: String {
             return LabelCollectionViewCell.reuseIdentifier
         }
@@ -142,10 +142,10 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType.indexPath] as? ClientCreationLabelItem where item.titleString == itemType.title else {
+            guard let item = dataSource?[itemType.indexPath] as? ClientCreationLabelItem where item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
-            return item.contentsString
+            return item.contents
         }
 
         let pubKey = stringForItem(.PublishKey)

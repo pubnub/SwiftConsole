@@ -9,9 +9,8 @@
 import Foundation
 
 protocol LabelItem: Item {
-    var titleString: String {get}
-    var contentsString: String {get set}
-    var defaultString: String {get}
+    var contents: String {get set}
+    var defaultContents: String {get}
     var alertControllerTitle: String? {get}
     var alertControllerTextFieldValue: String? {get}
     mutating func updateContentsString(updatedContents: String?)
@@ -19,19 +18,19 @@ protocol LabelItem: Item {
 
 extension LabelItem {
     mutating func updateContentsString(updatedContents: String?) {
-        self.contentsString = updatedContents ?? defaultString
+        self.contents = updatedContents ?? defaultContents
     }
-    var defaultString: String {
+    var defaultContents: String {
         return itemType.defaultValue
     }
-    var titleString: String {
+    var title: String {
         return itemType.title
     }
     var alertControllerTitle: String? {
-        return titleString
+        return title
     }
     var alertControllerTextFieldValue: String? {
-        return contentsString
+        return contents
     }
 }
 
@@ -113,8 +112,8 @@ class LabelCollectionViewCell: CollectionViewCell {
     }
     
     func updateLabels(item: LabelItem) {
-        self.titleLabel.text = item.titleString
-        self.contentsLabel.text = item.contentsString
+        self.titleLabel.text = item.title
+        self.contentsLabel.text = item.contents
         self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
     

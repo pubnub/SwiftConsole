@@ -25,19 +25,19 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     struct ConsoleLabelItem: LabelItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType) {
-            self.init(itemType: itemType, contentsString: itemType.defaultValue)
+            self.init(itemType: itemType, contents: itemType.defaultValue)
         }
         
-        init(itemType: ConsoleItemType, contentsString: String) {
+        init(itemType: ConsoleItemType, contents: String) {
             self.itemType = itemType
-            self.contentsString = contentsString
+            self.contents = contents
         }
         
         init(itemType: ConsoleItemType, client: PubNub) {
-            self.init(itemType: itemType, contentsString: itemType.contents(client))
+            self.init(itemType: itemType, contents: itemType.contents(client))
         }
         
-        var contentsString: String
+        var contents: String
         var reuseIdentifier: String {
             return LabelCollectionViewCell.reuseIdentifier
         }
@@ -184,7 +184,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels.indexPath] as? ConsoleLabelItem else {
             return
         }
-        let channels = [channelsItem.contentsString]
+        let channels = [channelsItem.contents]
         self.client?.subscribeToChannels(channels, withPresence: true)
         
     }

@@ -35,6 +35,7 @@ extension ItemType {
 }
 
 public protocol Item {
+    var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
 }

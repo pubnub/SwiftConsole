@@ -11,7 +11,6 @@ import UIKit
 typealias TargetSelector = (target: AnyObject?, selector: Selector)
 
 protocol ButtonItem: Item {
-    var title: String {get}
     var selectedTitle: String? {get}
     var targetSelector: TargetSelector {get set}
     var selected: Bool {get set}
