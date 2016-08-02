@@ -74,6 +74,52 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
     }
     
+    struct ConsoleSegmentedControlItem: SegmentedControlItem {
+        enum Segment: Int {
+            case All, SubscribeStatuses, Messages
+            var title: String {
+                switch self {
+                case .All:
+                    return "All"
+                case .SubscribeStatuses:
+                    return "Subscribes"
+                case .Messages:
+                    return "Messages"
+                }
+            }
+            static var allValues: [Segment] {
+                return [All, SubscribeStatuses, Messages]
+            }
+            static var allValuesTitles: [String] {
+                return allValues.map({ (segment) -> String in
+                    segment.title
+                })
+            }
+            
+        }
+        var selectedSegmentIndex: Int = Segment.All.rawValue
+        let itemType: ItemType
+        let items: [String]
+        var targetSelector: TargetSelector
+        init(itemType: ConsoleItemType, items: [String], targetSelector: TargetSelector) {
+            self.itemType = itemType
+            self.items = items
+            self.targetSelector = targetSelector
+        }
+        init(items: [String], targetSelector: TargetSelector) {
+            self.init(itemType: ConsoleItemType.SegmentedControl, items: items, targetSelector: targetSelector)
+        }
+        init(targetSelector: TargetSelector) {
+            self.init(items: Segment.allValuesTitles, targetSelector: targetSelector)
+        }
+        var reuseIdentifier: String {
+            return SegmentedControlCollectionViewCell.reuseIdentifier
+        }
+        var defaultSelectedSegmentIndex: Int {
+            return Segment.All.rawValue
+        }
+    }
+    
     struct ConsoleButtonItem: ButtonItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType, selected: Bool, targetSelector: TargetSelector) {
@@ -96,13 +142,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0, SubscribeLoopButtons, Console, Message
+        case Subscribables = 0, SubscribeLoopButtons, SegmentedControl, Console, Message
     }
     
     enum ConsoleItemType: ItemType {
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case SegmentedControl
         case SubscribeStatus
         case Message
         
@@ -114,6 +161,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 250.0, height: 100.0)
             case .SubscribeStatus, .Message:
                 return CGSize(width: 250.0, height: 150.0)
+            case .SegmentedControl:
+                return CGSize(width: 300.0, height: 75.0)
             }
         }
         
@@ -162,6 +211,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .Message:
                 // TODO: move this into console
                 return ConsoleSectionType.Message
+            case .SegmentedControl:
+                return ConsoleSectionType.SegmentedControl
 
             }
         }
@@ -184,6 +235,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .SubscribeStatus:
                 return 0
             case .Message:
+                return 0
+            case .SegmentedControl:
                 return 0
             }
         }
@@ -215,14 +268,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
         let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
+        let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
+        let segmentedControlSection = BasicDataSource.BasicSection(items: [consoleSegmentedControl])
         let subscribeStatusSection = BasicDataSource.ScrollingSection()
         let messageSection = BasicDataSource.ScrollingSection()
-        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, subscribeStatusSection, messageSection])
+        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, subscribeStatusSection, messageSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         
         // TODO: clean this up later, it's just for debug
@@ -256,6 +312,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let channels = [channelsItem.contents]
         self.client?.subscribeToChannels(channels, withPresence: true)
         
+    }
+    
+    func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
+        dataSource?.updateSelectedSegmentIndex(ConsoleItemType.SegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
     }
     
     // MARK: - CollectionViewControllerDelegate
