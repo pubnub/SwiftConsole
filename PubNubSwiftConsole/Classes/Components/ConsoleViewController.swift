@@ -25,9 +25,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
         let itemType: ItemType
         let title: String
+        let operation: String
+        let timeToken: NSNumber
+        let timeStamp: NSDate
+        let statusCode: NSNumber
         init(itemType: ConsoleItemType, status: PNStatus) {
-            self.title = status.stringifiedCategory() + " \(status.statusCode)"
+            self.title = status.stringifiedCategory()
             self.itemType = itemType
+            self.operation = status.stringifiedOperation()
+            self.timeToken = 1
+            self.timeStamp = NSDate()
+            self.statusCode = status.statusCode
         }
         init(status: PNStatus) {
             self.init(itemType: .SubscribeStatus, status: status)
