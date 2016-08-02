@@ -209,7 +209,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        // TODO: fix the forced unwrap of the client
         guard let currentClient = self.client else {
             return
         }
