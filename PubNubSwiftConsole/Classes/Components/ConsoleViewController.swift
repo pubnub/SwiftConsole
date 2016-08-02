@@ -18,21 +18,19 @@ extension PubNub {
     }
 }
 
-//extension Stack where ElementType: PNResult {
-//    
-//}
-
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
     
     struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
         let itemType: ItemType
-        init(itemType: ConsoleItemType) {
+        let title: String
+        init(itemType: ConsoleItemType, status: PNStatus) {
+            self.title = status.stringifiedCategory() + " \(status.statusCode)"
             self.itemType = itemType
         }
         init(status: PNStatus) {
-            self.init(itemType: .SubscribeStatus)
+            self.init(itemType: .SubscribeStatus, status: status)
         }
         var reuseIdentifier: String {
             return SubscribeStatusCollectionViewCell.reuseIdentifier
@@ -193,6 +191,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         
         // TODO: clean this up later, it's just for debug
@@ -262,7 +261,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             ){
             updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
             updateSubscribeButtonState()
+            
+            // TODO: add push to data source here
+            let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
+            dataSource?.push(ConsoleItemType.SubscribeStatus.section, item: subscribeStatus)
+            collectionView?.reloadSections(NSIndexSet(index: ConsoleItemType.SubscribeStatus.section))
         }
+
     }
     
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {

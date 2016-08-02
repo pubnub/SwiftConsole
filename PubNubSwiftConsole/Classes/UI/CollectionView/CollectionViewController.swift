@@ -47,6 +47,16 @@ public protocol ItemSection {
     subscript(index: Int) -> Item {get set}
 }
 
+protocol Stack: ItemSection {
+    mutating func push(item: Item)
+}
+
+extension Stack {
+    mutating func push(item: Item) {
+        self.items.insert(item, atIndex: 0)
+    }
+}
+
 public protocol DataSource {
     init(sections: [ItemSection])
     var sections: [ItemSection] {get set}
@@ -90,11 +100,13 @@ extension DataSource {
     public var count: Int {
         return sections.count
     }
-}
-
-protocol Stack: ItemSection {
-    associatedtype ElementType
-    mutating func push(item: ElementType)
+    public mutating func push(section: Int, item: Item) {
+        guard var stackSection = sections[section] as? Stack else {
+            return
+        }
+        stackSection.push(item)
+        self[section] = stackSection
+    }
 }
 
 @objc public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
@@ -117,9 +129,6 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
             }
             init() {
                 self.init(items: [])
-            }
-            mutating func push(item: Item) {
-                self.items.insert(item, atIndex: 0)
             }
         }
         var sections: [ItemSection]
