@@ -16,6 +16,9 @@ extension PubNub {
     func channelGroupsString() -> String {
         return self.channelGroups().reduce("", combine: +)
     }
+    func statusString(category: String, operation: String) -> String {
+        return category + operation
+    }
 }
 
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
@@ -65,6 +68,19 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
     }
     
+    struct ConsoleStatusItem: StatusItem {
+        let itemType: ItemType
+        init(itemType: ConsoleItemType) {
+            self.init(itemType: itemType)
+        }
+        
+        var contents: String
+        var reuseIdentifier: String {
+            return LabelCollectionViewCell.reuseIdentifier
+        }
+        
+    }
+    
     enum ConsoleSectionType: Int, ItemSectionType {
         case Subscribables = 0
         case SubscribeLoopButtons = 1
@@ -74,6 +90,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case Status
         
         func contents(client: PubNub) -> String {
             switch self {
@@ -94,6 +111,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return "Channel Groups"
             case .SubscribeButton:
                 return "Subscribe"
+            case .Status:
+                return "Status"
             }
         }
         
@@ -108,7 +127,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var sectionType: ItemSectionType {
             switch self {
-            case .Channels, .ChannelGroups:
+            case .Channels, .ChannelGroups, .Status:
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
                 return ConsoleSectionType.SubscribeLoopButtons
@@ -128,6 +147,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .ChannelGroups:
                 return 1
+            case .Status:
+                return 2
             case .SubscribeButton:
                 return 0
             }
@@ -158,7 +179,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             return
         }
-        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
+        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient), ConsoleStatusItem(itemType: .Status)])
         let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
         self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection])
@@ -204,6 +225,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - Update from Client
     
+    public func updateStatusCell(category: String, operation: String) {
+        let indexPath = ConsoleItemType.Status.indexPath
+        self.dataSource?.updateStatusContentsString(indexPath, updatedContents: client?.statusString(category, operation: operation))
+        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+    }
+    
     public func updateSubscribableLabelCells() {
         guard let currentClient = self.client, let currentDataSource = dataSource else {
             return
@@ -221,7 +248,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let indexPath = ConsoleItemType.SubscribeButton.indexPath
         self.dataSource?.updateSelected(indexPath, selected: subscribing)
         self.collectionView?.reloadItemsAtIndexPaths([indexPath])
-        
     }
     
     // MARK: - PNObjectEventListener
@@ -234,6 +260,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             ){
             updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
             updateSubscribeButtonState()
+            let category = status.stringifiedCategory()
+            let operation = status.stringifiedOperation()
+            updateStatusCell(category, operation: operation)
         }
     }
     
