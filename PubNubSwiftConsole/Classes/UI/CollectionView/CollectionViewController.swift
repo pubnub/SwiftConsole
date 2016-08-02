@@ -67,6 +67,9 @@ extension Stack {
     mutating func push(item: Item) {
         self.items.insert(item, atIndex: 0)
     }
+    mutating func clear() {
+        self.items.removeAll()
+    }
 }
 
 public protocol DataSource {
@@ -117,6 +120,13 @@ extension DataSource {
             return
         }
         stackSection.push(item)
+        self[section] = stackSection
+    }
+    public mutating func clear(section: Int) {
+        guard var stackSection = sections[section] as? Stack else {
+            return
+        }
+        stackSection.clear()
         self[section] = stackSection
     }
 }
@@ -210,9 +220,6 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
     // MARK: - UICollectionViewDelegateFlowLayout
     
     public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-//        let screenBounds = UIScreen.mainScreen().bounds
-//        let screenWidth = screenBounds.size.width
-//        return CGSize(width: (screenWidth/2) - 2, height: (screenWidth/2) - 2)
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }

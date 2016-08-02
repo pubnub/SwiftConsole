@@ -233,6 +233,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
 //        }
     }
     
+    public override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+        collectionView?.performBatchUpdates({ 
+            self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
+            self.dataSource?.clear(ConsoleItemType.Message.section)
+            self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
+            self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+            }, completion: nil)
+    }
+    
     // MARK: - Actions
     func subscribeButtonPressed(sender: UIButton!) {
         // TODO: clean this up
