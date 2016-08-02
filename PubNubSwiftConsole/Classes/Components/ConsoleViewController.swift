@@ -297,7 +297,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             // TODO: add push to data source here
             let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
             dataSource?.push(ConsoleItemType.SubscribeStatus.section, item: subscribeStatus)
-            collectionView?.reloadSections(NSIndexSet(index: ConsoleItemType.SubscribeStatus.section))
+            collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
         }
 
     }
@@ -306,7 +306,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         print(message.debugDescription)
         let message = ConsoleMessageItem(message: message)
         dataSource?.push(ConsoleItemType.Message.section, item: message)
-        collectionView?.reloadSections(NSIndexSet(index: ConsoleItemType.Message.section))
+        collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
     }
     
     // MARK: - UINavigationItem

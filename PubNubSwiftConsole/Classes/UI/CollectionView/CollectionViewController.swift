@@ -10,9 +10,17 @@ import Foundation
 
 public protocol ItemSectionType {
     var rawValue: Int {get}
+    var indexSet: NSIndexSet {get}
+}
+
+extension ItemSectionType {
+    var indexSet: NSIndexSet {
+        return NSIndexSet(index: rawValue)
+    }
 }
 
 public protocol ItemType {
+    var indexSet: NSIndexSet {get}
     var sectionType: ItemSectionType {get}
     var title: String {get}
     var selectedTitle: String? {get}
@@ -24,6 +32,9 @@ public protocol ItemType {
 }
 
 extension ItemType {
+    var indexSet: NSIndexSet {
+        return sectionType.indexSet
+    }
     var indexPath: NSIndexPath {
         return NSIndexPath(forItem: item, inSection: section)
     }
