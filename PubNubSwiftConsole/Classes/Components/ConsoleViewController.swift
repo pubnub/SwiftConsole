@@ -17,7 +17,8 @@ extension PubNub {
         return self.channelGroups().reduce("", combine: +)
     }
     func statusString(category: String, operation: String) -> String {
-        return category + operation
+        let statusString = "Category: \(category)" + "\n" + "Operation: \(operation)"
+        return statusString
     }
 }
 
@@ -71,12 +72,21 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     struct ConsoleStatusItem: StatusItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType) {
-            self.init(itemType: itemType)
+            self.init(itemType: itemType, contents: itemType.defaultValue)
+        }
+        
+        init(itemType: ConsoleItemType, contents: String) {
+            self.itemType = itemType
+            self.contents = contents
+        }
+        
+        init(itemType: ConsoleItemType, client: PubNub) {
+            self.init(itemType: itemType, contents: itemType.contents(client))
         }
         
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return StatusCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -179,15 +189,15 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             return
         }
-        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient), ConsoleStatusItem(itemType: .Status)])
+        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient), ConsoleStatusItem(itemType: .Status, client: currentClient)])
         let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
         self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(StatusCollectionViewCell.self, forCellWithReuseIdentifier: StatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
-        
         // TODO: clean this up later, it's just for debug
 //        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(10 * Double(NSEC_PER_SEC)))
 //        dispatch_after(delayTime, dispatch_get_main_queue()) {
@@ -275,5 +285,4 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public override var navBarTitle: String {
         return "PubNub Console"
     }
-
 }
