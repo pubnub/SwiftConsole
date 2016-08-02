@@ -99,7 +99,7 @@ class LabelCollectionViewCell: CollectionViewCell {
         contentView.addSubview(titleLabel)
         
         contentsLabel.textAlignment = .Center
-        contentsLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
+        contentsLabel.font = UIFont.systemFontOfSize(UIFont.labelFontSize())
         contentsLabel.translatesAutoresizingMaskIntoConstraints = false
         contentsLabel.numberOfLines = 3
         contentView.addSubview(contentsLabel)

@@ -20,6 +20,7 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
+    var size: CGSize {get}
 }
 
 extension ItemType {
@@ -113,7 +114,7 @@ extension DataSource {
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
 }
 
-public class CollectionViewController: ViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+public class CollectionViewController: ViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     struct BasicDataSource: DataSource {
         struct BasicSection: ItemSection {
@@ -193,6 +194,18 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
         }
         cell.updateCell(indexedItem)
         return cell
+    }
+    
+    // MARK: - UICollectionViewDelegateFlowLayout
+    
+    public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+//        let screenBounds = UIScreen.mainScreen().bounds
+//        let screenWidth = screenBounds.size.width
+//        return CGSize(width: (screenWidth/2) - 2, height: (screenWidth/2) - 2)
+        guard let item = dataSource?[indexPath] else {
+            fatalError()
+        }
+        return item.itemType.size
     }
     
     // MARK: - UICollectionViewDelegate
