@@ -10,9 +10,17 @@ import Foundation
 
 public protocol ItemSectionType {
     var rawValue: Int {get}
+    var indexSet: NSIndexSet {get}
+}
+
+extension ItemSectionType {
+    var indexSet: NSIndexSet {
+        return NSIndexSet(index: rawValue)
+    }
 }
 
 public protocol ItemType {
+    var indexSet: NSIndexSet {get}
     var sectionType: ItemSectionType {get}
     var title: String {get}
     var selectedTitle: String? {get}
@@ -20,9 +28,13 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
+    var size: CGSize {get}
 }
 
 extension ItemType {
+    var indexSet: NSIndexSet {
+        return sectionType.indexSet
+    }
     var indexPath: NSIndexPath {
         return NSIndexPath(forItem: item, inSection: section)
     }
@@ -44,7 +56,20 @@ public protocol ItemSection {
     init(items: [Item])
     var items: [Item] {get set}
     var count: Int {get}
-    subscript(row: Int) -> Item {get set}
+    subscript(index: Int) -> Item {get set}
+}
+
+protocol Stack: ItemSection {
+    mutating func push(item: Item)
+}
+
+extension Stack {
+    mutating func push(item: Item) {
+        self.items.insert(item, atIndex: 0)
+    }
+    mutating func clear() {
+        self.items.removeAll()
+    }
 }
 
 public protocol DataSource {
@@ -90,19 +115,42 @@ extension DataSource {
     public var count: Int {
         return sections.count
     }
+    public mutating func push(section: Int, item: Item) {
+        guard var stackSection = sections[section] as? Stack else {
+            return
+        }
+        stackSection.push(item)
+        self[section] = stackSection
+    }
+    public mutating func clear(section: Int) {
+        guard var stackSection = sections[section] as? Stack else {
+            return
+        }
+        stackSection.clear()
+        self[section] = stackSection
+    }
 }
 
 @objc public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
 }
 
-public class CollectionViewController: ViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+public class CollectionViewController: ViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     struct BasicDataSource: DataSource {
         struct BasicSection: ItemSection {
             var items: [Item]
             init(items: [Item]) {
                 self.items = items
+            }
+        }
+        struct ScrollingSection: Stack {
+            var items: [Item]
+            init(items: [Item]) {
+                self.items = items
+            }
+            init() {
+                self.init(items: [])
             }
         }
         var sections: [ItemSection]
@@ -167,6 +215,15 @@ public class CollectionViewController: ViewController, UICollectionViewDelegate,
         }
         cell.updateCell(indexedItem)
         return cell
+    }
+    
+    // MARK: - UICollectionViewDelegateFlowLayout
+    
+    public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+        guard let item = dataSource?[indexPath] else {
+            fatalError()
+        }
+        return item.itemType.size
     }
     
     // MARK: - UICollectionViewDelegate

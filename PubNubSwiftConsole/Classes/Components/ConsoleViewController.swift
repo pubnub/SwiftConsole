@@ -22,6 +22,36 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - DataSource
     
+    struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
+        let itemType: ItemType
+        let title: String
+        init(itemType: ConsoleItemType, status: PNStatus) {
+            self.title = status.stringifiedCategory() + " \(status.statusCode)"
+            self.itemType = itemType
+        }
+        init(status: PNStatus) {
+            self.init(itemType: .SubscribeStatus, status: status)
+        }
+        var reuseIdentifier: String {
+            return SubscribeStatusCollectionViewCell.reuseIdentifier
+        }
+    }
+    
+    struct ConsoleMessageItem: MessageItem {
+        let itemType: ItemType
+        let title: String
+        init(itemType: ConsoleItemType, message: PNMessageResult) {
+            self.title = "\(message.data.message)"
+            self.itemType = itemType
+        }
+        init(message: PNMessageResult) {
+            self.init(itemType: .Message, message: message)
+        }
+        var reuseIdentifier: String {
+            return MessageCollectionViewCell.reuseIdentifier
+        }
+    }
+    
     struct ConsoleLabelItem: LabelItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType) {
@@ -66,14 +96,27 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0
-        case SubscribeLoopButtons = 1
+        case Subscribables = 0, SubscribeLoopButtons, Console, Message
     }
     
     enum ConsoleItemType: ItemType {
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case SubscribeStatus
+        case Message
+        
+        var size: CGSize {
+            switch self {
+            case .Channels, .ChannelGroups:
+                return CGSize(width: 150.0, height: 125.0)
+            case .SubscribeButton:
+                return CGSize(width: 250.0, height: 100.0)
+            case .SubscribeStatus, .Message:
+                return CGSize(width: 250.0, height: 150.0)
+            }
+        }
+        
         
         func contents(client: PubNub) -> String {
             switch self {
@@ -94,6 +137,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return "Channel Groups"
             case .SubscribeButton:
                 return "Subscribe"
+            default:
+                return ""
             }
         }
         
@@ -112,6 +157,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
                 return ConsoleSectionType.SubscribeLoopButtons
+            case .SubscribeStatus:
+                return ConsoleSectionType.Console
+            case .Message:
+                // TODO: move this into console
+                return ConsoleSectionType.Message
+
             }
         }
         
@@ -129,6 +180,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .ChannelGroups:
                 return 1
             case .SubscribeButton:
+                return 0
+            case .SubscribeStatus:
+                return 0
+            case .Message:
                 return 0
             }
         }
@@ -154,17 +209,20 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        // TODO: fix the forced unwrap of the client
         guard let currentClient = self.client else {
             return
         }
         let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
         let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
-        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection])
+        let subscribeStatusSection = BasicDataSource.ScrollingSection()
+        let messageSection = BasicDataSource.ScrollingSection()
+        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, subscribeStatusSection, messageSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         
         // TODO: clean this up later, it's just for debug
@@ -172,6 +230,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
 //        dispatch_after(delayTime, dispatch_get_main_queue()) {
 //            self.client?.subscribeToChannels(["d"], withPresence: true)
 //        }
+    }
+    
+    public override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+        collectionView?.performBatchUpdates({ 
+            self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
+            self.dataSource?.clear(ConsoleItemType.Message.section)
+            self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
+            self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+            }, completion: nil)
     }
     
     // MARK: - Actions
@@ -234,11 +303,20 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             ){
             updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
             updateSubscribeButtonState()
+            
+            // TODO: add push to data source here
+            let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
+            dataSource?.push(ConsoleItemType.SubscribeStatus.section, item: subscribeStatus)
+            collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
         }
+
     }
     
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
         print(message.debugDescription)
+        let message = ConsoleMessageItem(message: message)
+        dataSource?.push(ConsoleItemType.Message.section, item: message)
+        collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
     }
     
     // MARK: - UINavigationItem

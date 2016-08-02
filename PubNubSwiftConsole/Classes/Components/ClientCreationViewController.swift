@@ -61,6 +61,15 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         case Origin
         case ClientCreationButton
         
+        var size: CGSize {
+            switch self {
+            case .PublishKey, .SubscribeKey, .Origin:
+                return CGSize(width: 200.0, height: 150.0)
+            case .ClientCreationButton:
+                return CGSize(width: 250.0, height: 100.0)
+            }
+        }
+        
         var selectedTitle: String? {
             return nil
         }
