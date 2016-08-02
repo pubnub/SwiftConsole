@@ -114,14 +114,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case SubscribeStatus
         case Message
         
-        var size: CGSize {
+        func size(superViewFrame: CGSize) -> CGSize {
             switch self {
             case .Channels, .ChannelGroups:
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
                 return CGSize(width: 250.0, height: 100.0)
             case .SubscribeStatus, .Message:
-                return CGSize(width: 250.0, height: 150.0)
+                return CGSize(width: superViewFrame.width, height: 150.0)
             }
         }
         

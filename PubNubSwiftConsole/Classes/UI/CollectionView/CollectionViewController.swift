@@ -28,7 +28,7 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
-    var size: CGSize {get}
+    func size(superViewFrame: CGSize) -> CGSize
 }
 
 extension ItemType {
@@ -223,7 +223,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
-        return item.itemType.size
+        return item.itemType.size(self.view.frame.size)
     }
     
     // MARK: - UICollectionViewDelegate
