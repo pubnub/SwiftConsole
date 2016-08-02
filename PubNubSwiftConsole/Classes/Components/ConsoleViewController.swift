@@ -280,12 +280,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
-        
-        // TODO: clean this up later, it's just for debug
-//        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(10 * Double(NSEC_PER_SEC)))
-//        dispatch_after(delayTime, dispatch_get_main_queue()) {
-//            self.client?.subscribeToChannels(["d"], withPresence: true)
-//        }
     }
     
     public override func didReceiveMemoryWarning() {
