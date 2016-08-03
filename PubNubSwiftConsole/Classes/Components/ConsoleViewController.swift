@@ -20,14 +20,11 @@ extension PubNub {
 
 extension NSDate {
     
-    func toShortTimeString() -> String
-    {
-        //Get Short Time String
+    func toShortTimeString() -> String {
         let formatter = NSDateFormatter()
         formatter.timeStyle = .ShortStyle
         let timeString = formatter.stringFromDate(self)
         
-        //Return Short Time String
         return timeString
     }
     
