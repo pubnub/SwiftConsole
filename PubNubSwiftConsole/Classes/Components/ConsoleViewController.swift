@@ -333,8 +333,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView?.performBatchUpdates({ 
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
+            self.dataSource?.clear(ConsoleItemType.All.section)
             self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
             self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+            self.collectionView?.reloadSections(ConsoleItemType.All.indexSet)
             }, completion: nil)
     }
     
@@ -356,9 +358,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
         collectionView?.performBatchUpdates({ 
             self.dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
-            // need to update other sections as well
+            guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: sender.selectedSegmentIndex) else {
+                fatalError()
+            }
+            self.dataSource?.updateSelectedSection(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).section, selectedSubSection: currentSegmentedControlValue.rawValue)
+            self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
             }, completion: nil)
-//        dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -427,8 +432,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
         print(message.debugDescription)
         let message = ConsoleMessageItem(message: message)
-        dataSource?.push(ConsoleItemType.Message.section, item: message)
-        collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+        dataSource?.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
+        dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
+        guard let consoleSegmentedControlIndex = dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
+            return
+        }
+        guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
+            fatalError()
+        }
+        if currentSegmentedControlValue == .All || currentSegmentedControlValue == .Messages {
+            collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+        }
     }
     
     // MARK: - UINavigationItem

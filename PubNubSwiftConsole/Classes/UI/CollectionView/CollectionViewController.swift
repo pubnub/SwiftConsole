@@ -130,6 +130,7 @@ protocol SelectableItemSection: ItemSection {
     mutating func push(section: Int, item: Item)
     mutating func clear(section: Int)
     mutating func clearAllSections()
+    mutating func updateSelectedSection(index: Int)
 }
 
 extension SelectableItemSection {
@@ -216,6 +217,9 @@ extension SelectableItemSection {
             self.clear(sectionIndex)
         }
     }
+    mutating func updateSelectedSection(index: Int) {
+        self.selectedSectionIndex = index
+    }
 }
 
 public protocol DataSource {
@@ -267,6 +271,13 @@ extension DataSource {
         }
         stackSection.clear()
         self[section] = stackSection
+    }
+    public mutating func updateSelectedSection(section: Int, selectedSubSection: Int) {
+        guard var selectableSection = sections[section] as? SelectableItemSection else {
+            fatalError()
+        }
+        selectableSection.updateSelectedSection(selectedSubSection)
+        sections[section] = selectableSection
     }
 }
 
