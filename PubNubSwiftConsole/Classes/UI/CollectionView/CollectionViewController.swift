@@ -13,6 +13,15 @@ public protocol ItemSectionType {
     var indexSet: NSIndexSet {get}
 }
 
+struct EmptySectionType: ItemSectionType {
+    var rawValue: Int {
+        return 0
+    }
+    var indexSet: NSIndexSet {
+        return NSIndexSet(index: 0)
+    }
+}
+
 extension ItemSectionType {
     var indexSet: NSIndexSet {
         return NSIndexSet(index: rawValue)
@@ -46,41 +55,44 @@ extension ItemType {
     }
 }
 
+struct EmptySectionItemType: ItemType {
+    var size: CGSize {
+        return CGSizeZero
+    }
+    var title: String {
+        return ""
+    }
+    var defaultValue: String {
+        return ""
+    }
+    var sectionType: ItemSectionType {
+        return EmptySectionType()
+    }
+    var item: Int {
+        return 0
+    }
+}
+
 public protocol Item {
     var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
 }
 
-public protocol ItemSection {
+public protocol ItemSection: Item {
     init(items: [Item])
     var items: [Item] {get set}
     var count: Int {get}
     subscript(index: Int) -> Item {get set}
 }
 
-protocol Stack: ItemSection {
-    mutating func push(item: Item)
-}
-
-extension Stack {
-    mutating func push(item: Item) {
-        self.items.insert(item, atIndex: 0)
-    }
-    mutating func clear() {
-        self.items.removeAll()
-    }
-}
-
-public protocol DataSource {
-    init(sections: [ItemSection])
-    var sections: [ItemSection] {get set}
-    var count: Int {get}
-    subscript(section: Int) -> ItemSection {get set}
-    subscript(indexPath: NSIndexPath) -> Item {get set}
-}
-
 extension ItemSection {
+    var title: String {
+        return itemType.title
+    }
+    var reuseIdentifier: String {
+        return ""
+    }
     public subscript(index: Int) -> Item {
         get {
             return items[index]
@@ -92,6 +104,118 @@ extension ItemSection {
     public var count: Int {
         return items.count
     }
+}
+
+protocol StackItemSection: ItemSection {
+    mutating func push(item: Item)
+}
+
+extension StackItemSection {
+    mutating func push(item: Item) {
+        self.items.insert(item, atIndex: 0)
+    }
+    mutating func clear() {
+        self.items.removeAll()
+    }
+}
+
+protocol SelectableItemSection: ItemSection {
+//    init(selectableItemSections: [ItemSection])
+    var selectedSectionIndex: Int {get set}
+    var selectedSection: ItemSection {get}
+    var itemSections: [ItemSection] {get}
+    subscript(indexPath: NSIndexPath) -> Item { get set }
+    subscript(section: Int) -> ItemSection {get set}
+    subscript(section: Int, item: Int) -> Item {get set}
+    mutating func push(section: Int, item: Item)
+    mutating func clear(section: Int)
+    mutating func clearAllSections()
+}
+
+extension SelectableItemSection {
+    var selectedSection: ItemSection {
+        return itemSections[selectedSectionIndex]
+    }
+    var itemSections: [ItemSection] {
+        get {
+            return items as! [ItemSection]
+        }
+        set {
+            var updatedItems = [Item]()
+            for item in newValue {
+                guard let newItem = item as? Item else {
+                    fatalError()
+                }
+                updatedItems.append(newItem)
+            }
+            self.items = updatedItems
+        }
+    }
+    public var count: Int {
+        return selectedSection.count
+    }
+    public subscript(section: Int) -> ItemSection {
+        get {
+            return itemSections[section]
+        }
+        set {
+            itemSections[section] = newValue
+        }
+    }
+    public subscript(index: Int) -> Item {
+        get {
+            return selectedSection[index]
+        }
+        set {
+            items[index] = newValue
+        }
+    }
+    subscript(indexPath: NSIndexPath) -> Item {
+        get {
+            return self[indexPath.section, indexPath.item]
+        }
+        set {
+            self[indexPath.section, indexPath.item] = newValue
+        }
+    }
+    subscript(section: Int, item: Int) -> Item {
+        get {
+            return itemSections[section][item]
+        }
+        set {
+            var itemSection = self[section]
+            itemSection[item] = newValue
+            self[section] = itemSection
+        }
+    }
+    mutating func push(section: Int, item: Item) {
+        guard var stackSection = itemSections[section] as? StackItemSection else {
+            fatalError()
+        }
+        stackSection.push(item)
+        self[section] = stackSection
+    }
+    mutating func clear(section: Int) {
+        guard var stackSection = itemSections[section] as? StackItemSection else {
+            fatalError()
+        }
+        stackSection.clear()
+        self[section] = stackSection
+        
+    }
+    mutating func clearAllSections() {
+        for sectionIndex in 0..<itemSections.count {
+            self.clear(sectionIndex)
+        }
+    }
+}
+
+public protocol DataSource {
+    init(sections: [ItemSection])
+    var sections: [ItemSection] {get set}
+    var count: Int {get}
+    subscript(section: Int) -> ItemSection {get set}
+    subscript(indexPath: NSIndexPath) -> Item {get set}
 }
 
 extension DataSource {
@@ -116,14 +240,14 @@ extension DataSource {
         return sections.count
     }
     public mutating func push(section: Int, item: Item) {
-        guard var stackSection = sections[section] as? Stack else {
+        guard var stackSection = sections[section] as? StackItemSection else {
             return
         }
         stackSection.push(item)
         self[section] = stackSection
     }
     public mutating func clear(section: Int) {
-        guard var stackSection = sections[section] as? Stack else {
+        guard var stackSection = sections[section] as? StackItemSection else {
             return
         }
         stackSection.clear()
@@ -140,13 +264,23 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
     struct BasicDataSource: DataSource {
         struct BasicSection: ItemSection {
             var items: [Item]
+            let itemType: ItemType
             init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
                 self.items = items
             }
         }
-        struct ScrollingSection: Stack {
+        struct ScrollingSection: StackItemSection {
             var items: [Item]
+            let itemType: ItemType
             init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
                 self.items = items
             }
             init() {
@@ -155,12 +289,33 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         }
         struct SingleSegmentedControlSection: SingleSegementedControlItemSection {
             var items: [Item]
+            let itemType: ItemType
             init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
                 self.items = items
             }
             init(segmentedControl: SegmentedControlItem) {
                 self.init(items: [segmentedControl])
             }
+        }
+        struct SelectableSection: SelectableItemSection {
+            var items: [Item]
+            let itemType: ItemType
+            var selectedSectionIndex: Int
+            init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
+                self.items = items
+                self.selectedSectionIndex = 0
+            }
+//            init(selectableItemSections: [ItemSection]) {
+//                self.init(items: (selectableItemSections as! [Item]))
+//            }
         }
         var sections: [ItemSection]
         init(sections: [ItemSection]) {
