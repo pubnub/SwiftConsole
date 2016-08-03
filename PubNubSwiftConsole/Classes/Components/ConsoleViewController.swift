@@ -10,6 +10,16 @@ import UIKit
 import PubNub
 
 extension PubNub {
+    enum PubNubStringParsingError: ErrorType {
+        case Nil
+        case Empty
+        case OnlyWhitespace
+        case TooLong
+    }
+    // TODO: Implement this, should eventually be a universal function in the PubNub framework
+    func channelStringToSubscribableChannelsArray(channels: String, commaDelimited: Bool = true) throws -> [String] {
+        return ["implement"]
+    }
     func channelsString() -> String {
         return self.channels().reduce("", combine: +)
     }
@@ -107,7 +117,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.targetSelector = targetSelector
         }
         init(items: [String], targetSelector: TargetSelector) {
-            self.init(itemType: ConsoleItemType.SegmentedControl, items: items, targetSelector: targetSelector)
+            self.init(itemType: ConsoleItemType.ConsoleSegmentedControl, items: items, targetSelector: targetSelector)
         }
         init(targetSelector: TargetSelector) {
             self.init(items: Segment.allValuesTitles, targetSelector: targetSelector)
@@ -142,16 +152,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0, SubscribeLoopButtons, SegmentedControl, Console, Message
+        case Subscribables = 0, SubscribeLoopButtons, ConsoleSegmentedControl, Console
     }
     
     enum ConsoleItemType: ItemType {
         case Channels
         case ChannelGroups
         case SubscribeButton
-        case SegmentedControl
         case SubscribeStatus
         case Message
+        case ConsoleSegmentedControl
+        indirect case Console(ConsoleItemType)
         
         var size: CGSize {
             switch self {
@@ -161,8 +172,15 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 250.0, height: 100.0)
             case .SubscribeStatus, .Message:
                 return CGSize(width: 250.0, height: 150.0)
-            case .SegmentedControl:
+            case .ConsoleSegmentedControl:
                 return CGSize(width: 300.0, height: 75.0)
+            case let Console(consoleItemType):
+                switch consoleItemType {
+                case .SubscribeStatus, .Message:
+                    return consoleItemType.size
+                default:
+                    fatalError("Invalid type passed in")
+                }
             }
         }
         
@@ -206,13 +224,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
                 return ConsoleSectionType.SubscribeLoopButtons
-            case .SubscribeStatus:
+            case .SubscribeStatus, .Message:
                 return ConsoleSectionType.Console
-            case .Message:
-                // TODO: move this into console
-                return ConsoleSectionType.Message
-            case .SegmentedControl:
-                return ConsoleSectionType.SegmentedControl
+            case .ConsoleSegmentedControl:
+                return ConsoleSectionType.ConsoleSegmentedControl
+            case let .Console(consoleItemType):
+                switch consoleItemType {
+                case .SubscribeStatus, .Message:
+                    return consoleItemType.sectionType
+                default:
+                    fatalError("Invalid type passed in")
+                }
 
             }
         }
@@ -236,8 +258,16 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .Message:
                 return 0
-            case .SegmentedControl:
+            case .ConsoleSegmentedControl:
                 return 0
+            case let .Console(consoleItemType):
+                switch consoleItemType {
+                case .SubscribeStatus, .Message:
+                    return consoleItemType.item
+                default:
+                    print("Invalid type passed in")
+                    fatalError("Invalid type passed in")
+                }
             }
         }
     }
@@ -269,10 +299,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
         let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
-        let segmentedControlSection = BasicDataSource.BasicSection(items: [consoleSegmentedControl])
+        let segmentedControlSection = BasicDataSource.SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
         let subscribeStatusSection = BasicDataSource.ScrollingSection()
         let messageSection = BasicDataSource.ScrollingSection()
-        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, subscribeStatusSection, messageSection])
+        dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, subscribeStatusSection, messageSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
@@ -304,12 +334,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return
         }
         let channels = [channelsItem.contents]
-        self.client?.subscribeToChannels(channels, withPresence: true)
+        client?.subscribeToChannels(channels, withPresence: true)
         
     }
     
     func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
-        dataSource?.updateSelectedSegmentIndex(ConsoleItemType.SegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+        dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -331,9 +361,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client, let currentDataSource = dataSource else {
             return
         }
-        self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: client?.channelsString())
-        self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: client?.channelGroupsString())
-        self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+        dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: client?.channelsString())
+        dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: client?.channelGroupsString())
+        collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
     }
     
     public func updateSubscribeButtonState() {
@@ -342,8 +372,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
         let indexPath = ConsoleItemType.SubscribeButton.indexPath
-        self.dataSource?.updateSelected(indexPath, selected: subscribing)
-        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+        dataSource?.updateSelected(indexPath, selected: subscribing)
+        collectionView?.reloadItemsAtIndexPaths([indexPath])
         
     }
     

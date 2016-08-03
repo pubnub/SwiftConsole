@@ -45,6 +45,32 @@ extension ItemSection {
     }
 }
 
+// assumes there is only one segmented control in the section
+protocol SingleSegementedControlItemSection: ItemSection {
+    init(segmentedControl: SegmentedControlItem)
+    var segmentedControl: SegmentedControlItem {get}
+    var selectedSegmentIndex: Int {get}
+    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int)
+}
+
+extension SingleSegementedControlItemSection {
+    var segmentIndex: Int {
+        return 0
+    }
+    var segmentedControl: SegmentedControlItem {
+        guard let segmentedControl = self.items[segmentIndex] as? SegmentedControlItem else {
+            fatalError("This should only have 1 SegmentedControlItem")
+        }
+        return segmentedControl
+    }
+    var selectedSegmentIndex: Int {
+        return segmentedControl.selectedSegmentIndex
+    }
+    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) {
+        self.updateSelectedSegmentIndex(segmentIndex, updatedSelectedSegmentIndex: index)
+    }
+}
+
 extension DataSource {
     mutating func updateSelectedSegmentIndex(indexPath: NSIndexPath, updatedSelectedSegmentIndex index: Int) {
         guard var segmentedControlItem = self[indexPath] as? SegmentedControlItem else {

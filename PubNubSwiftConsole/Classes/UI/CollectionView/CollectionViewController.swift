@@ -153,6 +153,15 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
                 self.init(items: [])
             }
         }
+        struct SingleSegmentedControlSection: SingleSegementedControlItemSection {
+            var items: [Item]
+            init(items: [Item]) {
+                self.items = items
+            }
+            init(segmentedControl: SegmentedControlItem) {
+                self.init(items: [segmentedControl])
+            }
+        }
         var sections: [ItemSection]
         init(sections: [ItemSection]) {
             self.sections = sections
