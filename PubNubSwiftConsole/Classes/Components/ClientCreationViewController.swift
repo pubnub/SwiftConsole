@@ -61,7 +61,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         case Origin
         case ClientCreationButton
         
-        func size(superViewFrame: CGSize) -> CGSize {
+        func size(collectionViewSize: CGSize) -> CGSize {
             switch self {
             case .PublishKey, .SubscribeKey, .Origin:
                 return CGSize(width: 200.0, height: 150.0)
