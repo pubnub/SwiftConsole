@@ -28,7 +28,7 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
-    func size(superViewFrame: CGSize) -> CGSize
+    func size(collectionViewSize: CGSize) -> CGSize
 }
 
 extension ItemType {

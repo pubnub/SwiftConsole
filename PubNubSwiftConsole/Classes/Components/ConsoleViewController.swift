@@ -18,6 +18,32 @@ extension PubNub {
     }
 }
 
+extension NSDate {
+    
+    func toShortTimeString() -> String
+    {
+        //Get Short Time String
+        let formatter = NSDateFormatter()
+        formatter.timeStyle = .ShortStyle
+        let timeString = formatter.stringFromDate(self)
+        
+        //Return Short Time String
+        return timeString
+    }
+    
+    func getDate() -> String {
+        let formatter = NSDateFormatter()
+        let date = NSDate()
+        let calendar = NSCalendar.currentCalendar()
+        let components = calendar.components([.Month , .Day], fromDate: date)
+        
+        let month = components.month
+        let day = components.day
+        
+        return "\(month)/\(day)"
+    }
+}
+
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
@@ -26,16 +52,22 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let itemType: ItemType
         let title: String
         let operation: String
-        let timeToken: NSNumber
-        let timeStamp: NSDate
-        let statusCode: NSNumber
+        let creationDate: String
+        let statusCode: Int
+        let timeToken: NSNumber?
         init(itemType: ConsoleItemType, status: PNStatus) {
             self.title = status.stringifiedCategory()
             self.itemType = itemType
             self.operation = status.stringifiedOperation()
-            self.timeToken = 1
-            self.timeStamp = NSDate()
-            self.statusCode = status.statusCode
+            guard let subscribeStatus = status as? PNSubscribeStatus else {
+                self.creationDate = "\(NSDate().getDate()) \(NSDate().toShortTimeString())"
+                self.statusCode = status.statusCode
+                self.timeToken = nil
+                return
+            }
+            self.creationDate = "\(NSDate().getDate()) \(NSDate().toShortTimeString())"
+            self.statusCode = subscribeStatus.statusCode
+            self.timeToken = subscribeStatus.data.timetoken
         }
         init(status: PNStatus) {
             self.init(itemType: .SubscribeStatus, status: status)
@@ -114,14 +146,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case SubscribeStatus
         case Message
         
-        func size(superViewFrame: CGSize) -> CGSize {
+        func size(collectionViewSize: CGSize) -> CGSize {
             switch self {
             case .Channels, .ChannelGroups:
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
                 return CGSize(width: 250.0, height: 100.0)
             case .SubscribeStatus, .Message:
-                return CGSize(width: superViewFrame.width, height: 150.0)
+                return CGSize(width: collectionViewSize.width, height: 150.0)
             }
         }
         
