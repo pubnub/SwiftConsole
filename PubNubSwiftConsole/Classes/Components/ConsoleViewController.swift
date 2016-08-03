@@ -302,7 +302,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let segmentedControlSection = BasicDataSource.SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
         let subscribeStatusSection = BasicDataSource.ScrollingSection()
         let messageSection = BasicDataSource.ScrollingSection()
-        dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, subscribeStatusSection, messageSection])
+        let consoleSection = BasicDataSource.SelectableSection(items: [subscribeStatusSection, messageSection])
+        dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
@@ -339,7 +340,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
-        dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+        collectionView?.performBatchUpdates({ 
+            self.dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+            // need to update other sections as well
+            }, completion: nil)
+//        dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
     }
     
     // MARK: - CollectionViewControllerDelegate

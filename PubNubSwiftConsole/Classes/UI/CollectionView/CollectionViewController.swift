@@ -138,7 +138,15 @@ extension SelectableItemSection {
     }
     var itemSections: [ItemSection] {
         get {
-            return items as! [ItemSection]
+//            return items as! [ItemSection]
+            var castedItems = [ItemSection]()
+            for item in items {
+                guard let castedItem = item as? ItemSection else {
+                    fatalError()
+                }
+                castedItems.append(castedItem)
+            }
+            return castedItems
         }
         set {
             var updatedItems = [Item]()
