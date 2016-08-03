@@ -97,6 +97,16 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return "Messages"
                 }
             }
+            var consoleItemType: ConsoleItemType {
+                switch self {
+                case .All:
+                    return ConsoleItemType.All
+                case .Messages:
+                    return ConsoleItemType.Message
+                case .SubscribeStatuses:
+                    return ConsoleItemType.SubscribeStatus
+                }
+            }
             static var allValues: [Segment] {
                 return [All, SubscribeStatuses, Messages]
             }
@@ -159,6 +169,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case All
         case SubscribeStatus
         case Message
         case ConsoleSegmentedControl
@@ -170,13 +181,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
                 return CGSize(width: 250.0, height: 100.0)
-            case .SubscribeStatus, .Message:
+            case .SubscribeStatus, .Message, .All:
                 return CGSize(width: 250.0, height: 150.0)
             case .ConsoleSegmentedControl:
                 return CGSize(width: 300.0, height: 75.0)
             case let Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message:
+                case .SubscribeStatus, .Message, .All:
                     return consoleItemType.size
                 default:
                     fatalError("Invalid type passed in")
@@ -224,13 +235,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
                 return ConsoleSectionType.SubscribeLoopButtons
-            case .SubscribeStatus, .Message:
+            case .SubscribeStatus, .Message, .All:
                 return ConsoleSectionType.Console
             case .ConsoleSegmentedControl:
                 return ConsoleSectionType.ConsoleSegmentedControl
             case let .Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message:
+                case .SubscribeStatus, .Message, .All:
                     return consoleItemType.sectionType
                 default:
                     fatalError("Invalid type passed in")
@@ -258,11 +269,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .Message:
                 return 0
+            case .All:
+                return 0
             case .ConsoleSegmentedControl:
                 return 0
             case let .Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message:
+                case .SubscribeStatus, .Message, .All:
                     return consoleItemType.item
                 default:
                     print("Invalid type passed in")
@@ -300,9 +313,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
         let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
         let segmentedControlSection = BasicDataSource.SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
+        let allSection = BasicDataSource.ScrollingSection()
         let subscribeStatusSection = BasicDataSource.ScrollingSection()
         let messageSection = BasicDataSource.ScrollingSection()
-        let consoleSection = BasicDataSource.SelectableSection(items: [subscribeStatusSection, messageSection])
+        let consoleSection = BasicDataSource.SelectableSection(items: [allSection, subscribeStatusSection, messageSection])
         dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
@@ -395,8 +409,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             
             // TODO: add push to data source here
             let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
-            dataSource?.push(ConsoleItemType.SubscribeStatus.section, item: subscribeStatus)
-            collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
+            dataSource?.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
+            dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
+            guard let consoleSegmentedControlIndex = dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
+                return
+            }
+            guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
+                fatalError()
+            }
+            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
+                collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+            }
         }
 
     }

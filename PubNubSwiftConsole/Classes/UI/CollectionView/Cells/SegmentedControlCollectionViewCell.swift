@@ -79,6 +79,12 @@ extension DataSource {
         segmentedControlItem.updateSelectedSegmentIndex(updatedSelectedSegmentIndex: index)
         self[indexPath] = segmentedControlItem
     }
+    func selectedSegmentIndex(indexPath: NSIndexPath) -> Int {
+        guard let segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
+            fatalError()
+        }
+        return segmentedControlItem.selectedSegmentIndex
+    }
 }
 
 public class SegmentedControlCollectionViewCell: CollectionViewCell {

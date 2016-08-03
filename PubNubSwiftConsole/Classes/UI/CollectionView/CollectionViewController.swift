@@ -249,10 +249,17 @@ extension DataSource {
     }
     public mutating func push(section: Int, item: Item) {
         guard var stackSection = sections[section] as? StackItemSection else {
-            return
+            fatalError()
         }
         stackSection.push(item)
         self[section] = stackSection
+    }
+    public mutating func push(section: Int, subSection: Int, item: Item) {
+        guard var selectableSection = sections[section] as? SelectableItemSection else {
+            fatalError()
+        }
+        selectableSection.push(subSection, item: item)
+        sections[section] = selectableSection
     }
     public mutating func clear(section: Int) {
         guard var stackSection = sections[section] as? StackItemSection else {
