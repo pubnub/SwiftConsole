@@ -316,7 +316,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let allSection = BasicDataSource.ScrollingSection()
         let subscribeStatusSection = BasicDataSource.ScrollingSection()
         let messageSection = BasicDataSource.ScrollingSection()
-        let consoleSection = BasicDataSource.SelectableSection(items: [allSection, subscribeStatusSection, messageSection])
+        let consoleSection = BasicDataSource.SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
         dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)

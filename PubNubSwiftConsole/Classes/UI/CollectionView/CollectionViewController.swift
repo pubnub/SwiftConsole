@@ -120,7 +120,7 @@ extension StackItemSection {
 }
 
 protocol SelectableItemSection: ItemSection {
-//    init(selectableItemSections: [ItemSection])
+    init(selectableItemSections: [ItemSection])
     var selectedSectionIndex: Int {get set}
     var selectedSection: ItemSection {get}
     var itemSections: [ItemSection] {get}
@@ -139,25 +139,20 @@ extension SelectableItemSection {
     }
     var itemSections: [ItemSection] {
         get {
-//            return items as! [ItemSection]
-            var castedItems = [ItemSection]()
-            for item in items {
+            return items.map({ (item) -> ItemSection in
                 guard let castedItem = item as? ItemSection else {
                     fatalError()
                 }
-                castedItems.append(castedItem)
-            }
-            return castedItems
+                return castedItem
+            })
         }
         set {
-            var updatedItems = [Item]()
-            for item in newValue {
-                guard let newItem = item as? Item else {
+            self.items = newValue.map({ (item) -> ItemSection in
+                guard let castedItem = item as? ItemSection else {
                     fatalError()
                 }
-                updatedItems.append(newItem)
-            }
-            self.items = updatedItems
+                return castedItem
+            })
         }
     }
     public var count: Int {
@@ -339,9 +334,15 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
                 self.items = items
                 self.selectedSectionIndex = 0
             }
-//            init(selectableItemSections: [ItemSection]) {
-//                self.init(items: (selectableItemSections as! [Item]))
-//            }
+            init(selectableItemSections: [ItemSection]) {
+                let items = selectableItemSections.map { (itemSection) -> Item in
+                    guard let castedItem = itemSection as? Item else {
+                        fatalError()
+                    }
+                    return castedItem
+                }
+                self.init(items: items)
+            }
         }
         var sections: [ItemSection]
         init(sections: [ItemSection]) {
