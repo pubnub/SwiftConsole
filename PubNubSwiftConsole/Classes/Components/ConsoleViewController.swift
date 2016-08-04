@@ -9,16 +9,57 @@
 import UIKit
 import PubNub
 
+extension String {
+    var isOnlyWhiteSpace: Bool {
+        let whitespaceSet = NSCharacterSet.whitespaceCharacterSet()
+        return self.stringByTrimmingCharactersInSet(whitespaceSet).isEmpty
+    }
+    var containsPubNubKeyWords: Bool {
+        let keywordCharacterSet = NSCharacterSet(charactersInString: ",:.*/\\")
+        if let _ = self.rangeOfCharacterFromSet(keywordCharacterSet, options: .CaseInsensitiveSearch) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+}
+
 extension PubNub {
     enum PubNubStringParsingError: ErrorType {
         case Nil
         case Empty
-        case OnlyWhitespace
-        case TooLong
+        case EntireStringTooLong
+        case ChannelNameContainsInvalidCharacters(channel: String)
+        case ChannelNameTooLong(channel: String)
+        case OnlyWhitespace(channel: String)
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    func channelStringToSubscribableChannelsArray(channels: String, commaDelimited: Bool = true) throws -> [String] {
-        return ["implement"]
+    func channelStringToSubscribableChannelsArray(channels: String?, commaDelimited: Bool = true) throws -> [String] {
+        guard let actualChannelsString = channels else {
+            throw PubNubStringParsingError.Nil
+        }
+        var channelsArray: [String]
+        if commaDelimited {
+            channelsArray = actualChannelsString.componentsSeparatedByString(",")
+        } else {
+            channelsArray = [actualChannelsString]
+        }
+        for channel in channelsArray {
+            guard channel.isOnlyWhiteSpace else {
+                throw PubNubStringParsingError.OnlyWhitespace(channel: channel)
+            }
+            guard channel.characters.count > 0 else {
+                throw PubNubStringParsingError.Empty
+            }
+            guard channel.characters.count > 92 else {
+                throw PubNubStringParsingError.ChannelNameTooLong(channel: channel)
+            }
+            guard !channel.containsPubNubKeyWords else {
+                throw PubNubStringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
+            }
+        }
+        return channelsArray
     }
     func channelsString() -> String {
         return self.channels().reduce("", combine: +)
