@@ -232,7 +232,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0, SubscribeLoopButtons, ConsoleSegmentedControl, Console
+        case Subscribables = 0, SubscribeLoopControls, ConsoleSegmentedControl, Console
     }
     
     enum ConsoleItemType: ItemType {
@@ -304,7 +304,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .Channels, .ChannelGroups:
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
-                return ConsoleSectionType.SubscribeLoopButtons
+                return ConsoleSectionType.SubscribeLoopControls
             case .SubscribeStatus, .Message, .All:
                 return ConsoleSectionType.Console
             case .ConsoleSegmentedControl:
