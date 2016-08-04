@@ -223,7 +223,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         self.navigationController?.pushViewController(consoleViewController, animated: true)
     }
     
-    // TODO: add error handling, resetting state?
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
