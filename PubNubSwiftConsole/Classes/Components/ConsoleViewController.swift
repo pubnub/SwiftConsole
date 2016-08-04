@@ -26,18 +26,18 @@ extension String {
 }
 
 extension PubNub {
-    enum PubNubStringParsingError: ErrorType {
-        case Nil
+    enum StringParsingError: ErrorType {
         case Empty
         case EntireStringTooLong
         case ChannelNameContainsInvalidCharacters(channel: String)
         case ChannelNameTooLong(channel: String)
         case OnlyWhitespace(channel: String)
+        
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String] {
+    func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
         guard let actualChannelsString = channels else {
-            throw PubNubStringParsingError.Nil
+            return nil
         }
         var channelsArray: [String]
         if commaDelimited {
@@ -46,30 +46,33 @@ extension PubNub {
             channelsArray = [actualChannelsString]
         }
         for channel in channelsArray {
-            guard channel.isOnlyWhiteSpace else {
-                throw PubNubStringParsingError.OnlyWhitespace(channel: channel)
+            guard !channel.isOnlyWhiteSpace else {
+                throw StringParsingError.OnlyWhitespace(channel: channel)
             }
             guard channel.characters.count > 0 else {
-                throw PubNubStringParsingError.Empty
+                throw StringParsingError.Empty
             }
-            guard channel.characters.count > 92 else {
-                throw PubNubStringParsingError.ChannelNameTooLong(channel: channel)
+            guard channel.characters.count <= 92 else {
+                throw StringParsingError.ChannelNameTooLong(channel: channel)
             }
             guard !channel.containsPubNubKeyWords else {
-                throw PubNubStringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
+                throw StringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
             }
         }
         return channelsArray
     }
     
-    func channelsString() -> String {
+    func channelsString() -> String? {
         return self.subscribablesToString(self.channels())
     }
-    func channelGroupsString() -> String {
+    func channelGroupsString() -> String? {
         return self.subscribablesToString(self.channelGroups())
     }
-    internal func subscribablesToString(subscribables: [String]) -> String {
-        return subscribables.reduce("", combine: { $0 + "," + $1 })
+    internal func subscribablesToString(subscribables: [String]) -> String? {
+        if subscribables.isEmpty {
+            return nil
+        }
+        return subscribables.reduce("", combine: { $0! + "," + $1 })
     }
 }
 
@@ -244,9 +247,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         func contents(client: PubNub) -> String {
             switch self {
             case .Channels:
-                return client.channelsString()
+                return client.channelsString() ?? ""
             case .ChannelGroups:
-                return client.channelGroupsString()
+                return client.channelGroupsString() ?? ""
             default:
                 return ""
             }
@@ -392,12 +395,29 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             client?.unsubscribeFromAll()
             return
         }
-        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels.indexPath] as? ConsoleLabelItem else {
+        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels.indexPath] as? ConsoleLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups.indexPath] as? ConsoleLabelItem else {
             return
         }
-        let channels = [channelsItem.contents]
-        client?.subscribeToChannels(channels, withPresence: true)
-        
+        do {
+            guard let channels = try client?.stringToSubscribablesArray(channelsItem.contents) else {
+                return
+            }
+            client?.subscribeToChannels(channels, withPresence: true)
+        } catch {
+            // TODO: implement all errors
+            print("\(#function) " + "error: " + "\(error)")
+            return
+        }
+        do {
+            guard let channelGroups = try client?.stringToSubscribablesArray(channelGroupsItem.contents) else {
+                return
+            }
+            client?.subscribeToChannelGroups(channelGroups, withPresence: true)
+        } catch {
+            // TODO: implement all errors
+            print("\(#function) " + "error: " + "\(error)")
+            return
+        }
     }
     
     func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
