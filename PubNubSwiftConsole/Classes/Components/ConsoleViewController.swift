@@ -25,12 +25,23 @@ extension String {
     }
 }
 
-enum PubNubStringParsingError: ErrorType {
+enum PubNubStringParsingError: ErrorType, CustomStringConvertible {
     case Empty
-    case EntireStringTooLong
     case ChannelNameContainsInvalidCharacters(channel: String)
     case ChannelNameTooLong(channel: String)
     case OnlyWhitespace(channel: String)
+    var description: String {
+        switch self {
+        case .Empty:
+            return "string has no length"
+        case let .OnlyWhitespace(channel):
+            return channel + " is only whitespace"
+        case let .ChannelNameContainsInvalidCharacters(channel):
+            return channel + " contains keywords that cannot be used with PubNub"
+        case let .ChannelNameTooLong(channel):
+            return channel + " is too long (over 92 characters)"
+        }
+    }
 }
 
 extension UIAlertController {
