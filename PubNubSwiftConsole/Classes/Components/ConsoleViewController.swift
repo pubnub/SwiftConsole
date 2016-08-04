@@ -61,6 +61,10 @@ extension PubNub {
         guard let actualChannelsString = channels else {
             return nil
         }
+        // if the whole string is empty, then return nil
+        guard !actualChannelsString.characters.isEmpty else {
+            return nil
+        }
         var channelsArray: [String]
         if commaDelimited {
             channelsArray = actualChannelsString.componentsSeparatedByString(",")
@@ -94,7 +98,12 @@ extension PubNub {
         if subscribables.isEmpty {
             return nil
         }
-        return subscribables.reduce("", combine: { $0! + "," + $1 })
+        return subscribables.reduce("", combine: { (accumulator: String, component) in
+            if accumulator.isEmpty {
+                return component
+            }
+            return accumulator + "," + component
+        })
     }
 }
 
@@ -421,28 +430,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return
         }
         do {
-            guard let channels = try client?.stringToSubscribablesArray(channelsItem.contents) else {
-                return
+            typealias SubscribablesTuple = (Channels: [String]?, ChannelGroups: [String]?)
+            let currentSubscribables: SubscribablesTuple = (try client?.stringToSubscribablesArray(channelsItem.contents), try client?.stringToSubscribablesArray(channelGroupsItem.contents))
+            switch currentSubscribables {
+            case let (channels, channelGroups) where channels == nil && channelGroups == nil:
+                let alertController = UIAlertController(title: "Cannot subscribe", message: "Cannot subscribe with no channels and no channel grouups", preferredStyle: .Alert)
+                alertController.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                presentViewController(alertController, animated: true, completion: nil)
+            case let (channels, channelGroups) where channels != nil && channelGroups == nil:
+                client?.subscribeToChannels(channels!, withPresence: true)
+            case let (channels, channelGroups) where channels == nil && channelGroups != nil:
+                client?.subscribeToChannelGroups(channelGroups!, withPresence: true)
+            default:
+                client?.subscribeToChannels(currentSubscribables.Channels!, withPresence: true)
+                client?.subscribeToChannelGroups(currentSubscribables.ChannelGroups!, withPresence: true)
             }
-            client?.subscribeToChannels(channels, withPresence: true)
         } catch let pubNubError as PubNubStringParsingError {
-            // TODO: implement all errors
-            print("\(#function) " + "error: " + "\(pubNubError)")
             let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelsItem.title, error: pubNubError, handler: nil)
-            presentViewController(alertController, animated: true, completion: nil)
-            return
-        } catch {
-            fatalError(#function + " error: \(error)")
-        }
-        do {
-            guard let channelGroups = try client?.stringToSubscribablesArray(channelGroupsItem.contents) else {
-                return
-            }
-            client?.subscribeToChannelGroups(channelGroups, withPresence: true)
-        } catch let pubNubError as PubNubStringParsingError {
-            // TODO: implement all errors
-            print("\(#function) " + "error: " + "\(pubNubError)")
-            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelGroupsItem.title, error: pubNubError, handler: nil)
             presentViewController(alertController, animated: true, completion: nil)
             return
         } catch {
