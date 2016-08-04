@@ -58,7 +58,7 @@ extension UIAlertController {
     enum ItemAction: String {
         case OK, Cancel
     }
-    class func updateItemWithAlertController(selectedItem: LabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
+    static func updateItemWithAlertController(selectedItem: LabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
         guard let item = selectedItem else {
             fatalError()
         }

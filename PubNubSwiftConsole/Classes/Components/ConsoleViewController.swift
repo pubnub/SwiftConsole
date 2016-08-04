@@ -25,15 +25,26 @@ extension String {
     }
 }
 
-extension PubNub {
-    enum StringParsingError: ErrorType {
-        case Empty
-        case EntireStringTooLong
-        case ChannelNameContainsInvalidCharacters(channel: String)
-        case ChannelNameTooLong(channel: String)
-        case OnlyWhitespace(channel: String)
-        
+enum PubNubStringParsingError: ErrorType {
+    case Empty
+    case EntireStringTooLong
+    case ChannelNameContainsInvalidCharacters(channel: String)
+    case ChannelNameTooLong(channel: String)
+    case OnlyWhitespace(channel: String)
+}
+
+extension UIAlertController {
+    static func alertControllerForPubNubStringParsingIntoSubscribablesArrayError(source: String?, error: PubNubStringParsingError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
+        let blame = source ?? "string Parsing"
+        let title = "Issue with " + blame
+        let message = "Could not parse " + blame + " into array because \(error)"
+        let alertController = UIAlertController(title: "Failed to enter", message: message, preferredStyle: .Alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
+        return alertController
     }
+}
+
+extension PubNub {
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
     func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
         guard let actualChannelsString = channels else {
@@ -47,16 +58,16 @@ extension PubNub {
         }
         for channel in channelsArray {
             guard !channel.isOnlyWhiteSpace else {
-                throw StringParsingError.OnlyWhitespace(channel: channel)
+                throw PubNubStringParsingError.OnlyWhitespace(channel: channel)
             }
             guard channel.characters.count > 0 else {
-                throw StringParsingError.Empty
+                throw PubNubStringParsingError.Empty
             }
             guard channel.characters.count <= 92 else {
-                throw StringParsingError.ChannelNameTooLong(channel: channel)
+                throw PubNubStringParsingError.ChannelNameTooLong(channel: channel)
             }
             guard !channel.containsPubNubKeyWords else {
-                throw StringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
+                throw PubNubStringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
             }
         }
         return channelsArray
@@ -403,20 +414,28 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             client?.subscribeToChannels(channels, withPresence: true)
-        } catch {
+        } catch let pubNubError as PubNubStringParsingError {
             // TODO: implement all errors
-            print("\(#function) " + "error: " + "\(error)")
+            print("\(#function) " + "error: " + "\(pubNubError)")
+            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelsItem.title, error: pubNubError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
             return
+        } catch {
+            fatalError(#function + " error: \(error)")
         }
         do {
             guard let channelGroups = try client?.stringToSubscribablesArray(channelGroupsItem.contents) else {
                 return
             }
             client?.subscribeToChannelGroups(channelGroups, withPresence: true)
-        } catch {
+        } catch let pubNubError as PubNubStringParsingError {
             // TODO: implement all errors
-            print("\(#function) " + "error: " + "\(error)")
+            print("\(#function) " + "error: " + "\(pubNubError)")
+            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelGroupsItem.title, error: pubNubError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
             return
+        } catch {
+            fatalError(#function + " error: \(error)")
         }
     }
     
