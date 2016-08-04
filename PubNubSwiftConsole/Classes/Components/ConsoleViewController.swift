@@ -35,7 +35,7 @@ extension PubNub {
         case OnlyWhitespace(channel: String)
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    func channelStringToSubscribableChannelsArray(channels: String?, commaDelimited: Bool = true) throws -> [String] {
+    func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String] {
         guard let actualChannelsString = channels else {
             throw PubNubStringParsingError.Nil
         }
@@ -61,11 +61,15 @@ extension PubNub {
         }
         return channelsArray
     }
+    
     func channelsString() -> String {
-        return self.channels().reduce("", combine: +)
+        return self.subscribablesToString(self.channels())
     }
     func channelGroupsString() -> String {
-        return self.channelGroups().reduce("", combine: +)
+        return self.subscribablesToString(self.channelGroups())
+    }
+    internal func subscribablesToString(subscribables: [String]) -> String {
+        return subscribables.reduce("", combine: { $0 + "," + $1 })
     }
 }
 
