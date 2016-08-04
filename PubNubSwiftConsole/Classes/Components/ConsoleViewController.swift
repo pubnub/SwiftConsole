@@ -19,30 +19,10 @@ extension PubNub {
 }
 
 extension NSDate {
-    
-    func timeString() -> String {
-        let formatter = NSDateFormatter()
-        formatter.timeStyle = .MediumStyle
-        let timeString = formatter.stringFromDate(self)
-        
-        return timeString
-    }
-    
-    func dateString() -> String {
-        let date = NSDate()
-        let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components([.Month , .Day], fromDate: date)
-        
-        let month = components.month
-        let day = components.day
-        
-        return "\(month)/\(day)"
-    }
-    
     func subscribeTimeStamp() -> String {
-        return "\(dateString()) \(timeString())"
+        let formatter = CreationDateFormatter.sharedInstance
+        return formatter.stringFromDate(self)
     }
-    
 }
 
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
@@ -53,22 +33,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let itemType: ItemType
         let category: String
         let operation: String
-        let creationDate: String
+        let creationDate: NSDate
         let statusCode: Int
-        let timeToken: NSNumber?
+        var timeToken: NSNumber?
         init(itemType: ConsoleItemType, status: PNStatus) {
-            self.category = status.stringifiedCategory()
             self.itemType = itemType
+            self.category = status.stringifiedCategory()
             self.operation = status.stringifiedOperation()
-            guard let subscribeStatus = status as? PNSubscribeStatus else {
-                self.creationDate = NSDate().subscribeTimeStamp()
-                self.statusCode = status.statusCode
-                self.timeToken = nil
-                return
+            self.creationDate = NSDate()
+            self.statusCode = status.statusCode
+            if let subscribeStatus = status as? PNSubscribeStatus {
+                self.timeToken = subscribeStatus.data.timetoken
             }
-            self.creationDate = NSDate().subscribeTimeStamp()
-            self.statusCode = subscribeStatus.statusCode
-            self.timeToken = subscribeStatus.data.timetoken
         }
         init(status: PNStatus) {
             self.init(itemType: .SubscribeStatus, status: status)
