@@ -42,6 +42,7 @@ extension PNConfiguration {
         case Origin
     }
     typealias KeyValue = (name: Property, value: String?)
+    // TODO: clean this up
     convenience init(properties: KeyValue...) throws {
         var pubKey: KeyValue = (.PublishKey, nil)
         var subKey: KeyValue = (.SubscribeKey, nil)
