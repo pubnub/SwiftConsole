@@ -12,7 +12,7 @@ class CollectionViewFlowLayout: UICollectionViewFlowLayout {
     
     public required override init() {
         super.init()
-        self.sectionInset = UIEdgeInsets(top: 40, left: 1, bottom: 10, right: 1)
+        self.sectionInset = UIEdgeInsets(top: 40, left: 0, bottom: 10, right: 0)
         self.minimumInteritemSpacing = 1
         self.minimumLineSpacing = 1
     }

@@ -39,10 +39,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     struct ConsoleMessageItem: MessageItem {
         let itemType: ItemType
-        let title: String
+        let payload: AnyObject?
         init(itemType: ConsoleItemType, message: PNMessageResult) {
-            self.title = "\(message.data.message)"
             self.itemType = itemType
+            payload = message.data.message
         }
         init(message: PNMessageResult) {
             self.init(itemType: .Message, message: message)
@@ -106,14 +106,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case SubscribeStatus
         case Message
         
-        var size: CGSize {
+        func size(collectionViewSize: CGSize) -> CGSize {
             switch self {
             case .Channels, .ChannelGroups:
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
                 return CGSize(width: 250.0, height: 100.0)
             case .SubscribeStatus, .Message:
-                return CGSize(width: 250.0, height: 150.0)
+                return CGSize(width: collectionViewSize.width, height: 150.0)
             }
         }
         
