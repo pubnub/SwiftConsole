@@ -37,7 +37,7 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
-    var size: CGSize {get}
+    func size(collectionViewSize: CGSize) -> CGSize
 }
 
 extension ItemType {
@@ -56,7 +56,7 @@ extension ItemType {
 }
 
 struct EmptySectionItemType: ItemType {
-    var size: CGSize {
+    func size(collectionViewSize: CGSize) -> CGSize {
         return CGSizeZero
     }
     var title: String {
@@ -413,7 +413,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
-        return item.itemType.size
+        return item.itemType.size(self.view.frame.size)
     }
     
     // MARK: - UICollectionViewDelegate
