@@ -11,15 +11,22 @@ import PubNub
 
 protocol SubscribeStatusItem: Item {
     init(status: PNStatus)
+    var category: String {get}
     var operation: String {get}
     var creationDate: String {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
 }
 
+extension SubscribeStatusItem {
+    var title: String {
+        return category
+    }
+}
+
 class SubscribeStatusCollectionViewCell: CollectionViewCell {
     
-    private let titleLabel: UILabel
+    private let categoryLabel: UILabel
     private let operationLabel: UILabel
     private let timeStampLabel: UILabel
     private let statusCodeLabel: UILabel
@@ -29,13 +36,13 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         return String(self.dynamicType)
     }
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
+        categoryLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
         operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
         timeStampLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
         statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/4))
         timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/4))
         super.init(frame: frame)
-        self.addSubview(titleLabel)
+        self.addSubview(categoryLabel)
         self.addSubview(operationLabel)
         self.addSubview(timeStampLabel)
         self.addSubview(statusCodeLabel)
@@ -47,7 +54,7 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     func updateStatus(item: SubscribeStatusItem) {
-        titleLabel.text = "Channel connection: \(item.title)"
+        categoryLabel.text = "Channel connection: \(item.title)"
         operationLabel.text = "Action: \(item.operation)"
         timeStampLabel.text = "Creation date: \(item.creationDate)"
         statusCodeLabel.text = "Status code: \(item.statusCode)"

@@ -20,16 +20,15 @@ extension PubNub {
 
 extension NSDate {
     
-    func toShortTimeString() -> String {
+    func timeString() -> String {
         let formatter = NSDateFormatter()
-        formatter.timeStyle = .ShortStyle
+        formatter.timeStyle = .MediumStyle
         let timeString = formatter.stringFromDate(self)
         
         return timeString
     }
     
-    func getDate() -> String {
-        let formatter = NSDateFormatter()
+    func dateString() -> String {
         let date = NSDate()
         let calendar = NSCalendar.currentCalendar()
         let components = calendar.components([.Month , .Day], fromDate: date)
@@ -39,6 +38,11 @@ extension NSDate {
         
         return "\(month)/\(day)"
     }
+    
+    func subscribeTimeStamp() -> String {
+        return "\(dateString()) \(timeString())"
+    }
+    
 }
 
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
@@ -47,22 +51,22 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
         let itemType: ItemType
-        let title: String
+        let category: String
         let operation: String
         let creationDate: String
         let statusCode: Int
         let timeToken: NSNumber?
         init(itemType: ConsoleItemType, status: PNStatus) {
-            self.title = status.stringifiedCategory()
+            self.category = status.stringifiedCategory()
             self.itemType = itemType
             self.operation = status.stringifiedOperation()
             guard let subscribeStatus = status as? PNSubscribeStatus else {
-                self.creationDate = "\(NSDate().getDate()) \(NSDate().toShortTimeString())"
+                self.creationDate = NSDate().subscribeTimeStamp()
                 self.statusCode = status.statusCode
                 self.timeToken = nil
                 return
             }
-            self.creationDate = "\(NSDate().getDate()) \(NSDate().toShortTimeString())"
+            self.creationDate = NSDate().subscribeTimeStamp()
             self.statusCode = subscribeStatus.statusCode
             self.timeToken = subscribeStatus.data.timetoken
         }
@@ -76,10 +80,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     struct ConsoleMessageItem: MessageItem {
         let itemType: ItemType
-        let title: String
+        let payload: AnyObject?
         init(itemType: ConsoleItemType, message: PNMessageResult) {
-            self.title = "\(message.data.message)"
             self.itemType = itemType
+            payload = message.data.message
         }
         init(message: PNMessageResult) {
             self.init(itemType: .Message, message: message)
