@@ -49,7 +49,7 @@ extension UIAlertController {
         let blame = source ?? "string Parsing"
         let title = "Issue with " + blame
         let message = "Could not parse " + blame + " into array because \(error)"
-        let alertController = UIAlertController(title: "Failed to enter", message: message, preferredStyle: .Alert)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
         return alertController
     }

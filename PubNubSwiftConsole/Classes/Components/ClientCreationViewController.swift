@@ -9,6 +9,81 @@
 import Foundation
 import PubNub
 
+enum PubNubConfigurationCreationError: ErrorType, CustomStringConvertible {
+    case NilValue(propertyName: String)
+    case EmptyStringValue(propertyName: String)
+    case OriginInvalid
+    var description: String {
+        switch self {
+        case let .NilValue(name):
+            return "Value for " + name + " property is nil"
+        case let .EmptyStringValue(name):
+            return "Value for " + name + " property is empty"
+        case .OriginInvalid:
+            return "Origin is invalid, it should be pubsub.pubnub.com or something specially provided"
+        }
+    }
+}
+
+extension UIAlertController {
+    static func alertControllerForPubNubConfigurationCreationError(error: PubNubConfigurationCreationError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
+        let title = "Cannot create client with configuration"
+        let message = error.description
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
+        return alertController
+    }
+}
+
+extension PNConfiguration {
+    enum Property: String {
+        case SubscribeKey = "Subscribe Key"
+        case PublishKey = "Publish Key"
+        case Origin
+    }
+    typealias KeyValue = (name: Property, value: String?)
+    convenience init(properties: KeyValue...) throws {
+        var pubKey: KeyValue = (.PublishKey, nil)
+        var subKey: KeyValue = (.SubscribeKey, nil)
+        var otherProperties = [KeyValue]()
+        for var pair in properties {
+            guard let value = pair.value else {
+                throw PubNubConfigurationCreationError.NilValue(propertyName: pair.name.rawValue)
+            }
+            guard value.characters.count > 0 else {
+                throw PubNubConfigurationCreationError.EmptyStringValue(propertyName: pair.name.rawValue)
+            }
+            switch pair.name {
+            case .SubscribeKey:
+                subKey.value = value
+            case .PublishKey:
+                pubKey.value = value
+            case .Origin:
+                guard value.hasSuffix(".com") else {
+                    throw PubNubConfigurationCreationError.OriginInvalid
+                }
+                pair.value = value
+                otherProperties.append(pair)
+            }
+        }
+        guard let finalPubKey = pubKey.value else {
+            throw PubNubConfigurationCreationError.NilValue(propertyName: Property.PublishKey.rawValue)
+        }
+        guard let finalSubKey = subKey.value else {
+            throw PubNubConfigurationCreationError.NilValue(propertyName: Property.SubscribeKey.rawValue)
+        }
+        self.init(publishKey: finalPubKey, subscribeKey: finalSubKey)
+        for otherPropertyPair in otherProperties {
+            switch otherPropertyPair.name {
+            case .Origin:
+                self.origin = otherPropertyPair.value!
+            default:
+                continue
+            }
+        }
+    }
+}
+
 public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - DataSource
     
@@ -158,11 +233,21 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
 
         let pubKey = stringForItem(.PublishKey)
+        let pubKeyProperty = PNConfiguration.KeyValue(.PublishKey, pubKey)
         let subKey = stringForItem(.SubscribeKey)
+        let subKeyProperty = PNConfiguration.KeyValue(.SubscribeKey, subKey)
         let origin = stringForItem(.Origin)
-        let config = PNConfiguration(publishKey: pubKey, subscribeKey: subKey)
-        config.origin = origin
-        return PubNub.clientWithConfiguration(config)
+        let originProperty = PNConfiguration.KeyValue(.Origin, origin)
+        do {
+            let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
+            return PubNub.clientWithConfiguration(config)
+        } catch let pubNubError as PubNubConfigurationCreationError {
+            let alertController = UIAlertController.alertControllerForPubNubConfigurationCreationError(pubNubError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
+            return nil
+        } catch {
+            fatalError("\(error)")
+        }
     }
     
     // MARK: - UINavigationItem
