@@ -362,9 +362,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 fatalError()
             }
             self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
-//            self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
-//            self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
-//            self.collectionView?.reloadSections(ConsoleItemType.All.indexSet)
             }, completion: nil)
     }
     
@@ -448,7 +445,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return
         }
         collectionView?.performBatchUpdates({ 
-            let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
+            let subscribing = currentClient.isSubscribing
             let indexPath = ConsoleItemType.SubscribeButton.indexPath
             self.dataSource?.updateSelected(indexPath, selected: subscribing)
             self.collectionView?.reloadItemsAtIndexPaths([indexPath])
@@ -468,16 +465,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
                 let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
-                self.dataSource?.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
-                self.dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
-                guard let consoleSegmentedControlIndex = self.dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
+                guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
-                guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
-                    fatalError()
-                }
+                currentDataSource.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
+                currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
+                let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
                 if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
-                    self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+                    self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
                 }
                 }, completion: nil)
         }
@@ -487,16 +482,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         print(message.debugDescription)
         collectionView?.performBatchUpdates({ 
             let message = ConsoleMessageItem(message: message)
-            self.dataSource?.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
-            self.dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
-            guard let consoleSegmentedControlIndex = self.dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
+            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
-            guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
-                fatalError()
-            }
+            currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
+            currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
+            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .All || currentSegmentedControlValue == .Messages {
-                self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+                self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
             }
             }, completion: nil)
     }

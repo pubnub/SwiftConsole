@@ -181,5 +181,14 @@ extension PubNub {
             return accumulator + "," + component
         })
     }
+    var isSubscribingToChannels: Bool {
+        return !self.channels().isEmpty
+    }
+    var isSubscribingToChannelGroups: Bool {
+        return !self.channelGroups().isEmpty
+    }
+    var isSubscribing: Bool {
+        return isSubscribingToChannels || isSubscribingToChannelGroups
+    }
 }
 
