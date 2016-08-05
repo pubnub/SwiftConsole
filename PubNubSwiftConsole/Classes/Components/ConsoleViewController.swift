@@ -13,7 +13,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - DataSource
     
-    class ConsoleDataSource: BasicDataSource {
+    final class ConsoleDataSource: BasicDataSource {
         required override init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
@@ -186,8 +186,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         var reuseIdentifier: String {
             return ButtonCollectionViewCell.reuseIdentifier
         }
-        
-        
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
