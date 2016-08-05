@@ -1,8 +1,8 @@
 //
-//  CreationDateFormatter.swift
+//  DateTimeExtensions.swift
 //  Pods
 //
-//  Created by Keith Martin on 8/4/16.
+//  Created by Jordan Zucker on 8/5/16.
 //
 //
 
@@ -24,3 +24,9 @@ class CreationDateFormatter: NSDateFormatter {
     static let sharedInstance =  CreationDateFormatter()
 }
 
+extension NSDate {
+    func creationTimeStampString() -> String {
+        let formatter = CreationDateFormatter.sharedInstance
+        return formatter.stringFromDate(self)
+    }
+}

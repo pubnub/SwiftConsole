@@ -13,6 +13,15 @@ public protocol ItemSectionType {
     var indexSet: NSIndexSet {get}
 }
 
+struct EmptySectionType: ItemSectionType {
+    var rawValue: Int {
+        return 0
+    }
+    var indexSet: NSIndexSet {
+        return NSIndexSet(index: 0)
+    }
+}
+
 extension ItemSectionType {
     var indexSet: NSIndexSet {
         return NSIndexSet(index: rawValue)
@@ -46,29 +55,189 @@ extension ItemType {
     }
 }
 
+struct EmptySectionItemType: ItemType {
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSizeZero
+    }
+    var title: String {
+        return ""
+    }
+    var defaultValue: String {
+        return ""
+    }
+    var sectionType: ItemSectionType {
+        return EmptySectionType()
+    }
+    var item: Int {
+        return 0
+    }
+}
+
 public protocol Item {
     var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
 }
 
-public protocol ItemSection {
+public protocol ItemSection: Item {
     init(items: [Item])
     var items: [Item] {get set}
     var count: Int {get}
-    subscript(index: Int) -> Item {get set}
+    subscript(item: Int) -> Item {get set}
 }
 
-protocol Stack: ItemSection {
+extension ItemSection {
+    var title: String {
+        return itemType.title
+    }
+    var reuseIdentifier: String {
+        return ""
+    }
+    public subscript(item: Int) -> Item {
+        get {
+            return items[item]
+        }
+        set {
+            items[item] = newValue
+        }
+    }
+    public subscript(itemType: ItemType) -> Item {
+        get {
+            return items[itemType.item]
+        }
+        set {
+            items[itemType.item] = newValue
+        }
+    }
+    public var count: Int {
+        return items.count
+    }
+}
+
+// should there be a protocol for pushable items?
+protocol StackItemSection: ItemSection {
     mutating func push(item: Item)
 }
 
-extension Stack {
+extension StackItemSection {
     mutating func push(item: Item) {
         self.items.insert(item, atIndex: 0)
     }
     mutating func clear() {
         self.items.removeAll()
+    }
+}
+
+protocol SelectableItemSection: ItemSection {
+    init(selectableItemSections: [ItemSection])
+    var selectedSectionIndex: Int {get set}
+    var selectedSection: ItemSection {get}
+    var itemSections: [ItemSection] {get}
+    subscript(indexPath: NSIndexPath) -> Item { get set }
+    subscript(section: Int) -> ItemSection {get set}
+    subscript(section: Int, item: Int) -> Item {get set}
+    mutating func push(section: Int, item: Item)
+    mutating func clear(section: Int)
+    mutating func clearAllSections()
+    mutating func updateSelectedSection(index: Int)
+}
+
+extension SelectableItemSection {
+    var selectedSection: ItemSection {
+        return itemSections[selectedSectionIndex]
+    }
+    var itemSections: [ItemSection] {
+        get {
+            return items.map({ (item) -> ItemSection in
+                guard let castedItem = item as? ItemSection else {
+                    fatalError()
+                }
+                return castedItem
+            })
+        }
+        set {
+            self.items = newValue.map({ (item) -> ItemSection in
+                guard let castedItem = item as? ItemSection else {
+                    fatalError()
+                }
+                return castedItem
+            })
+        }
+    }
+    public var count: Int {
+        return selectedSection.count
+    }
+    public subscript(section: Int) -> ItemSection {
+        get {
+            return itemSections[section]
+        }
+        set {
+            itemSections[section] = newValue
+        }
+    }
+    // FIXME: this seems wrong
+    public subscript(item: Int) -> Item {
+        get {
+            return selectedSection[item]
+        }
+        set {
+            // FIXME: this seems wrong
+            self[selectedSectionIndex][item] = newValue
+        }
+    }
+    subscript(itemType: ItemType) -> Item {
+        get {
+            return self[itemType.indexPath]
+        }
+        set {
+            self[itemType.indexPath] = newValue
+        }
+    }
+    subscript(indexPath: NSIndexPath) -> Item {
+        get {
+            return self[indexPath.section, indexPath.item]
+        }
+        set {
+            self[indexPath.section, indexPath.item] = newValue
+        }
+    }
+    subscript(section: Int, item: Int) -> Item {
+        get {
+            return itemSections[section][item]
+        }
+        set {
+            var itemSection = self[section]
+            itemSection[item] = newValue
+            self[section] = itemSection
+        }
+    }
+    mutating func push(section: Int, item: Item) {
+        guard var stackSection = itemSections[section] as? StackItemSection else {
+            fatalError()
+        }
+        stackSection.push(item)
+        self[section] = stackSection
+    }
+    mutating func push(item: Item) {
+        push(item.itemType.section, item: item)
+    }
+    mutating func clear(section: Int) {
+        guard var stackSection = itemSections[section] as? StackItemSection else {
+            fatalError()
+        }
+        stackSection.clear()
+        self[section] = stackSection
+    }
+    mutating func clear(itemType: ItemType) {
+        clear(itemType.section)
+    }
+    mutating func clearAllSections() {
+        for sectionIndex in 0..<itemSections.count {
+            self.clear(sectionIndex)
+        }
+    }
+    mutating func updateSelectedSection(index: Int) {
+        self.selectedSectionIndex = index
     }
 }
 
@@ -78,20 +247,7 @@ public protocol DataSource {
     var count: Int {get}
     subscript(section: Int) -> ItemSection {get set}
     subscript(indexPath: NSIndexPath) -> Item {get set}
-}
-
-extension ItemSection {
-    public subscript(index: Int) -> Item {
-        get {
-            return items[index]
-        }
-        set {
-            items[index] = newValue
-        }
-    }
-    public var count: Int {
-        return items.count
-    }
+    subscript(itemType: ItemType) -> Item {get set}
 }
 
 extension DataSource {
@@ -112,22 +268,37 @@ extension DataSource {
             self[indexPath.section][indexPath.row] = newValue
         }
     }
+    public subscript(itemType: ItemType) -> Item {
+        get {
+            return self[itemType.indexPath]
+        }
+        set {
+            self[itemType.indexPath] = newValue
+        }
+    }
     public var count: Int {
         return sections.count
     }
-    public mutating func push(section: Int, item: Item) {
-        guard var stackSection = sections[section] as? Stack else {
-            return
+    public mutating func push(section: Int, subSection: Int, item: Item) {
+        guard var selectableSection = sections[section] as? SelectableItemSection else {
+            fatalError()
         }
-        stackSection.push(item)
-        self[section] = stackSection
+        selectableSection.push(subSection, item: item)
+        sections[section] = selectableSection
     }
     public mutating func clear(section: Int) {
-        guard var stackSection = sections[section] as? Stack else {
+        guard var stackSection = sections[section] as? StackItemSection else {
             return
         }
         stackSection.clear()
         self[section] = stackSection
+    }
+    public mutating func updateSelectedSection(section: Int, selectedSubSection: Int) {
+        guard var selectableSection = sections[section] as? SelectableItemSection else {
+            fatalError()
+        }
+        selectableSection.updateSelectedSection(selectedSubSection)
+        sections[section] = selectableSection
     }
 }
 
@@ -137,24 +308,71 @@ extension DataSource {
 
 public class CollectionViewController: ViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
-    struct BasicDataSource: DataSource {
+    // this is a class so that it can be subclassed and modified by subclasses of CollectionViewController
+    class BasicDataSource: DataSource {
         struct BasicSection: ItemSection {
             var items: [Item]
+            let itemType: ItemType
             init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
                 self.items = items
             }
         }
-        struct ScrollingSection: Stack {
+        struct ScrollingSection: StackItemSection {
             var items: [Item]
+            let itemType: ItemType
             init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
                 self.items = items
             }
             init() {
                 self.init(items: [])
             }
         }
+        struct SingleSegmentedControlSection: SingleSegementedControlItemSection {
+            var items: [Item]
+            let itemType: ItemType
+            init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
+                self.items = items
+            }
+            init(segmentedControl: SegmentedControlItem) {
+                self.init(items: [segmentedControl])
+            }
+        }
+        struct SelectableSection: SelectableItemSection {
+            var items: [Item]
+            let itemType: ItemType
+            var selectedSectionIndex: Int
+            init(items: [Item]) {
+                self.init(items: items, sectionItemType: EmptySectionItemType())
+            }
+            init(items: [Item], sectionItemType: ItemType) {
+                self.itemType = sectionItemType
+                self.items = items
+                self.selectedSectionIndex = 0
+            }
+            init(selectableItemSections: [ItemSection]) {
+                let items = selectableItemSections.map { (itemSection) -> Item in
+                    guard let castedItem = itemSection as? Item else {
+                        fatalError()
+                    }
+                    return castedItem
+                }
+                self.init(items: items)
+            }
+        }
         var sections: [ItemSection]
-        init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             self.sections = sections
         }
     }
@@ -233,22 +451,23 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         guard let currentCollectionView = self.collectionView else {
             return
         }
-        guard var selectedItem = dataSource?[indexPath] as? LabelItem else {
+        guard var selectedItem = dataSource?[indexPath] as? UpdateableLabelItem else {
             return
         }
         let alertController = UIAlertController.updateItemWithAlertController(selectedItem) { (action, updatedTextFieldString) in
             if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                 switch (alertDecision) {
                 case .OK:
-                    self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                    self.collectionView?.performBatchUpdates({
+                        self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+                        self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
+                        }, completion: nil)
                 default:
                     return
                 }
             }
-            self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
-            currentCollectionView.reloadItemsAtIndexPaths([indexPath])
         }
-        
         self.presentViewController(alertController, animated: true, completion: nil)
     }
     

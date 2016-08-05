@@ -9,25 +9,47 @@
 import UIKit
 import PubNub
 
-extension PubNub {
-    func channelsString() -> String {
-        return self.channels().reduce("", combine: +)
-    }
-    func channelGroupsString() -> String {
-        return self.channelGroups().reduce("", combine: +)
-    }
-}
-
-extension NSDate {
-    func subscribeTimeStamp() -> String {
-        let formatter = CreationDateFormatter.sharedInstance
-        return formatter.stringFromDate(self)
-    }
-}
-
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
+    
+    class ConsoleDataSource: BasicDataSource {
+        required override init(sections: [ItemSection]) {
+            super.init(sections: sections)
+        }
+        convenience init(client: PubNub, subscribeButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
+            let subscribablesSection = BasicSection(items: [ConsoleUpdateableLabelItem(itemType: .Channels, client: client), ConsoleUpdateableLabelItem(itemType: .ChannelGroups, client: client)])
+            let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
+            let subscribeLoopButtonsSection = BasicSection(items: [subscribeButtonItem])
+            let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
+            let segmentedControlSection = SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
+            let allSection = ScrollingSection()
+            let subscribeStatusSection = ScrollingSection()
+            let messageSection = ScrollingSection()
+            let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
+            self.init(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
+        }
+        var selectedConsoleSegmentIndex: Int {
+            guard let consoleSegment = self[ConsoleItemType.ConsoleSegmentedControl.indexPath] as? ConsoleSegmentedControlItem else {
+                fatalError()
+            }
+            return consoleSegment.selectedSegmentIndex
+        }
+        var selectedConsoleSegment: ConsoleSegmentedControlItem.Segment {
+            // forcefully unwrapped because let's catch any issue, this shouldn't cause a crash
+            return ConsoleSegmentedControlItem.Segment(rawValue: selectedConsoleSegmentIndex)!
+        }
+        var selectedConsoleSegmentItemType: ConsoleItemType {
+            return selectedConsoleSegment.consoleItemType
+        }
+        func updateSelectedSection(selectedSection: Int) {
+            guard var selectableSection = self[selectedConsoleSegmentItemType.section] as? SelectableSection else {
+                fatalError()
+            }
+            selectableSection.updateSelectedSection(selectedSection)
+//            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
+        }
+    }
     
     struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
         let itemType: ItemType
@@ -59,7 +81,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let payload: AnyObject?
         init(itemType: ConsoleItemType, message: PNMessageResult) {
             self.itemType = itemType
-            payload = message.data.message
+            self.payload = message.data.message
         }
         init(message: PNMessageResult) {
             self.init(itemType: .Message, message: message)
@@ -69,7 +91,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleLabelItem: LabelItem {
+    struct ConsoleUpdateableLabelItem: UpdateableLabelItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType) {
             self.init(itemType: itemType, contents: itemType.defaultValue)
@@ -86,9 +108,65 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return UpdateableLabelCollectionViewCell.reuseIdentifier
         }
         
+    }
+    
+    struct ConsoleSegmentedControlItem: SegmentedControlItem {
+        enum Segment: Int {
+            case All, SubscribeStatuses, Messages
+            var title: String {
+                switch self {
+                case .All:
+                    return "All"
+                case .SubscribeStatuses:
+                    return "Subscribes"
+                case .Messages:
+                    return "Messages"
+                }
+            }
+            var consoleItemType: ConsoleItemType {
+                switch self {
+                case .All:
+                    return ConsoleItemType.All
+                case .Messages:
+                    return ConsoleItemType.Message
+                case .SubscribeStatuses:
+                    return ConsoleItemType.SubscribeStatus
+                }
+            }
+            static var allValues: [Segment] {
+                return [All, SubscribeStatuses, Messages]
+            }
+            static var allValuesTitles: [String] {
+                return allValues.map({ (segment) -> String in
+                    segment.title
+                })
+            }
+            
+        }
+        var selectedSegmentIndex: Int = Segment.All.rawValue
+        let itemType: ItemType
+        let items: [String]
+        var targetSelector: TargetSelector
+        init(itemType: ConsoleItemType, items: [String], targetSelector: TargetSelector) {
+            self.itemType = itemType
+            self.items = items
+            self.targetSelector = targetSelector
+        }
+        init(items: [String], targetSelector: TargetSelector) {
+            self.init(itemType: ConsoleItemType.ConsoleSegmentedControl, items: items, targetSelector: targetSelector)
+        }
+        init(targetSelector: TargetSelector) {
+            self.init(items: Segment.allValuesTitles, targetSelector: targetSelector)
+        }
+        var reuseIdentifier: String {
+            return SegmentedControlCollectionViewCell.reuseIdentifier
+        }
+        var defaultSelectedSegmentIndex: Int {
+            return Segment.All.rawValue
+        }
     }
     
     struct ConsoleButtonItem: ButtonItem {
@@ -113,15 +191,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0, SubscribeLoopButtons, Console, Message
+        case Subscribables = 0, SubscribeLoopControls, ConsoleSegmentedControl, Console
     }
     
     enum ConsoleItemType: ItemType {
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case All
         case SubscribeStatus
         case Message
+        case ConsoleSegmentedControl
+        indirect case Console(ConsoleItemType)
         
         func size(collectionViewSize: CGSize) -> CGSize {
             switch self {
@@ -129,8 +210,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
                 return CGSize(width: 250.0, height: 100.0)
-            case .SubscribeStatus, .Message:
+            case .SubscribeStatus, .Message, .All:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
+            case .ConsoleSegmentedControl:
+                return CGSize(width: 300.0, height: 75.0)
+            case let Console(consoleItemType):
+                switch consoleItemType {
+                case .SubscribeStatus, .Message, .All:
+                    return consoleItemType.size(collectionViewSize)
+                default:
+                    fatalError("Invalid type passed in")
+                }
             }
         }
         
@@ -138,9 +228,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         func contents(client: PubNub) -> String {
             switch self {
             case .Channels:
-                return client.channelsString()
+                return client.channelsString() ?? ""
             case .ChannelGroups:
-                return client.channelGroupsString()
+                return client.channelGroupsString() ?? ""
             default:
                 return ""
             }
@@ -173,12 +263,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .Channels, .ChannelGroups:
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton:
-                return ConsoleSectionType.SubscribeLoopButtons
-            case .SubscribeStatus:
+                return ConsoleSectionType.SubscribeLoopControls
+            case .SubscribeStatus, .Message, .All:
                 return ConsoleSectionType.Console
-            case .Message:
-                // TODO: move this into console
-                return ConsoleSectionType.Message
+            case .ConsoleSegmentedControl:
+                return ConsoleSectionType.ConsoleSegmentedControl
+            case let .Console(consoleItemType):
+                switch consoleItemType {
+                case .SubscribeStatus, .Message, .All:
+                    return consoleItemType.sectionType
+                default:
+                    fatalError("Invalid type passed in")
+                }
 
             }
         }
@@ -202,6 +298,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .Message:
                 return 0
+            case .All:
+                return 0
+            case .ConsoleSegmentedControl:
+                return 0
+            case let .Console(consoleItemType):
+                switch consoleItemType {
+                case .SubscribeStatus, .Message, .All:
+                    return consoleItemType.item
+                default:
+                    print("Invalid type passed in")
+                    fatalError("Invalid type passed in")
+                }
             }
         }
     }
@@ -220,6 +328,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        self.client?.removeListener(self)
+    }
 
     // MARK: - View Lifecycle
     
@@ -229,34 +341,27 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             return
         }
-        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
-        let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
-        let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
-        let subscribeStatusSection = BasicDataSource.ScrollingSection()
-        let messageSection = BasicDataSource.ScrollingSection()
-        self.dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, subscribeStatusSection, messageSection])
+        dataSource = ConsoleDataSource(client: currentClient, subscribeButton: (self, #selector(self.subscribeButtonPressed(_:))), consoleSegmentedControl: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
-        
-        // TODO: clean this up later, it's just for debug
-//        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(10 * Double(NSEC_PER_SEC)))
-//        dispatch_after(delayTime, dispatch_get_main_queue()) {
-//            self.client?.subscribeToChannels(["d"], withPresence: true)
-//        }
     }
     
     public override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-        collectionView?.performBatchUpdates({ 
+        collectionView?.performBatchUpdates({
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
-            self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
-            self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+            self.dataSource?.clear(ConsoleItemType.All.section)
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                fatalError()
+            }
+            self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
             }, completion: nil)
     }
     
@@ -267,12 +372,46 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             client?.unsubscribeFromAll()
             return
         }
-        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels.indexPath] as? ConsoleLabelItem else {
+        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleUpdateableLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleUpdateableLabelItem else {
             return
         }
-        let channels = [channelsItem.contents]
-        self.client?.subscribeToChannels(channels, withPresence: true)
-        
+        do {
+            typealias SubscribablesTuple = (Channels: [String]?, ChannelGroups: [String]?)
+            let currentSubscribables: SubscribablesTuple = (try client?.stringToSubscribablesArray(channelsItem.contents), try client?.stringToSubscribablesArray(channelGroupsItem.contents))
+            switch currentSubscribables {
+            case let (nil, nil):
+                let alertController = UIAlertController(title: "Cannot subscribe", message: "Cannot subscribe with no channels and no channel grouups", preferredStyle: .Alert)
+                alertController.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
+                presentViewController(alertController, animated: true, completion: nil)
+            case let (channels, nil) where channels != nil:
+                client?.subscribeToChannels(channels!, withPresence: true)
+            case let (nil, channelGroups) where channelGroups != nil:
+                client?.subscribeToChannelGroups(channelGroups!, withPresence: true)
+            default:
+                client?.subscribeToChannels(currentSubscribables.Channels!, withPresence: true)
+                client?.subscribeToChannelGroups(currentSubscribables.ChannelGroups!, withPresence: true)
+            }
+        } catch let pubNubError as PubNubStringParsingError {
+            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelsItem.title, error: pubNubError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
+            return
+        } catch {
+            fatalError(#function + " error: \(error)")
+        }
+    }
+    
+    func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
+        collectionView?.performBatchUpdates({ 
+            self.dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+            guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: sender.selectedSegmentIndex) else {
+                fatalError()
+            }
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                return
+            }
+            self.dataSource?.updateSelectedSection(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).section, selectedSubSection: currentSegmentedControlValue.rawValue)
+            self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+            }, completion: nil)
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -291,23 +430,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - Update from Client
     
     public func updateSubscribableLabelCells() {
-        guard let currentClient = self.client, let currentDataSource = dataSource else {
-            return
-        }
-        self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: client?.channelsString())
-        self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: client?.channelGroupsString())
-        self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+        collectionView?.performBatchUpdates({ 
+            self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
+            self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
+            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+            }, completion: nil)
     }
     
     public func updateSubscribeButtonState() {
         guard let currentClient = self.client else {
             return
         }
-        let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
-        let indexPath = ConsoleItemType.SubscribeButton.indexPath
-        self.dataSource?.updateSelected(indexPath, selected: subscribing)
-        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
-        
+        collectionView?.performBatchUpdates({ 
+            let subscribing = currentClient.isSubscribing
+            let indexPath = ConsoleItemType.SubscribeButton.indexPath
+            self.dataSource?.updateSelected(indexPath, selected: subscribing)
+            self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+            }, completion: nil)
     }
     
     // MARK: - PNObjectEventListener
@@ -318,22 +457,38 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             (status.operation == .SubscribeOperation) ||
             (status.operation == .UnsubscribeOperation)
             ){
-            updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
-            updateSubscribeButtonState()
-            
-            // TODO: add push to data source here
-            let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
-            dataSource?.push(ConsoleItemType.SubscribeStatus.section, item: subscribeStatus)
-            collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
+            collectionView?.performBatchUpdates({
+                // performBatchUpdates is nestable, so let's update other sections first
+                self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
+                self.updateSubscribeButtonState()
+                let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
+                guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+                    return
+                }
+                currentDataSource.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
+                currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
+                let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+                if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
+                    self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+                }
+                }, completion: nil)
         }
-
     }
     
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
         print(message.debugDescription)
-        let message = ConsoleMessageItem(message: message)
-        dataSource?.push(ConsoleItemType.Message.section, item: message)
-        collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+        collectionView?.performBatchUpdates({ 
+            let message = ConsoleMessageItem(message: message)
+            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+                return
+            }
+            currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
+            currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
+            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .Messages {
+                self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+            }
+            }, completion: nil)
     }
     
     // MARK: - UINavigationItem

@@ -8,8 +8,6 @@
 
 import UIKit
 
-typealias TargetSelector = (target: AnyObject?, selector: Selector)
-
 protocol ButtonItem: Item {
     var selectedTitle: String? {get}
     var targetSelector: TargetSelector {get set}
@@ -37,6 +35,9 @@ extension ItemSection {
         buttonItem.updateSelected(selected)
         self[item] = buttonItem
     }
+    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.item, selected: selected)
+    }
 }
 
 extension DataSource {
@@ -47,13 +48,8 @@ extension DataSource {
         buttonItem.updateSelected(selected)
         self[indexPath] = buttonItem
     }
-}
-
-extension UIControl {
-    func removeAllTargets() {
-        self.allTargets().forEach { (target) in
-            self.removeTarget(target, action: nil, forControlEvents: .AllEvents)
-        }
+    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.indexPath, selected: selected)
     }
 }
 
