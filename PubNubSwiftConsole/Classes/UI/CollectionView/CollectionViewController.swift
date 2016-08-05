@@ -431,15 +431,16 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
             if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                 switch (alertDecision) {
                 case .OK:
-                    self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                    self.collectionView?.performBatchUpdates({
+                        self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+                        self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
+                        }, completion: nil)
                 default:
                     return
                 }
             }
-            self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
-            currentCollectionView.reloadItemsAtIndexPaths([indexPath])
         }
-        
         self.presentViewController(alertController, animated: true, completion: nil)
     }
     
