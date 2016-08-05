@@ -430,9 +430,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - Update from Client
     
     public func updateSubscribableLabelCells() {
-        guard let currentClient = self.client, let currentDataSource = dataSource else {
-            return
-        }
         collectionView?.performBatchUpdates({ 
             self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
             self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
