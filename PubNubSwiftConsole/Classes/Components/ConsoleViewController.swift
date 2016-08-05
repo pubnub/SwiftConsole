@@ -450,13 +450,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             typealias SubscribablesTuple = (Channels: [String]?, ChannelGroups: [String]?)
             let currentSubscribables: SubscribablesTuple = (try client?.stringToSubscribablesArray(channelsItem.contents), try client?.stringToSubscribablesArray(channelGroupsItem.contents))
             switch currentSubscribables {
-            case let (channels, channelGroups) where channels == nil && channelGroups == nil:
+            case let (nil, nil):
                 let alertController = UIAlertController(title: "Cannot subscribe", message: "Cannot subscribe with no channels and no channel grouups", preferredStyle: .Alert)
                 alertController.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
                 presentViewController(alertController, animated: true, completion: nil)
-            case let (channels, channelGroups) where channels != nil && channelGroups == nil:
+            case let (channels, nil) where channels != nil:
                 client?.subscribeToChannels(channels!, withPresence: true)
-            case let (channels, channelGroups) where channels == nil && channelGroups != nil:
+            case let (nil, channelGroups) where channelGroups != nil:
                 client?.subscribeToChannelGroups(channelGroups!, withPresence: true)
             default:
                 client?.subscribeToChannels(currentSubscribables.Channels!, withPresence: true)
