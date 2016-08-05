@@ -19,12 +19,12 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         convenience init(clientCreationButton: TargetSelector) {
             let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
             let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
-            let configSection = BasicDataSource.BasicSection(items: [ClientCreationLabelItem(itemType: .PublishKey), ClientCreationLabelItem(itemType: .SubscribeKey), ClientCreationLabelItem(itemType: .Origin)])
+            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdateableLabelItem(itemType: .PublishKey), ClientCreationUpdateableLabelItem(itemType: .SubscribeKey), ClientCreationUpdateableLabelItem(itemType: .Origin)])
             self.init(sections: [configSection, creationSection])
         }
     }
     
-    struct ClientCreationLabelItem: LabelItem {
+    struct ClientCreationUpdateableLabelItem: UpdateableLabelItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -37,7 +37,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         let itemType: ItemType
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return UpdateableLabelCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -140,7 +140,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         self.delegate = self
         dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
@@ -158,7 +158,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType] as? ClientCreationLabelItem where item.title == itemType.title else {
+            guard let item = dataSource?[itemType] as? ClientCreationUpdateableLabelItem where item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents

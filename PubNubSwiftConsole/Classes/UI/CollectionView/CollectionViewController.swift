@@ -451,7 +451,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         guard let currentCollectionView = self.collectionView else {
             return
         }
-        guard var selectedItem = dataSource?[indexPath] as? LabelItem else {
+        guard var selectedItem = dataSource?[indexPath] as? UpdateableLabelItem else {
             return
         }
         let alertController = UIAlertController.updateItemWithAlertController(selectedItem) { (action, updatedTextFieldString) in

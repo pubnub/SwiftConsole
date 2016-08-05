@@ -18,7 +18,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             super.init(sections: sections)
         }
         convenience init(client: PubNub, subscribeButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
-            let subscribablesSection = BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: client), ConsoleLabelItem(itemType: .ChannelGroups, client: client)])
+            let subscribablesSection = BasicSection(items: [ConsoleUpdateableLabelItem(itemType: .Channels, client: client), ConsoleUpdateableLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
             let subscribeLoopButtonsSection = BasicSection(items: [subscribeButtonItem])
             let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
@@ -91,7 +91,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleLabelItem: LabelItem {
+    struct ConsoleUpdateableLabelItem: UpdateableLabelItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType) {
             self.init(itemType: itemType, contents: itemType.defaultValue)
@@ -108,7 +108,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return UpdateableLabelCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -343,7 +343,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         dataSource = ConsoleDataSource(client: currentClient, subscribeButton: (self, #selector(self.subscribeButtonPressed(_:))), consoleSegmentedControl: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
@@ -372,7 +372,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             client?.unsubscribeFromAll()
             return
         }
-        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleLabelItem else {
+        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleUpdateableLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleUpdateableLabelItem else {
             return
         }
         do {

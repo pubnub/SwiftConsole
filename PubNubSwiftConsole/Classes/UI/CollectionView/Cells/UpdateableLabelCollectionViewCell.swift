@@ -1,5 +1,5 @@
 //
-//  LabelCollectionViewCell.swift
+//  UpdateableLabelCollectionViewCell.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/13/16.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol LabelItem: Item {
+protocol UpdateableLabelItem: Item {
     var contents: String {get set}
     var defaultContents: String {get}
     var alertControllerTitle: String? {get}
@@ -16,7 +16,7 @@ protocol LabelItem: Item {
     mutating func updateContentsString(updatedContents: String?)
 }
 
-extension LabelItem {
+extension UpdateableLabelItem {
     mutating func updateContentsString(updatedContents: String?) {
         self.contents = updatedContents ?? defaultContents
     }
@@ -36,7 +36,7 @@ extension LabelItem {
 
 extension ItemSection {
     mutating func updateLabelContentsString(item: Int, updatedContents: String?) {
-        guard var selectedLabelItem = self[item] as? LabelItem else {
+        guard var selectedLabelItem = self[item] as? UpdateableLabelItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedLabelItem.updateContentsString(updatedContents)
@@ -49,7 +49,7 @@ extension ItemSection {
 
 extension DataSource {
     mutating func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
-        guard var selectedItem = self[indexPath] as? LabelItem else {
+        guard var selectedItem = self[indexPath] as? UpdateableLabelItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedItem.updateContentsString(updatedContents)
@@ -64,7 +64,7 @@ extension UIAlertController {
     enum ItemAction: String {
         case OK, Cancel
     }
-    static func updateItemWithAlertController(selectedItem: LabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
+    static func updateItemWithAlertController(selectedItem: UpdateableLabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
         guard let item = selectedItem else {
             fatalError()
         }
@@ -85,7 +85,7 @@ extension UIAlertController {
     }
 }
 
-class LabelCollectionViewCell: CollectionViewCell {
+class UpdateableLabelCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
@@ -117,14 +117,14 @@ class LabelCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateLabels(item: LabelItem) {
+    func updateLabels(item: UpdateableLabelItem) {
         self.titleLabel.text = item.title
         self.contentsLabel.text = item.contents
         self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
     
     override func updateCell(item: Item) {
-        guard let labelItem = item as? LabelItem else {
+        guard let labelItem = item as? UpdateableLabelItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateLabels(labelItem)
