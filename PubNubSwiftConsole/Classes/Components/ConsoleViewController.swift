@@ -501,20 +501,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client, let currentDataSource = dataSource else {
             return
         }
-        dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: client?.channelsString())
-        dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: client?.channelGroupsString())
-        collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+        collectionView?.performBatchUpdates({ 
+            self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
+            self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
+            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
+            }, completion: nil)
     }
     
     public func updateSubscribeButtonState() {
         guard let currentClient = self.client else {
             return
         }
-        let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
-        let indexPath = ConsoleItemType.SubscribeButton.indexPath
-        dataSource?.updateSelected(indexPath, selected: subscribing)
-        collectionView?.reloadItemsAtIndexPaths([indexPath])
-        
+        collectionView?.performBatchUpdates({ 
+            let subscribing = !(currentClient.channels().isEmpty && currentClient.channelGroups().isEmpty)
+            let indexPath = ConsoleItemType.SubscribeButton.indexPath
+            self.dataSource?.updateSelected(indexPath, selected: subscribing)
+            self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+            }, completion: nil)
     }
     
     // MARK: - PNObjectEventListener
@@ -525,40 +528,42 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             (status.operation == .SubscribeOperation) ||
             (status.operation == .UnsubscribeOperation)
             ){
-            updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
-            updateSubscribeButtonState()
-            
-            // TODO: add push to data source here
-            let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
-            dataSource?.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
-            dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
-            guard let consoleSegmentedControlIndex = dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
+            collectionView?.performBatchUpdates({
+                // performBatchUpdates is nestable, so let's update other sections first
+                self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
+                self.updateSubscribeButtonState()
+                let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
+                self.dataSource?.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
+                self.dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
+                guard let consoleSegmentedControlIndex = self.dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
+                    return
+                }
+                guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
+                    fatalError()
+                }
+                if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
+                    self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+                }
+                }, completion: nil)
+        }
+    }
+    
+    public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
+        print(message.debugDescription)
+        collectionView?.performBatchUpdates({ 
+            let message = ConsoleMessageItem(message: message)
+            self.dataSource?.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
+            self.dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
+            guard let consoleSegmentedControlIndex = self.dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
                 return
             }
             guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
                 fatalError()
             }
-            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
-                collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .Messages {
+                self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
             }
-        }
-
-    }
-    
-    public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
-        print(message.debugDescription)
-        let message = ConsoleMessageItem(message: message)
-        dataSource?.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
-        dataSource?.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
-        guard let consoleSegmentedControlIndex = dataSource?.selectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath) else {
-            return
-        }
-        guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: consoleSegmentedControlIndex) else {
-            fatalError()
-        }
-        if currentSegmentedControlValue == .All || currentSegmentedControlValue == .Messages {
-            collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
-        }
+            }, completion: nil)
     }
     
     // MARK: - UINavigationItem
