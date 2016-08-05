@@ -16,6 +16,8 @@ protocol SubscribeStatusItem: Item {
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
+    var channel: String? {get}
+    var channelGroup: String? {get}
 }
 
 extension SubscribeStatusItem {
@@ -31,6 +33,8 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     private let timeStampLabel: UILabel
     private let statusCodeLabel: UILabel
     private let timeTokenLabel: UILabel
+    private let channelLabel: UILabel
+    private let channelGroupLabel: UILabel
     
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
@@ -41,12 +45,16 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         timeStampLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
         statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/4))
         timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/4))
+        channelLabel = UILabel(frame: CGRect(x: 5, y: 150, width: frame.size.width, height: frame.size.height/4))
+        channelGroupLabel = UILabel(frame: CGRect(x: 5, y: 180, width: frame.size.width, height: frame.size.height/4))
         super.init(frame: frame)
         contentView.addSubview(categoryLabel)
         contentView.addSubview(operationLabel)
         contentView.addSubview(timeStampLabel)
         contentView.addSubview(statusCodeLabel)
         contentView.addSubview(timeTokenLabel)
+        contentView.addSubview(channelLabel)
+        contentView.addSubview(channelGroupLabel)
         contentView.layer.borderWidth = 3
     }
     
@@ -63,6 +71,18 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
             timeTokenLabel.text = "Time token: \(timeToken)"
         } else {
             timeTokenLabel.hidden = true
+        }
+        if let channel = item.channel {
+            channelLabel.hidden = false
+            channelLabel.text = "Channel(s): \(channel)"
+        } else {
+            channelLabel.hidden = true
+        }
+        if let channelGroup = item.channelGroup {
+            channelGroupLabel.hidden = false
+            channelGroupLabel.text = "Channel group: \(channelGroup)"
+        } else {
+            channelGroupLabel.hidden = true
         }
         setNeedsLayout()
     }

@@ -36,6 +36,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let creationDate: NSDate
         let statusCode: Int
         var timeToken: NSNumber?
+        var channel: String?
+        var channelGroup: String?
         init(itemType: ConsoleItemType, status: PNStatus) {
             self.itemType = itemType
             self.category = status.stringifiedCategory()
@@ -44,6 +46,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.statusCode = status.statusCode
             if let subscribeStatus = status as? PNSubscribeStatus {
                 self.timeToken = subscribeStatus.data.timetoken
+                // TODO: Change sdk variable names and descriptions for channel(s) and channel group
+                self.channel = subscribeStatus.data.subscribedChannel
+                self.channelGroup = subscribeStatus.data.actualChannel
             }
         }
         init(status: PNStatus) {
@@ -57,9 +62,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     struct ConsoleMessageItem: MessageItem {
         let itemType: ItemType
         let payload: AnyObject?
+        var channel: String?
+        var channelGroup: String?
         init(itemType: ConsoleItemType, message: PNMessageResult) {
             self.itemType = itemType
             payload = message.data.message
+            channel = message.data.subscribedChannel
+            channelGroup = message.data.actualChannel
         }
         init(message: PNMessageResult) {
             self.init(itemType: .Message, message: message)
@@ -130,7 +139,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .SubscribeButton:
                 return CGSize(width: 250.0, height: 100.0)
             case .SubscribeStatus, .Message:
-                return CGSize(width: collectionViewSize.width, height: 150.0)
+                return CGSize(width: collectionViewSize.width, height: 230.0)
             }
         }
         
@@ -320,7 +329,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             ){
             updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
             updateSubscribeButtonState()
-            
             // TODO: add push to data source here
             let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
             dataSource?.push(ConsoleItemType.SubscribeStatus.section, item: subscribeStatus)
