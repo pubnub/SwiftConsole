@@ -107,16 +107,33 @@ extension PubNub {
     }
 }
 
+extension NSDate {
+    func subscribeTimeStamp() -> String {
+        let formatter = CreationDateFormatter.sharedInstance
+        return formatter.stringFromDate(self)
+    }
+}
+
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
     
     struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
         let itemType: ItemType
-        let title: String
+        let category: String
+        let operation: String
+        let creationDate: NSDate
+        let statusCode: Int
+        var timeToken: NSNumber?
         init(itemType: ConsoleItemType, status: PNStatus) {
-            self.title = status.stringifiedCategory() + " \(status.statusCode)"
             self.itemType = itemType
+            self.category = status.stringifiedCategory()
+            self.operation = status.stringifiedOperation()
+            self.creationDate = NSDate()
+            self.statusCode = status.statusCode
+            if let subscribeStatus = status as? PNSubscribeStatus {
+                self.timeToken = subscribeStatus.data.timetoken
+            }
         }
         init(status: PNStatus) {
             self.init(itemType: .SubscribeStatus, status: status)

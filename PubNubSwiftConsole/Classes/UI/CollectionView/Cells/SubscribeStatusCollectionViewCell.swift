@@ -11,18 +11,42 @@ import PubNub
 
 protocol SubscribeStatusItem: Item {
     init(status: PNStatus)
+    var category: String {get}
+    var operation: String {get}
+    var creationDate: NSDate {get}
+    var statusCode: Int {get}
+    var timeToken: NSNumber? {get}
+}
+
+extension SubscribeStatusItem {
+    var title: String {
+        return category
+    }
 }
 
 class SubscribeStatusCollectionViewCell: CollectionViewCell {
     
-    private let titleLabel: UILabel
+    private let categoryLabel: UILabel
+    private let operationLabel: UILabel
+    private let timeStampLabel: UILabel
+    private let statusCodeLabel: UILabel
+    private let timeTokenLabel: UILabel
+    
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
     }
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height/3))
+        categoryLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
+        operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
+        timeStampLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
+        statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/4))
+        timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/4))
         super.init(frame: frame)
-        self.addSubview(titleLabel)
+        contentView.addSubview(categoryLabel)
+        contentView.addSubview(operationLabel)
+        contentView.addSubview(timeStampLabel)
+        contentView.addSubview(statusCodeLabel)
+        contentView.addSubview(timeTokenLabel)
         contentView.layer.borderWidth = 3
     }
     
@@ -30,7 +54,16 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     func updateStatus(item: SubscribeStatusItem) {
-        titleLabel.text = item.title
+        categoryLabel.text = "Category: \(item.title)"
+        operationLabel.text = "Operation: \(item.operation)"
+        timeStampLabel.text = "Creation date: \(item.creationDate.subscribeTimeStamp())"
+        statusCodeLabel.text = "Status code: \(item.statusCode)"
+        if let timeToken = item.timeToken {
+            timeTokenLabel.hidden = false
+            timeTokenLabel.text = "Time token: \(timeToken)"
+        } else {
+            timeTokenLabel.hidden = true
+        }
         setNeedsLayout()
     }
     
