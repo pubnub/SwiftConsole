@@ -83,7 +83,7 @@ public protocol ItemSection: Item {
     init(items: [Item])
     var items: [Item] {get set}
     var count: Int {get}
-    subscript(index: Int) -> Item {get set}
+    subscript(item: Int) -> Item {get set}
 }
 
 extension ItemSection {
@@ -93,12 +93,20 @@ extension ItemSection {
     var reuseIdentifier: String {
         return ""
     }
-    public subscript(index: Int) -> Item {
+    public subscript(item: Int) -> Item {
         get {
-            return items[index]
+            return items[item]
         }
         set {
-            items[index] = newValue
+            items[item] = newValue
+        }
+    }
+    public subscript(itemType: ItemType) -> Item {
+        get {
+            return items[itemType.item]
+        }
+        set {
+            items[itemType.item] = newValue
         }
     }
     public var count: Int {
@@ -167,12 +175,22 @@ extension SelectableItemSection {
             itemSections[section] = newValue
         }
     }
-    public subscript(index: Int) -> Item {
+    // FIXME: this seems wrong
+    public subscript(item: Int) -> Item {
         get {
-            return selectedSection[index]
+            return selectedSection[item]
         }
         set {
-            items[index] = newValue
+            // FIXME: this seems wrong
+            self[selectedSectionIndex][item] = newValue
+        }
+    }
+    subscript(itemType: ItemType) -> Item {
+        get {
+            return self[itemType.indexPath]
+        }
+        set {
+            self[itemType.indexPath] = newValue
         }
     }
     subscript(indexPath: NSIndexPath) -> Item {
@@ -200,13 +218,18 @@ extension SelectableItemSection {
         stackSection.push(item)
         self[section] = stackSection
     }
+    mutating func push(item: Item) {
+        push(item.itemType.section, item: item)
+    }
     mutating func clear(section: Int) {
         guard var stackSection = itemSections[section] as? StackItemSection else {
             fatalError()
         }
         stackSection.clear()
         self[section] = stackSection
-        
+    }
+    mutating func clear(itemType: ItemType) {
+        clear(itemType.section)
     }
     mutating func clearAllSections() {
         for sectionIndex in 0..<itemSections.count {

@@ -18,16 +18,36 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             super.init(sections: sections)
         }
         convenience init(client: PubNub, subscribeButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
-            let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: client), ConsoleLabelItem(itemType: .ChannelGroups, client: client)])
+            let subscribablesSection = BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: client), ConsoleLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
-            let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
+            let subscribeLoopButtonsSection = BasicSection(items: [subscribeButtonItem])
             let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
-            let segmentedControlSection = BasicDataSource.SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
-            let allSection = BasicDataSource.ScrollingSection()
-            let subscribeStatusSection = BasicDataSource.ScrollingSection()
-            let messageSection = BasicDataSource.ScrollingSection()
-            let consoleSection = BasicDataSource.SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
+            let segmentedControlSection = SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
+            let allSection = ScrollingSection()
+            let subscribeStatusSection = ScrollingSection()
+            let messageSection = ScrollingSection()
+            let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
             self.init(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
+        }
+        var selectedConsoleSegmentIndex: Int {
+            guard let consoleSegment = self[ConsoleItemType.ConsoleSegmentedControl.indexPath] as? ConsoleSegmentedControlItem else {
+                fatalError()
+            }
+            return consoleSegment.selectedSegmentIndex
+        }
+        var selectedConsoleSegment: ConsoleSegmentedControlItem.Segment {
+            // forcefully unwrapped because let's catch any issue, this shouldn't cause a crash
+            return ConsoleSegmentedControlItem.Segment(rawValue: selectedConsoleSegmentIndex)!
+        }
+        var selectedConsoleSegmentItemType: ConsoleItemType {
+            return selectedConsoleSegment.consoleItemType
+        }
+        func updateSelectedSection(selectedSection: Int) {
+            guard var selectableSection = self[selectedConsoleSegmentItemType.section] as? SelectableSection else {
+                fatalError()
+            }
+            selectableSection.updateSelectedSection(selectedSection)
+//            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
         }
     }
     
@@ -61,7 +81,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let payload: AnyObject?
         init(itemType: ConsoleItemType, message: PNMessageResult) {
             self.itemType = itemType
-            payload = message.data.message
+            self.payload = message.data.message
         }
         init(message: PNMessageResult) {
             self.init(itemType: .Message, message: message)
@@ -338,9 +358,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
             self.dataSource?.clear(ConsoleItemType.All.section)
-            self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
-            self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
-            self.collectionView?.reloadSections(ConsoleItemType.All.indexSet)
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                fatalError()
+            }
+            self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+//            self.collectionView?.reloadSections(ConsoleItemType.SubscribeStatus.indexSet)
+//            self.collectionView?.reloadSections(ConsoleItemType.Message.indexSet)
+//            self.collectionView?.reloadSections(ConsoleItemType.All.indexSet)
             }, completion: nil)
     }
     
@@ -384,6 +408,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
             guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: sender.selectedSegmentIndex) else {
                 fatalError()
+            }
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                return
             }
             self.dataSource?.updateSelectedSection(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).section, selectedSubSection: currentSegmentedControlValue.rawValue)
             self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
