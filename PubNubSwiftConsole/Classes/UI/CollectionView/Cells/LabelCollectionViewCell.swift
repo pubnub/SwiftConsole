@@ -42,6 +42,9 @@ extension ItemSection {
         selectedLabelItem.updateContentsString(updatedContents)
         self[item] = selectedLabelItem
     }
+    mutating func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
+        updateLabelContentsString(itemType.item, updatedContents: updatedContents)
+    }
 }
 
 extension DataSource {
@@ -51,6 +54,9 @@ extension DataSource {
         }
         selectedItem.updateContentsString(updatedContents)
         self[indexPath] = selectedItem
+    }
+    mutating func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
+        updateLabelContentsString(itemType.indexPath, updatedContents: updatedContents)
     }
 }
 

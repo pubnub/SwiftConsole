@@ -106,6 +106,7 @@ extension ItemSection {
     }
 }
 
+// should there be a protocol for pushable items?
 protocol StackItemSection: ItemSection {
     mutating func push(item: Item)
 }
@@ -254,13 +255,6 @@ extension DataSource {
     }
     public var count: Int {
         return sections.count
-    }
-    public mutating func push(section: Int, item: Item) {
-        guard var stackSection = sections[section] as? StackItemSection else {
-            fatalError()
-        }
-        stackSection.push(item)
-        self[section] = stackSection
     }
     public mutating func push(section: Int, subSection: Int, item: Item) {
         guard var selectableSection = sections[section] as? SelectableItemSection else {

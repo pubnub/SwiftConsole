@@ -37,6 +37,9 @@ extension ItemSection {
         buttonItem.updateSelected(selected)
         self[item] = buttonItem
     }
+    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.item, selected: selected)
+    }
 }
 
 extension DataSource {
@@ -46,6 +49,9 @@ extension DataSource {
         }
         buttonItem.updateSelected(selected)
         self[indexPath] = buttonItem
+    }
+    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.indexPath, selected: selected)
     }
 }
 

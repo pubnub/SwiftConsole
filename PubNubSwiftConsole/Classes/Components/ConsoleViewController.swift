@@ -297,6 +297,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        self.client?.removeListener(self)
+    }
 
     // MARK: - View Lifecycle
     
@@ -328,7 +332,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-        collectionView?.performBatchUpdates({ 
+        collectionView?.performBatchUpdates({
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
             self.dataSource?.clear(ConsoleItemType.All.section)
@@ -345,7 +349,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             client?.unsubscribeFromAll()
             return
         }
-        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels.indexPath] as? ConsoleLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups.indexPath] as? ConsoleLabelItem else {
+        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleLabelItem else {
             return
         }
         do {

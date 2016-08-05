@@ -43,6 +43,9 @@ extension ItemSection {
         segmentedControlItem.updateSelectedSegmentIndex(updatedSelectedSegmentIndex: index)
         self[item] = segmentedControlItem
     }
+    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) {
+        updateSelectedSegmentIndex(itemType.item, updatedSelectedSegmentIndex: index)
+    }
 }
 
 // assumes there is only one segmented control in the section
@@ -84,6 +87,12 @@ extension DataSource {
             fatalError()
         }
         return segmentedControlItem.selectedSegmentIndex
+    }
+    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) {
+        updateSelectedSegmentIndex(itemType.indexPath, updatedSelectedSegmentIndex: index)
+    }
+    func selectedSegmentIndex(itemType: ItemType) -> Int {
+        return selectedSegmentIndex(itemType.indexPath)
     }
 }
 
