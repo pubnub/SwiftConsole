@@ -226,7 +226,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType.indexPath] as? ClientCreationLabelItem where item.title == itemType.title else {
+            guard let item = dataSource?[itemType] as? ClientCreationLabelItem where item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents

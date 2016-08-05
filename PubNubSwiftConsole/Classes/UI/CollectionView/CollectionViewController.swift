@@ -223,6 +223,7 @@ public protocol DataSource {
     var count: Int {get}
     subscript(section: Int) -> ItemSection {get set}
     subscript(indexPath: NSIndexPath) -> Item {get set}
+    subscript(itemType: ItemType) -> Item {get set}
 }
 
 extension DataSource {
@@ -241,6 +242,14 @@ extension DataSource {
         }
         set {
             self[indexPath.section][indexPath.row] = newValue
+        }
+    }
+    public subscript(itemType: ItemType) -> Item {
+        get {
+            return self[itemType.indexPath]
+        }
+        set {
+            self[itemType.indexPath] = newValue
         }
     }
     public var count: Int {
