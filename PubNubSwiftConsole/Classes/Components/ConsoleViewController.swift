@@ -20,6 +20,24 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - DataSource
     
+    class ConsoleDataSource: BasicDataSource {
+        required override init(sections: [ItemSection]) {
+            super.init(sections: sections)
+        }
+        convenience init(client: PubNub, subscribeButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
+            let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: client), ConsoleLabelItem(itemType: .ChannelGroups, client: client)])
+            let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
+            let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
+            let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
+            let segmentedControlSection = BasicDataSource.SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
+            let allSection = BasicDataSource.ScrollingSection()
+            let subscribeStatusSection = BasicDataSource.ScrollingSection()
+            let messageSection = BasicDataSource.ScrollingSection()
+            let consoleSection = BasicDataSource.SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
+            self.init(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
+        }
+    }
+    
     struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
         let itemType: ItemType
         let category: String
@@ -310,16 +328,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             return
         }
-        let subscribablesSection = BasicDataSource.BasicSection(items: [ConsoleLabelItem(itemType: .Channels, client: currentClient), ConsoleLabelItem(itemType: .ChannelGroups, client: currentClient)])
-        let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: (self, #selector(self.subscribeButtonPressed(_:))))
-        let subscribeLoopButtonsSection = BasicDataSource.BasicSection(items: [subscribeButtonItem])
-        let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
-        let segmentedControlSection = BasicDataSource.SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
-        let allSection = BasicDataSource.ScrollingSection()
-        let subscribeStatusSection = BasicDataSource.ScrollingSection()
-        let messageSection = BasicDataSource.ScrollingSection()
-        let consoleSection = BasicDataSource.SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
-        dataSource = BasicDataSource(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
+        dataSource = ConsoleDataSource(client: currentClient, subscribeButton: (self, #selector(self.subscribeButtonPressed(_:))), consoleSegmentedControl: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)

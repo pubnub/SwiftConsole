@@ -12,6 +12,18 @@ import PubNub
 public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - DataSource
     
+    class ClientCreationDataSource: BasicDataSource {
+        required override init(sections: [ItemSection]) {
+            super.init(sections: sections)
+        }
+        convenience init(clientCreationButton: TargetSelector) {
+            let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
+            let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
+            let configSection = BasicDataSource.BasicSection(items: [ClientCreationLabelItem(itemType: .PublishKey), ClientCreationLabelItem(itemType: .SubscribeKey), ClientCreationLabelItem(itemType: .Origin)])
+            self.init(sections: [configSection, creationSection])
+        }
+    }
+    
     struct ClientCreationLabelItem: LabelItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
@@ -126,11 +138,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: (self, #selector(self.clientCreationButtonPressed(_:))))
-        let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
-        let configSection = BasicDataSource.BasicSection(items: [ClientCreationLabelItem(itemType: .PublishKey), ClientCreationLabelItem(itemType: .SubscribeKey), ClientCreationLabelItem(itemType: .Origin)])
-        let clientCreationDataSource = BasicDataSource(sections: [configSection, creationSection])
-        self.dataSource = clientCreationDataSource
+        dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)

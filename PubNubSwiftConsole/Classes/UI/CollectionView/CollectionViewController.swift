@@ -285,7 +285,8 @@ extension DataSource {
 
 public class CollectionViewController: ViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
-    struct BasicDataSource: DataSource {
+    // this is a class so that it can be subclassed and modified by subclasses of CollectionViewController
+    class BasicDataSource: DataSource {
         struct BasicSection: ItemSection {
             var items: [Item]
             let itemType: ItemType
@@ -348,7 +349,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
             }
         }
         var sections: [ItemSection]
-        init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             self.sections = sections
         }
     }
