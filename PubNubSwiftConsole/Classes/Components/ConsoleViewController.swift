@@ -9,13 +9,6 @@
 import UIKit
 import PubNub
 
-extension NSDate {
-    func subscribeTimeStamp() -> String {
-        let formatter = CreationDateFormatter.sharedInstance
-        return formatter.stringFromDate(self)
-    }
-}
-
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
     
     // MARK: - DataSource
