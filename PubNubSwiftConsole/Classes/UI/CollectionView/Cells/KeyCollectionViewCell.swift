@@ -8,11 +8,11 @@
 
 import Foundation
 
-protocol KeyItem: Item {
+protocol LabelItem: Item {
     var keyContents: String {get}
 }
 
-extension KeyItem {
+extension LabelItem {
     var title: String {
         return itemType.title
     }
@@ -46,13 +46,13 @@ class KeyCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateKey(item: KeyItem) {
+    func updateKey(item: LabelItem) {
         self.titleLabel.text = item.title
         self.keyContentsLabel.text = item.keyContents
     }
     
     override func updateCell(item: Item) {
-        guard let keyItem = item as? KeyItem else {
+        guard let keyItem = item as? LabelItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateKey(keyItem)

@@ -52,7 +52,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleClientKeyItem: KeyItem {
+    struct ConsoleClientKeyItem: LabelItem {
         let itemType: ItemType
         let keyContents: String
         init(itemType: ConsoleItemType, keyContents: String) {
