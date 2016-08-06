@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol UpdateableLabelItem: Item {
+protocol UpdateableLabelItem: LabelItem {
     var contents: String {get set}
     var defaultContents: String {get}
     var alertControllerTitle: String? {get}
@@ -85,7 +85,7 @@ extension UIAlertController {
     }
 }
 
-class UpdateableLabelCollectionViewCell: CollectionViewCell {
+class UpdateableLabelCollectionViewCell: KeyCollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
@@ -115,12 +115,6 @@ class UpdateableLabelCollectionViewCell: CollectionViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    func updateLabels(item: UpdateableLabelItem) {
-        self.titleLabel.text = item.title
-        self.contentsLabel.text = item.contents
-        self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
     
     override func updateCell(item: Item) {

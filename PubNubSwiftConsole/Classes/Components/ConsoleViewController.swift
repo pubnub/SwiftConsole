@@ -54,14 +54,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     struct ConsoleClientKeyItem: LabelItem {
         let itemType: ItemType
-        let keyContents: String
-        init(itemType: ConsoleItemType, keyContents: String) {
+        let contents: String
+        init(itemType: ConsoleItemType, contents: String) {
             self.itemType = itemType
-            self.keyContents = keyContents
+            self.contents = contents
         }
         
         init(itemType: ConsoleItemType, client: PubNub) {
-            self.init(itemType: itemType, keyContents: itemType.contents(client))
+            self.init(itemType: itemType, contents: itemType.contents(client))
         }
         var reuseIdentifier: String {
             return KeyCollectionViewCell.reuseIdentifier

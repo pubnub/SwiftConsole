@@ -9,7 +9,7 @@
 import Foundation
 
 protocol LabelItem: Item {
-    var keyContents: String {get}
+    var contents: String {get}
 }
 
 extension LabelItem {
@@ -21,7 +21,7 @@ extension LabelItem {
 class KeyCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
-    private let keyContentsLabel: UILabel
+    private let contentsLabel: UILabel
     
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
@@ -29,16 +29,16 @@ class KeyCollectionViewCell: CollectionViewCell {
     
     override init(frame: CGRect) {
         titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/2))
-        keyContentsLabel = UILabel(frame: CGRect(x: 5, y: 25, width: frame.size.width, height: frame.size.height/2))
+        contentsLabel = UILabel(frame: CGRect(x: 5, y: 25, width: frame.size.width, height: frame.size.height/2))
         
         super.init(frame: frame)
         titleLabel.textAlignment = .Center
         titleLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
         contentView.addSubview(titleLabel)
         
-        keyContentsLabel.textAlignment = .Center
-        keyContentsLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
-        contentView.addSubview(keyContentsLabel)
+        contentsLabel.textAlignment = .Center
+        contentsLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
+        contentView.addSubview(contentsLabel)
         contentView.layer.borderWidth = 3
     }
     
@@ -46,15 +46,16 @@ class KeyCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateKey(item: LabelItem) {
+    func updateLabels(item: LabelItem) {
         self.titleLabel.text = item.title
-        self.keyContentsLabel.text = item.keyContents
+        self.contentsLabel.text = item.contents
+        self.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
         guard let keyItem = item as? LabelItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateKey(keyItem)
+        updateLabels(keyItem)
     }
 }
