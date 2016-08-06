@@ -118,7 +118,6 @@ class UpdateableLabelCollectionViewCell: CollectionViewCell {
     }
     
     func updateLabels(item: UpdateableLabelItem) {
-        self.titleLabel.Center = contentView.Center
         self.titleLabel.text = item.title
         self.contentsLabel.text = item.contents
         self.setNeedsLayout() // make sure this occurs during the next update cycle

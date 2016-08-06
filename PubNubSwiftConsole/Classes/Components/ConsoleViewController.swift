@@ -213,9 +213,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .Channels, .ChannelGroups:
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
-                return CGSize(width: 75.0, height: 100.0)
+                return CGSize(width: 150.0, height: 100.0)
             case .ChannelPresenceButton, .ChannelGroupPresenceButton:
-                return CGSize(width: 100.0, height: 100.0)
+                return CGSize(width: 200.0, height: 100.0)
             case .SubscribeStatus, .Message, .All:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
             case .ConsoleSegmentedControl:
@@ -388,11 +388,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     func channelPresenceButtonPressed(sender: UIButton!) {
-        
+        collectionView?.performBatchUpdates({
+            self.dataSource?.toggleSelected(ConsoleItemType.ChannelPresenceButton)
+            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.ChannelPresenceButton.indexPath])
+            }, completion: nil)
     }
     
     func channelGroupPresenceButtonPressed(sender: UIButton!) {
-        
+        collectionView?.performBatchUpdates({
+            self.dataSource?.toggleSelected(ConsoleItemType.ChannelGroupPresenceButton)
+            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.ChannelGroupPresenceButton.indexPath])
+            }, completion: nil)
     }
     
     // MARK: - Actions
