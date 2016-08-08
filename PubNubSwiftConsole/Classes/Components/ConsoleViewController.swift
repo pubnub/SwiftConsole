@@ -509,11 +509,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
-                currentDataSource.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
+                // the index path is the same for both calls
+                let subscribeStatusIndexPath = currentDataSource.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
                 currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
                 let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
                 if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
-                    self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+                    self.collectionView?.insertItemsAtIndexPaths([subscribeStatusIndexPath])
                 }
                 }, completion: nil)
         }
@@ -526,11 +527,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
-            currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
+            // the indexPath is the same for both calls
+            let messageIndexPath = currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: message)
             currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: message)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .All || currentSegmentedControlValue == .Messages {
-                self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+                self.collectionView?.insertItemsAtIndexPaths([messageIndexPath])
             }
             }, completion: nil)
     }
