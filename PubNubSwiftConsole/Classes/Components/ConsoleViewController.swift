@@ -209,7 +209,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case ClientKeys = 0, Subscribables, SubscribeLoopControls, ConsoleSegmentedControl, Console
+        case ClientConfig = 0, Subscribables, SubscribeLoopControls, ConsoleSegmentedControl, Console
     }
     
     enum ConsoleItemType: ItemType {
@@ -302,7 +302,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         var sectionType: ItemSectionType {
             switch self {
             case .PublishKey, .SubscribeKey:
-                return ConsoleSectionType.ClientKeys
+                return ConsoleSectionType.ClientConfig
             case .Channels, .ChannelGroups:
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton, .ChannelPresenceButton, .ChannelGroupPresenceButton:
