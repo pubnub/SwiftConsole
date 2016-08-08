@@ -116,12 +116,13 @@ extension ItemSection {
 
 // should there be a protocol for pushable items?
 protocol StackItemSection: ItemSection {
-    mutating func push(item: Item)
+    mutating func push(item: Item) -> Int
 }
 
 extension StackItemSection {
-    mutating func push(item: Item) {
+    mutating func push(item: Item) -> Int {
         self.items.insert(item, atIndex: 0)
+        return 0
     }
     mutating func clear() {
         self.items.removeAll()
@@ -136,7 +137,7 @@ protocol SelectableItemSection: ItemSection {
     subscript(indexPath: NSIndexPath) -> Item { get set }
     subscript(section: Int) -> ItemSection {get set}
     subscript(section: Int, item: Int) -> Item {get set}
-    mutating func push(section: Int, item: Item)
+    mutating func push(section: Int, item: Item) -> NSIndexPath
     mutating func clear(section: Int)
     mutating func clearAllSections()
     mutating func updateSelectedSection(index: Int)
@@ -211,15 +212,16 @@ extension SelectableItemSection {
             self[section] = itemSection
         }
     }
-    mutating func push(section: Int, item: Item) {
+    mutating func push(section: Int, item: Item) -> NSIndexPath {
         guard var stackSection = itemSections[section] as? StackItemSection else {
             fatalError()
         }
-        stackSection.push(item)
+        let itemIndex = stackSection.push(item)
         self[section] = stackSection
+        return NSIndexPath(forItem: itemIndex, inSection: section)
     }
-    mutating func push(item: Item) {
-        push(item.itemType.section, item: item)
+    mutating func push(item: Item) -> NSIndexPath {
+        return push(item.itemType.section, item: item)
     }
     mutating func clear(section: Int) {
         guard var stackSection = itemSections[section] as? StackItemSection else {
@@ -279,12 +281,13 @@ extension DataSource {
     public var count: Int {
         return sections.count
     }
-    public mutating func push(section: Int, subSection: Int, item: Item) {
+    public mutating func push(section: Int, subSection: Int, item: Item) -> NSIndexPath {
         guard var selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }
-        selectableSection.push(subSection, item: item)
+        let pushedIndexPath = selectableSection.push(subSection, item: item)
         sections[section] = selectableSection
+        return NSIndexPath(forItem: pushedIndexPath.item, inSection: section) // we need to alter this value because we want to return the major section for use in collection view cell reloading and not the sub section value used by the data store
     }
     public mutating func clear(section: Int) {
         guard var stackSection = sections[section] as? StackItemSection else {
