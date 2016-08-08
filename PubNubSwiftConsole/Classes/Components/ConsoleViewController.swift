@@ -221,7 +221,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 150.0, height: 100.0)
             case .ChannelPresenceButton, .ChannelGroupPresenceButton:
                 return CGSize(width: 200.0, height: 100.0)
-            case .SubscribeStatus, .Message, .All:
+            case .SubscribeStatus:
+                return CGSize(width: collectionViewSize.width, height: 230.0)
+            case .Message, .All:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
             case .ConsoleSegmentedControl:
                 return CGSize(width: 300.0, height: 75.0)
