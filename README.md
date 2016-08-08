@@ -27,3 +27,7 @@ Jordan Zucker, jordan.zucker@gmail.com
 ## License
 
 PubNubSwiftConsole is available under the MIT license. See the LICENSE file for more info.
+
+## To Do
+
+* Add activity indicator spinner to subscribe button

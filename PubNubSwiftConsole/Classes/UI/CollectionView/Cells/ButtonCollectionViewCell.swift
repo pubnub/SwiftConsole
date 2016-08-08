@@ -8,16 +8,18 @@
 
 import UIKit
 
-typealias TargetSelector = (target: AnyObject?, selector: Selector)
-
 protocol ButtonItem: Item {
     var selectedTitle: String? {get}
     var targetSelector: TargetSelector {get set}
     var selected: Bool {get set}
+    mutating func toggleSelected()
     mutating func updateSelected(selected: Bool)
 }
 
 extension ButtonItem {
+    mutating func toggleSelected() {
+        selected = (!selected)
+    }
     mutating func updateSelected(selected: Bool) {
         self.selected = selected
     }
@@ -30,6 +32,13 @@ extension ButtonItem {
 }
 
 extension ItemSection {
+    mutating func toggleSelected(item: Int) {
+        guard var buttonItem = self[item] as? ButtonItem else {
+            fatalError("Please contact support@pubnub.com")
+        }
+        buttonItem.toggleSelected()
+        self[item] = buttonItem
+    }
     mutating func updateSelected(item: Int, selected: Bool) {
         guard var buttonItem = self[item] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
@@ -37,9 +46,19 @@ extension ItemSection {
         buttonItem.updateSelected(selected)
         self[item] = buttonItem
     }
+    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.item, selected: selected)
+    }
 }
 
 extension DataSource {
+    mutating func toggleSelected(indexPath: NSIndexPath) {
+        guard var buttonItem = self[indexPath] as? ButtonItem else {
+            fatalError("Please contact support@pubnub.com")
+        }
+        buttonItem.toggleSelected()
+        self[indexPath] = buttonItem
+    }
     mutating func updateSelected(indexPath: NSIndexPath, selected: Bool) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
@@ -47,13 +66,11 @@ extension DataSource {
         buttonItem.updateSelected(selected)
         self[indexPath] = buttonItem
     }
-}
-
-extension UIControl {
-    func removeAllTargets() {
-        self.allTargets().forEach { (target) in
-            self.removeTarget(target, action: nil, forControlEvents: .AllEvents)
-        }
+    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.indexPath, selected: selected)
+    }
+    mutating func toggleSelected(itemType: ItemType) {
+        toggleSelected(itemType.indexPath)
     }
 }
 

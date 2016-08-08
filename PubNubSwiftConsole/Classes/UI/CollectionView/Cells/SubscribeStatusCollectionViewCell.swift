@@ -64,7 +64,7 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     func updateStatus(item: SubscribeStatusItem) {
         categoryLabel.text = "Category: \(item.title)"
         operationLabel.text = "Operation: \(item.operation)"
-        timeStampLabel.text = "Creation date: \(item.creationDate.subscribeTimeStamp())"
+        timeStampLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
         if let timeToken = item.timeToken {
             timeTokenLabel.hidden = false

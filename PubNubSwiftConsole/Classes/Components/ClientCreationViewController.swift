@@ -12,7 +12,19 @@ import PubNub
 public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - DataSource
     
-    struct ClientCreationLabelItem: LabelItem {
+    class ClientCreationDataSource: BasicDataSource {
+        required override init(sections: [ItemSection]) {
+            super.init(sections: sections)
+        }
+        convenience init(clientCreationButton: TargetSelector) {
+            let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
+            let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
+            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdateableLabelItem(itemType: .PublishKey), ClientCreationUpdateableLabelItem(itemType: .SubscribeKey), ClientCreationUpdateableLabelItem(itemType: .Origin)])
+            self.init(sections: [configSection, creationSection])
+        }
+    }
+    
+    struct ClientCreationUpdateableLabelItem: UpdateableLabelItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -25,7 +37,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         let itemType: ItemType
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return UpdateableLabelCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -126,13 +138,9 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: (self, #selector(self.clientCreationButtonPressed(_:))))
-        let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
-        let configSection = BasicDataSource.BasicSection(items: [ClientCreationLabelItem(itemType: .PublishKey), ClientCreationLabelItem(itemType: .SubscribeKey), ClientCreationLabelItem(itemType: .Origin)])
-        let clientCreationDataSource = BasicDataSource(sections: [configSection, creationSection])
-        self.dataSource = clientCreationDataSource
+        dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
@@ -147,22 +155,31 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         self.navigationController?.pushViewController(consoleViewController, animated: true)
     }
     
-    // TODO: add error handling, resetting state?
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType.indexPath] as? ClientCreationLabelItem where item.title == itemType.title else {
+            guard let item = dataSource?[itemType] as? ClientCreationUpdateableLabelItem where item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents
         }
 
         let pubKey = stringForItem(.PublishKey)
+        let pubKeyProperty = PNConfiguration.KeyValue(.PublishKey, pubKey)
         let subKey = stringForItem(.SubscribeKey)
+        let subKeyProperty = PNConfiguration.KeyValue(.SubscribeKey, subKey)
         let origin = stringForItem(.Origin)
-        let config = PNConfiguration(publishKey: pubKey, subscribeKey: subKey)
-        config.origin = origin
-        return PubNub.clientWithConfiguration(config)
+        let originProperty = PNConfiguration.KeyValue(.Origin, origin)
+        do {
+            let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
+            return PubNub.clientWithConfiguration(config)
+        } catch let pubNubError as PubNubConfigurationCreationError {
+            let alertController = UIAlertController.alertControllerForPubNubConfigurationCreationError(pubNubError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
+            return nil
+        } catch {
+            fatalError("\(error)")
+        }
     }
     
     // MARK: - UINavigationItem
