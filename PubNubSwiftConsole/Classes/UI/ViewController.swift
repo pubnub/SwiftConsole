@@ -25,7 +25,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         fatalError("init(coder:) has not been implemented")
     }
     
-    var client: PubNub? {
+    public var client: PubNub? {
         didSet {
             oldValue?.removeListener(self)
             client?.addListener(self)
