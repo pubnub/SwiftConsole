@@ -381,6 +381,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
+        let publishBarButtonItemItem = UIBarButtonItem(title: "Publish", style: .Plain, target: self.navigationController!, action: #selector(navigationController!.publishBarButtonItemTapped(_:)))
+        self.toolbarItems = [publishBarButtonItemItem]
+    }
+    
+    public override func viewDidAppear(animated: Bool) {
+        self.navigationController?.toolbarHidden = false
     }
     
     public override func didReceiveMemoryWarning() {

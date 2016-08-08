@@ -18,3 +18,7 @@ public func modalConsoleViewController(client: PubNub) -> UINavigationController
     let rootViewController = ConsoleViewController(client: client)
     return UINavigationController.init(pubNubViewController: rootViewController)
 }
+
+public func modalPublishViewController(client: PubNub) -> PublishViewController {
+    return PublishViewController(client: client)
+}
