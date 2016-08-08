@@ -16,8 +16,8 @@ protocol SubscribeStatusItem: Item {
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
-    var channel: String? {get}
-    var channelGroup: String? {get}
+    var channel: [String] {get}
+    var channelGroup: [String] {get}
 }
 
 extension SubscribeStatusItem {
@@ -72,15 +72,15 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         } else {
             timeTokenLabel.hidden = true
         }
-        if let channel = item.channel {
+        if !(item.channel.isEmpty) {
             channelLabel.hidden = false
-            channelLabel.text = "Channel(s): \(channel)"
+            channelLabel.text = "Channel(s): \(item.channel.joinWithSeparator(", "))"
         } else {
             channelLabel.hidden = true
         }
-        if let channelGroup = item.channelGroup {
+        if !(item.channelGroup.isEmpty) {
             channelGroupLabel.hidden = false
-            channelGroupLabel.text = "Channel group: \(channelGroup)"
+            channelGroupLabel.text = "Channel group: \(item.channelGroup.joinWithSeparator(", "))"
         } else {
             channelGroupLabel.hidden = true
         }

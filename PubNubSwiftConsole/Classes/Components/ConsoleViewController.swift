@@ -36,8 +36,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let creationDate: NSDate
         let statusCode: Int
         var timeToken: NSNumber?
-        var channel: String?
-        var channelGroup: String?
+        var channel: [String] = []
+        var channelGroup: [String] = []
         init(itemType: ConsoleItemType, status: PNStatus) {
             self.itemType = itemType
             self.category = status.stringifiedCategory()
@@ -47,8 +47,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             if let subscribeStatus = status as? PNSubscribeStatus {
                 self.timeToken = subscribeStatus.data.timetoken
                 // TODO: Change sdk variable names and descriptions for channel(s) and channel group
-                self.channel = subscribeStatus.data.subscribedChannel
-                self.channelGroup = subscribeStatus.data.actualChannel
+                self.channel = subscribeStatus.subscribedChannels
+                self.channelGroup = subscribeStatus.subscribedChannelGroups
             }
         }
         init(status: PNStatus) {
