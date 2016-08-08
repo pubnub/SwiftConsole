@@ -12,10 +12,14 @@ protocol ButtonItem: Item {
     var selectedTitle: String? {get}
     var targetSelector: TargetSelector {get set}
     var selected: Bool {get set}
+    mutating func toggleSelected()
     mutating func updateSelected(selected: Bool)
 }
 
 extension ButtonItem {
+    mutating func toggleSelected() {
+        selected = (!selected)
+    }
     mutating func updateSelected(selected: Bool) {
         self.selected = selected
     }
@@ -28,6 +32,13 @@ extension ButtonItem {
 }
 
 extension ItemSection {
+    mutating func toggleSelected(item: Int) {
+        guard var buttonItem = self[item] as? ButtonItem else {
+            fatalError("Please contact support@pubnub.com")
+        }
+        buttonItem.toggleSelected()
+        self[item] = buttonItem
+    }
     mutating func updateSelected(item: Int, selected: Bool) {
         guard var buttonItem = self[item] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
@@ -41,6 +52,13 @@ extension ItemSection {
 }
 
 extension DataSource {
+    mutating func toggleSelected(indexPath: NSIndexPath) {
+        guard var buttonItem = self[indexPath] as? ButtonItem else {
+            fatalError("Please contact support@pubnub.com")
+        }
+        buttonItem.toggleSelected()
+        self[indexPath] = buttonItem
+    }
     mutating func updateSelected(indexPath: NSIndexPath, selected: Bool) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
@@ -50,6 +68,9 @@ extension DataSource {
     }
     mutating func updateSelected(itemType: ItemType, selected: Bool) {
         updateSelected(itemType.indexPath, selected: selected)
+    }
+    mutating func toggleSelected(itemType: ItemType) {
+        toggleSelected(itemType.indexPath)
     }
 }
 

@@ -17,12 +17,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         required override init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
-        convenience init(client: PubNub, subscribeButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
+        convenience init(client: PubNub, subscribeButton: TargetSelector, channelPresenceButton: TargetSelector, channelGroupPresenceButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
             let subscribablesSection = BasicSection(items: [ConsoleUpdateableLabelItem(itemType: .Channels, client: client), ConsoleUpdateableLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
-            let subscribeLoopButtonsSection = BasicSection(items: [subscribeButtonItem])
-            let consoleSegmentedControl = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
-            let segmentedControlSection = SingleSegmentedControlSection(segmentedControl: consoleSegmentedControl)
+            let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
+            let channelGroupPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelGroupPresenceButton, targetSelector: channelGroupPresenceButton)
+            let subscribeLoopButtonsSection = BasicSection(items: [channelPresenceButtonItem, subscribeButtonItem, channelGroupPresenceButtonItem])
+            let consoleSegmentedControlItem = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
+            let segmentedControlSection = SingleSegmentedControlSection(segmentedControl: consoleSegmentedControlItem)
             let allSection = ScrollingSection()
             let subscribeStatusSection = ScrollingSection()
             let messageSection = ScrollingSection()
@@ -196,6 +198,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case Channels
         case ChannelGroups
         case SubscribeButton
+        case ChannelPresenceButton
+        case ChannelGroupPresenceButton
         case All
         case SubscribeStatus
         case Message
@@ -207,7 +211,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .Channels, .ChannelGroups:
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
-                return CGSize(width: 250.0, height: 100.0)
+                return CGSize(width: 150.0, height: 100.0)
+            case .ChannelPresenceButton, .ChannelGroupPresenceButton:
+                return CGSize(width: 200.0, height: 100.0)
             case .SubscribeStatus, .Message, .All:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
             case .ConsoleSegmentedControl:
@@ -242,6 +248,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return "Channel Groups"
             case .SubscribeButton:
                 return "Subscribe"
+            case .ChannelPresenceButton:
+                return "Channels No Presence"
+            case .ChannelGroupPresenceButton:
+                return "Channel Group No Presence"
             default:
                 return ""
             }
@@ -251,6 +261,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             switch self {
             case .SubscribeButton:
                 return "Unsubscribe"
+            case .ChannelPresenceButton:
+                return "Channel Presence"
+            case .ChannelGroupPresenceButton:
+                return "Channel Group Presence"
             default:
                 return nil
             }
@@ -260,7 +274,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             switch self {
             case .Channels, .ChannelGroups:
                 return ConsoleSectionType.Subscribables
-            case .SubscribeButton:
+            case .SubscribeButton, .ChannelPresenceButton, .ChannelGroupPresenceButton:
                 return ConsoleSectionType.SubscribeLoopControls
             case .SubscribeStatus, .Message, .All:
                 return ConsoleSectionType.Console
@@ -291,7 +305,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case .ChannelGroups:
                 return 1
             case .SubscribeButton:
+                return 1
+            case .ChannelPresenceButton:
                 return 0
+            case .ChannelGroupPresenceButton:
+                return 2
             case .SubscribeStatus:
                 return 0
             case .Message:
@@ -339,7 +357,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             return
         }
-        dataSource = ConsoleDataSource(client: currentClient, subscribeButton: (self, #selector(self.subscribeButtonPressed(_:))), consoleSegmentedControl: (self, #selector(self.consoleSegmentedControlValueChanged(_:))))
+        let subscribeButton: TargetSelector = (self, #selector(self.subscribeButtonPressed(_:)))
+        let channelPresenceButton: TargetSelector = (self, #selector(self.channelPresenceButtonPressed(_:)))
+        let channelGroupPresenceButton: TargetSelector = (self, #selector(self.channelGroupPresenceButtonPressed(_:)))
+        let consoleSegmentedControl: TargetSelector = (self, #selector(self.consoleSegmentedControlValueChanged(_:)))
+        dataSource = ConsoleDataSource(client: currentClient, subscribeButton: subscribeButton, channelPresenceButton: channelPresenceButton, channelGroupPresenceButton: channelGroupPresenceButton, consoleSegmentedControl: consoleSegmentedControl)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
@@ -363,6 +385,20 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }, completion: nil)
     }
     
+    func channelPresenceButtonPressed(sender: UIButton!) {
+        collectionView?.performBatchUpdates({
+            self.dataSource?.toggleSelected(ConsoleItemType.ChannelPresenceButton)
+            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.ChannelPresenceButton.indexPath])
+            }, completion: nil)
+    }
+    
+    func channelGroupPresenceButtonPressed(sender: UIButton!) {
+        collectionView?.performBatchUpdates({
+            self.dataSource?.toggleSelected(ConsoleItemType.ChannelGroupPresenceButton)
+            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.ChannelGroupPresenceButton.indexPath])
+            }, completion: nil)
+    }
+    
     // MARK: - Actions
     func subscribeButtonPressed(sender: UIButton!) {
         // TODO: clean this up
@@ -373,6 +409,16 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleUpdateableLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleUpdateableLabelItem else {
             return
         }
+        var channelPresence: Bool
+        var channelGroupPresence: Bool
+        if let channelPresenceItem = currentDataSource[ConsoleItemType.ChannelPresenceButton] as? ConsoleButtonItem, let channelGroupPresenceItem = currentDataSource[ConsoleItemType.ChannelGroupPresenceButton] as? ConsoleButtonItem {
+            channelPresence = channelPresenceItem.selected
+            channelGroupPresence = channelGroupPresenceItem.selected
+        } else {
+            channelPresence = true
+            channelGroupPresence = true
+        }
+        
         do {
             typealias SubscribablesTuple = (Channels: [String]?, ChannelGroups: [String]?)
             let currentSubscribables: SubscribablesTuple = (try client?.stringToSubscribablesArray(channelsItem.contents), try client?.stringToSubscribablesArray(channelGroupsItem.contents))
@@ -382,12 +428,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 alertController.addAction(UIAlertAction(title: "Ok", style: .Default, handler: nil))
                 presentViewController(alertController, animated: true, completion: nil)
             case let (channels, nil) where channels != nil:
-                client?.subscribeToChannels(channels!, withPresence: true)
+                client?.subscribeToChannels(channels!, withPresence: channelPresence)
             case let (nil, channelGroups) where channelGroups != nil:
-                client?.subscribeToChannelGroups(channelGroups!, withPresence: true)
+                client?.subscribeToChannelGroups(channelGroups!, withPresence: channelGroupPresence)
             default:
-                client?.subscribeToChannels(currentSubscribables.Channels!, withPresence: true)
-                client?.subscribeToChannelGroups(currentSubscribables.ChannelGroups!, withPresence: true)
+                client?.subscribeToChannels(currentSubscribables.Channels!, withPresence: channelPresence)
+                client?.subscribeToChannelGroups(currentSubscribables.ChannelGroups!, withPresence: channelGroupPresence)
             }
         } catch let pubNubError as PubNubStringParsingError {
             let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelsItem.title, error: pubNubError, handler: nil)
