@@ -303,6 +303,12 @@ extension DataSource {
         selectableSection.updateSelectedSection(selectedSubSection)
         sections[section] = selectableSection
     }
+    public func selectedSectionIndex(section: Int) -> Int {
+        guard let selectableSection = sections[section] as? SelectableItemSection else {
+            fatalError()
+        }
+        return selectableSection.selectedSectionIndex
+    }
 }
 
 @objc public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {

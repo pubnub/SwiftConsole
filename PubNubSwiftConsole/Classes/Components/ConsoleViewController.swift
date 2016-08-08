@@ -50,12 +50,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         func updateConsoleSelectedSegmentIndex(updatedSelectedSegment segment: ConsoleSegmentedControlItem.Segment) -> Bool {
             return updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: segment.rawValue)
         }
+        var selectedSectionIndex: Int {
+            return selectedSectionIndex(ConsoleItemType.Console(selectedConsoleSegmentItemType).section)
+        }
+        func updateSelectedSection(selectedSegment: ConsoleSegmentedControlItem.Segment) {
+            updateSelectedSection(selectedSegment.rawValue)
+        }
         func updateSelectedSection(selectedSection: Int) {
             guard var selectableSection = self[selectedConsoleSegmentItemType.section] as? SelectableSection else {
                 fatalError()
             }
             selectableSection.updateSelectedSection(selectedSection)
-//            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
+            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
         }
     }
     
@@ -384,7 +390,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
             self.dataSource?.clear(ConsoleItemType.All.section)
-            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                 fatalError()
             }
             self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
@@ -457,7 +463,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
             let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
             if (shouldUpdate) {
-                self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+                currentDataSource.updateSelectedSection(sender.selectedSegmentIndex)
+                self.collectionView?.reloadSections(ConsoleItemType.Console(currentDataSource.selectedConsoleSegmentItemType).indexSet)
             }
             }, completion: nil)
     }
