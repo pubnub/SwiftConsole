@@ -105,6 +105,19 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
+    struct ConsolePublishStatusItem: PublishStatus {
+        let itemType: ItemType
+        init(itemType: ConsoleItemType, publishStatus: PNPublishStatus) {
+            self.itemType = itemType
+        }
+        init(publishStatus: PNPublishStatus) {
+            self.init(itemType: .All, publishStatus: publishStatus)
+        }
+        var reuseIdentifier: String {
+            return PublishStatusCollectionViewCell.reuseIdentifier
+        }
+    }
+    
     struct ConsoleUpdateableLabelItem: UpdateableLabelItem {
         let itemType: ItemType
         init(itemType: ConsoleItemType) {
@@ -380,6 +393,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         guard let navController = self.navigationController as? NavigationController else {
             return
