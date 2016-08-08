@@ -13,13 +13,14 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     // MARK: - DataSource
     
     enum PublishSectionType: Int, ItemSectionType {
-        case Channel = 0, PayloadInput, PublishButton
+        case Channel = 0, PayloadInput, PublishButton, PublishStatusConsole
     }
     
     enum PublishItemType: ItemType {
         case ChannelLabel
         case PayloadInput
         case PublishButton
+        case PublishStatus
         
         func size(collectionViewSize: CGSize) -> CGSize {
             switch self {
@@ -29,6 +30,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 300.0, height: 300.0)
             case .PublishButton:
                 return CGSize(width: 200.0, height: 100.0)
+            case .PublishStatus:
+                return CGSize(width: collectionViewSize.width, height: 150.0)
             }
         }
         
@@ -44,6 +47,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 return "Publish"
             case .PayloadInput:
                 return "Payload"
+            case .PublishStatus:
+                return "Publish Statuses"
             }
         }
         
@@ -55,6 +60,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 return PublishSectionType.PayloadInput
             case .PublishButton:
                 return PublishSectionType.PublishButton
+            case .PublishStatus:
+                return PublishSectionType.PublishStatusConsole
             }
         }
         
@@ -76,6 +83,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             case .PayloadInput:
                 return 0
             case .PublishButton:
+                return 0
+            case .PublishStatus:
                 return 0
             }
         }
@@ -134,6 +143,19 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
     }
     
+    struct PublishStatusItem: PublishStatus {
+        let itemType: ItemType
+        init(itemType: PublishItemType, publishStatus: PNPublishStatus) {
+            self.itemType = itemType
+        }
+        init(publishStatus: PNPublishStatus) {
+            self.init(itemType: .PublishStatus, publishStatus: publishStatus)
+        }
+        var reuseIdentifier: String {
+            return PublishStatusCollectionViewCell.reuseIdentifier
+        }
+    }
+    
     final class PublishDataSource: BasicDataSource {
         required override init(sections: [ItemSection]) {
             super.init(sections: sections)
@@ -145,7 +167,23 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             let channelLabelSection = BasicSection(items: [channelLabelItem])
             let payloadSection = BasicSection(items: [textViewItem])
             let publishButtonSection = BasicSection(items: [publishButtonItem])
-            self.init(sections: [channelLabelSection, payloadSection, publishButtonSection])
+            let publishStatusSection = ScrollingSection()
+            self.init(sections: [channelLabelSection, payloadSection, publishButtonSection, publishStatusSection])
+        }
+        var message: String {
+            guard let payloadItem = self[PublishItemType.PayloadInput.indexPath] as? PublishTextViewItem else {
+                fatalError()
+            }
+            return payloadItem.contents
+        }
+        var channel: String {
+            guard let channelItem = self[PublishItemType.ChannelLabel.indexPath] as? PublishUpdateableLabelItem else {
+                fatalError()
+            }
+            return channelItem.contents
+        }
+        func push(publishStatus: PNPublishStatus) {
+//            self.push(<#T##section: Int##Int#>, subSection: <#T##Int#>, item: <#T##Item#>)
         }
     }
     
@@ -179,12 +217,27 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - Actions
     public func publishButtonTapped(sender: UIButton!) {
         print(#function)
+        publish()
+    }
+    
+    func publish() {
+        guard let currentDataSource = dataSource as? PublishDataSource else {
+            return
+        }
+        let message = currentDataSource.message // eventually throw errors for feedback
+        let channel = currentDataSource.channel
+        // we may exit the view controller before the completion handler occurs, so let's keep that in mind
+        self.client?.publish(message, toChannel: channel, withCompletion: { [weak self] (publishStatus) in
+            print(publishStatus.debugDescription)
+//            self?.dataSource?.push(PublishItemType, subSection: <#T##Int#>, item: <#T##Item#>)
+        })
     }
     
     // MARK: - UINavigationItem

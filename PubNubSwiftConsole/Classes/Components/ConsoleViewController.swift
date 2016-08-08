@@ -406,6 +406,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
         collectionView?.performBatchUpdates({
+            // FIXME: this seems off
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
             self.dataSource?.clear(ConsoleItemType.All.section)
