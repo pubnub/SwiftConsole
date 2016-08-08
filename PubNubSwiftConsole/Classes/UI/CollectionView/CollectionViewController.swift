@@ -460,6 +460,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         guard let currentCollectionView = self.collectionView else {
             return
         }
+        // FIXME: probably need to handle text views here
         guard var selectedItem = dataSource?[indexPath] as? UpdateableLabelItem else {
             return
         }
