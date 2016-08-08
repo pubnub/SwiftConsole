@@ -25,7 +25,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         fatalError("init(coder:) has not been implemented")
     }
     
-    var client: PubNub? {
+    public var client: PubNub? {
         didSet {
             oldValue?.removeListener(self)
             client?.addListener(self)
@@ -35,23 +35,18 @@ public class ViewController: UIViewController, PNObjectEventListener {
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.redColor()
+        self.navigationItem.title = navBarTitle
+        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        navigationItem.rightBarButtonItem = closeButton
     }
     
     // MARK: - UINavigationItem
     
     func closeButtonPressed(sender: UIBarButtonItem!) {
-        var navController = self.navigationController as? NavigationController
-        navController?.close(sender)
+        self.navigationController?.close(sender)
     }
     
     public var navBarTitle: String {
         return "PubNub"
-    }
-    
-    public override var navigationItem: UINavigationItem {
-        let navigationItem = UINavigationItem(title: self.navBarTitle)
-        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
-        navigationItem.rightBarButtonItem = closeButton
-        return navigationItem
-    }
+    }    
 }
