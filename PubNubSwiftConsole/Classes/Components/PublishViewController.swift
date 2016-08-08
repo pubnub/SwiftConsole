@@ -182,8 +182,9 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             }
             return channelItem.contents
         }
-        func push(publishStatus: PNPublishStatus) {
-//            self.push(<#T##section: Int##Int#>, subSection: <#T##Int#>, item: <#T##Item#>)
+        func push(publishStatus: PNPublishStatus) -> NSIndexPath {
+            let publishItem = PublishStatusItem(publishStatus: publishStatus)
+            return push(PublishItemType.PublishStatus.section, item: publishItem)
         }
     }
     
@@ -236,7 +237,12 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
         self.client?.publish(message, toChannel: channel, withCompletion: { [weak self] (publishStatus) in
             print(publishStatus.debugDescription)
-//            self?.dataSource?.push(PublishItemType, subSection: <#T##Int#>, item: <#T##Item#>)
+            guard var completionDataSource = self?.dataSource as? PublishDataSource else {
+                return
+            }
+            let insertedPublishCell = completionDataSource.push(publishStatus)
+            self?.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
+            // now try to send this publish status to the console view controller
         })
     }
     
