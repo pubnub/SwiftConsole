@@ -23,7 +23,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
             let channelGroupPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelGroupPresenceButton, targetSelector: channelGroupPresenceButton)
             let subscribeLoopButtonsSection = BasicSection(items: [channelPresenceButtonItem, subscribeButtonItem, channelGroupPresenceButtonItem])
-            let consoleSegmentedControlItem = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
+            var consoleSegmentedControlItem = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
             let segmentedControlSection = SingleSegmentedControlSection(segmentedControl: consoleSegmentedControlItem)
             let allSection = ScrollingSection()
             let subscribeStatusSection = ScrollingSection()
@@ -43,6 +43,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         var selectedConsoleSegmentItemType: ConsoleItemType {
             return selectedConsoleSegment.consoleItemType
+        }
+        func updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
+            return updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl, updatedSelectedSegmentIndex: index)
+        }
+        func updateConsoleSelectedSegmentIndex(updatedSelectedSegment segment: ConsoleSegmentedControlItem.Segment) -> Bool {
+            return updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: segment.rawValue)
         }
         func updateSelectedSection(selectedSection: Int) {
             guard var selectableSection = self[selectedConsoleSegmentItemType.section] as? SelectableSection else {
@@ -445,16 +451,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
-        collectionView?.performBatchUpdates({ 
-            self.dataSource?.updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl.indexPath, updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
-            guard let currentSegmentedControlValue = ConsoleSegmentedControlItem.Segment(rawValue: sender.selectedSegmentIndex) else {
-                fatalError()
-            }
-            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+        collectionView?.performBatchUpdates({
+            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
-            self.dataSource?.updateSelectedSection(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).section, selectedSubSection: currentSegmentedControlValue.rawValue)
-            self.collectionView?.reloadSections(ConsoleItemType.Console(currentSegmentedControlValue.consoleItemType).indexSet)
+            let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+            if (shouldUpdate) {
+                self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+            }
             }, completion: nil)
     }
     

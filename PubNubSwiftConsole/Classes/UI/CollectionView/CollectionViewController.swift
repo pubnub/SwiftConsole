@@ -243,7 +243,7 @@ extension SelectableItemSection {
     }
 }
 
-public protocol DataSource {
+public protocol DataSource: class {
     init(sections: [ItemSection])
     var sections: [ItemSection] {get set}
     var count: Int {get}
@@ -281,7 +281,7 @@ extension DataSource {
     public var count: Int {
         return sections.count
     }
-    public mutating func push(section: Int, subSection: Int, item: Item) -> NSIndexPath {
+    public func push(section: Int, subSection: Int, item: Item) -> NSIndexPath {
         guard var selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }
@@ -289,14 +289,14 @@ extension DataSource {
         sections[section] = selectableSection
         return NSIndexPath(forItem: pushedIndexPath.item, inSection: section) // we need to alter this value because we want to return the major section for use in collection view cell reloading and not the sub section value used by the data store
     }
-    public mutating func clear(section: Int) {
+    public func clear(section: Int) {
         guard var stackSection = sections[section] as? StackItemSection else {
             return
         }
         stackSection.clear()
         self[section] = stackSection
     }
-    public mutating func updateSelectedSection(section: Int, selectedSubSection: Int) {
+    public func updateSelectedSection(section: Int, selectedSubSection: Int) {
         guard var selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }

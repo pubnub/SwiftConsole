@@ -48,14 +48,14 @@ extension ItemSection {
 }
 
 extension DataSource {
-    mutating func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
+    func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
         guard var selectedItem = self[indexPath] as? UpdateableLabelItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedItem.updateContentsString(updatedContents)
         self[indexPath] = selectedItem
     }
-    mutating func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
+    func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
         updateLabelContentsString(itemType.indexPath, updatedContents: updatedContents)
     }
 }
