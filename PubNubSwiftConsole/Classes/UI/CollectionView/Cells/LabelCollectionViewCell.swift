@@ -18,7 +18,7 @@ extension LabelItem {
     }
 }
 
-class KeyCollectionViewCell: CollectionViewCell {
+class LabelCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
@@ -46,16 +46,16 @@ class KeyCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateLabels(item: LabelItem) {
-        self.titleLabel.text = item.title
-        self.contentsLabel.text = item.contents
+    func updateLabels(labelItem: LabelItem) {
+        self.titleLabel.text = labelItem.title
+        self.contentsLabel.text = labelItem.contents
         self.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
-        guard let keyItem = item as? LabelItem else {
+        guard let labelItem = item as? LabelItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateLabels(keyItem)
+        updateLabels(labelItem)
     }
 }

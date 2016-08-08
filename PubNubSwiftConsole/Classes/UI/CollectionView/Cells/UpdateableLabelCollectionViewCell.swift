@@ -85,7 +85,7 @@ extension UIAlertController {
     }
 }
 
-class UpdateableLabelCollectionViewCell: KeyCollectionViewCell {
+class UpdateableLabelCollectionViewCell: LabelCollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel

@@ -19,7 +19,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         convenience init(client: PubNub, subscribeButton: TargetSelector, channelPresenceButton: TargetSelector, channelGroupPresenceButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
-            let clientKeysSection = BasicSection(items: [ConsoleClientKeyItem(itemType: .PublishKey, client: client), ConsoleClientKeyItem(itemType: .SubscribeKey, client: client)])
+            let clientConfigSection = BasicSection(items: [ConsoleLabelItem(itemType: .PublishKey, client: client), ConsoleLabelItem(itemType: .SubscribeKey, client: client)])
             let subscribablesSection = BasicSection(items: [ConsoleUpdateableLabelItem(itemType: .Channels, client: client), ConsoleUpdateableLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
             let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
@@ -31,7 +31,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let subscribeStatusSection = ScrollingSection()
             let messageSection = ScrollingSection()
             let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
-            self.init(sections: [clientKeysSection, subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
+            self.init(sections: [clientConfigSection, subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         }
         var selectedConsoleSegmentIndex: Int {
             guard let consoleSegment = self[ConsoleItemType.ConsoleSegmentedControl.indexPath] as? ConsoleSegmentedControlItem else {
@@ -55,7 +55,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleClientKeyItem: LabelItem {
+    struct ConsoleLabelItem: LabelItem {
         let itemType: ItemType
         let contents: String
         init(itemType: ConsoleItemType, contents: String) {
@@ -67,7 +67,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.init(itemType: itemType, contents: itemType.contents(client))
         }
         var reuseIdentifier: String {
-            return KeyCollectionViewCell.reuseIdentifier
+            return LabelCollectionViewCell.reuseIdentifier
         }
     }
     
@@ -398,7 +398,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let consoleSegmentedControl: TargetSelector = (self, #selector(self.consoleSegmentedControlValueChanged(_:)))
         dataSource = ConsoleDataSource(client: currentClient, subscribeButton: subscribeButton, channelPresenceButton: channelPresenceButton, channelGroupPresenceButton: channelGroupPresenceButton, consoleSegmentedControl: consoleSegmentedControl)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(KeyCollectionViewCell.self, forCellWithReuseIdentifier: KeyCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
