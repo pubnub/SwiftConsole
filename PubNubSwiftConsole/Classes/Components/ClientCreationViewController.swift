@@ -13,7 +13,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     // MARK: - DataSource
     
     class ClientCreationDataSource: BasicDataSource {
-        required override init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
         convenience init(clientCreationButton: TargetSelector) {

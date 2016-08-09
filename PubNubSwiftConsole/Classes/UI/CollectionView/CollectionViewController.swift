@@ -138,9 +138,6 @@ protocol SelectableItemSection: ItemSection {
     subscript(indexPath: NSIndexPath) -> Item { get set }
     subscript(section: Int) -> ItemSection {get set}
     subscript(section: Int, item: Int) -> Item {get set}
-//    mutating func push(section: Int, item: Item) -> NSIndexPath
-//    mutating func clear(section: Int)
-//    mutating func clearAllSections()
     mutating func updateSelectedSection(index: Int)
 }
 
@@ -166,10 +163,10 @@ extension SelectableItemSection {
             })
         }
     }
-    public var count: Int {
+    var count: Int {
         return selectedSection.count
     }
-    public subscript(section: Int) -> ItemSection {
+    subscript(section: Int) -> ItemSection {
         get {
             return itemSections[section]
         }
@@ -178,7 +175,7 @@ extension SelectableItemSection {
         }
     }
     // FIXME: this seems wrong
-    public subscript(item: Int) -> Item {
+    subscript(item: Int) -> Item {
         get {
             return selectedSection[item]
         }
@@ -418,7 +415,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        guard var currentDataSource = dataSource else {
+        guard let currentDataSource = dataSource else {
             fatalError()
         }
         let indexedItem = currentDataSource[indexPath]
@@ -426,7 +423,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
         cell.updateCell(indexedItem)
-        if var textViewCell = cell as? TextViewCollectionViewCell {
+        if let textViewCell = cell as? TextViewCollectionViewCell {
             textViewCell.delegate = self
         }
         return cell
@@ -449,10 +446,10 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             return
         }
         // FIXME: probably need to handle text views here
-        if var selectedTextViewItem = dataSource?[indexPath] as? TextViewItem {
+        if let _ = dataSource?[indexPath] as? TextViewItem {
             // are we going to handle text view differently?
             // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
-        } else if var selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
+        } else if let selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
             let alertController = UIAlertController.updateItemWithAlertController(selectedUpdateableLabelItem) { (action, updatedTextFieldString) in
                 if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                     switch (alertDecision) {

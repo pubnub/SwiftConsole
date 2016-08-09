@@ -151,7 +151,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     }
     
     final class PublishDataSource: BasicDataSource {
-        required override init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
         convenience init(publishButton: TargetSelector) {
@@ -229,7 +229,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
         // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
         self.client?.publish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
-            guard var completionDataSource = self.dataSource as? PublishDataSource else {
+            guard let completionDataSource = self.dataSource as? PublishDataSource else {
                 return
             }
             self.collectionView?.performBatchUpdates({ 

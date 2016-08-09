@@ -14,7 +14,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - DataSource
     
     final class ConsoleDataSource: BasicDataSource {
-        required override init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
         
@@ -25,7 +25,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
             let channelGroupPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelGroupPresenceButton, targetSelector: channelGroupPresenceButton)
             let subscribeLoopButtonsSection = BasicSection(items: [channelPresenceButtonItem, subscribeButtonItem, channelGroupPresenceButtonItem])
-            var consoleSegmentedControlItem = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
+            let consoleSegmentedControlItem = ConsoleSegmentedControlItem(targetSelector: consoleSegmentedControl)
             let segmentedControlSection = SingleSegmentedControlSection(segmentedControl: consoleSegmentedControlItem)
             let allSection = ScrollingSection()
             let subscribeStatusSection = ScrollingSection()
@@ -396,7 +396,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
             self.dataSource?.clear(ConsoleItemType.All.section)
-            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 fatalError()
             }
             self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
@@ -464,7 +464,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
         collectionView?.performBatchUpdates({
-            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
             let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
@@ -493,7 +493,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
         self.collectionView?.performBatchUpdates({ 
             let publishStatus = PublishStatus(itemType: ConsoleItemType.PublishStatus, publishStatus: status)
-            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
             // the index path is the same for both calls
@@ -539,7 +539,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
                 let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.SubscribeStatus, status: status)
-                guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+                guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
                 // the index path is the same for both calls
@@ -556,7 +556,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
         collectionView?.performBatchUpdates({
             let receivedMessage = Message(itemType: ConsoleItemType.Message, message: message)
-            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
             // the indexPath is the same for both calls

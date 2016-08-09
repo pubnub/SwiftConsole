@@ -82,7 +82,7 @@ extension UIAlertController {
             textField.text = item.alertControllerTextFieldValue!
         })
         alertController.addAction(UIAlertAction(title: ItemAction.OK.rawValue, style: .Default, handler: { (action) -> Void in
-            var updatedContentsString = alertController.textFields?[0].text
+            let updatedContentsString = alertController.textFields?[0].text
             completionHandler(action, updatedContentsString)
         }))
         alertController.addAction(UIAlertAction(title: ItemAction.Cancel.rawValue, style: .Default, handler: { (action) in
