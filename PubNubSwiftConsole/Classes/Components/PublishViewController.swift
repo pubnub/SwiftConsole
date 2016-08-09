@@ -217,7 +217,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - Actions
     public func publishButtonTapped(sender: UIButton!) {
-        print(#function)
         publish()
     }
     
@@ -230,7 +229,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
         // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
         self.client?.publish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
-            print(publishStatus.debugDescription)
             guard var completionDataSource = self.dataSource as? PublishDataSource else {
                 return
             }
@@ -249,10 +247,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     // MARK: - CollectionViewControllerDelegate
     
     public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
-        print(#file)
-        print(#line)
-        print(#function)
-        print(updatedString)
     }
     
     // MARK: - UINavigationItem

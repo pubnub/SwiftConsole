@@ -491,8 +491,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - PublishViewControllerDelegate
     
     public func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
-        print(#function)
-        print(status.debugDescription)
         self.collectionView?.performBatchUpdates({ 
             let publishStatus = PublishStatus(itemType: ConsoleItemType.PublishStatus, publishStatus: status)
             guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
@@ -532,7 +530,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - PNObjectEventListener
     
     public func client(client: PubNub, didReceiveStatus status: PNStatus) {
-        print(status.debugDescription)
         if (
             (status.operation == .SubscribeOperation) ||
             (status.operation == .UnsubscribeOperation)
@@ -557,8 +554,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
-        print(message.debugDescription)
-        collectionView?.performBatchUpdates({ 
+        collectionView?.performBatchUpdates({
             let receivedMessage = Message(itemType: ConsoleItemType.Message, message: message)
             guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return

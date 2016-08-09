@@ -474,8 +474,6 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     // MARK: - TextViewCollectionViewCellDelegate
     
     public func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView) {
-        print(#file)
-        print(#function)
         guard let currentCollectionView = self.collectionView else {
             return
         }

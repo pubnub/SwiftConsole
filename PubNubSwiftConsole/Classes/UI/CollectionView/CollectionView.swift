@@ -21,8 +21,6 @@ class CollectionView: UICollectionView {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        print(#function)
-        print("testing closing this")
         endEditing(true)
         super.touchesBegan(touches, withEvent: event)
     }

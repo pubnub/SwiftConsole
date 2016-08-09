@@ -54,7 +54,6 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     // MARK: - UITextViewDelegate
     
     public func textViewDidEndEditing(textView: UITextView) {
-        print(#function)
         self.delegate?.textViewCell?(self, textViewDidEndEditing: textView)
     }
 }
