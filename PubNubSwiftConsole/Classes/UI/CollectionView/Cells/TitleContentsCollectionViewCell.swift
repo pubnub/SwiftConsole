@@ -92,7 +92,7 @@ extension UIAlertController {
     }
 }
 
-class LabelCollectionViewCell: CollectionViewCell {
+final class TitleContentsCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel

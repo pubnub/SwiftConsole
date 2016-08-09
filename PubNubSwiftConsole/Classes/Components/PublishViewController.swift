@@ -128,7 +128,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let itemType: ItemType
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return TitleContentsCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -209,7 +209,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let publishButton: TargetSelector = (self, #selector(self.publishButtonTapped(_:)))
         dataSource = PublishDataSource(publishButton: publishButton)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)

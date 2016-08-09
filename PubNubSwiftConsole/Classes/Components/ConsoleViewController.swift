@@ -80,7 +80,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return TitleContentsCollectionViewCell.reuseIdentifier
         }
     }
     
@@ -101,7 +101,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return TitleContentsCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -374,7 +374,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let consoleSegmentedControl: TargetSelector = (self, #selector(self.consoleSegmentedControlValueChanged(_:)))
         dataSource = ConsoleDataSource(client: currentClient, subscribeButton: subscribeButton, channelPresenceButton: channelPresenceButton, channelGroupPresenceButton: channelGroupPresenceButton, consoleSegmentedControl: consoleSegmentedControl)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
