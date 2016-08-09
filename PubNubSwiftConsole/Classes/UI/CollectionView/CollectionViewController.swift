@@ -447,7 +447,7 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         // FIXME: probably need to handle text views here
         if var selectedTextViewItem = dataSource?[indexPath] as? TextViewItem {
             
-        } else if var selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdateableLabelItem {
+        } else if var selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
             let alertController = UIAlertController.updateItemWithAlertController(selectedUpdateableLabelItem) { (action, updatedTextFieldString) in
                 if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                     switch (alertDecision) {

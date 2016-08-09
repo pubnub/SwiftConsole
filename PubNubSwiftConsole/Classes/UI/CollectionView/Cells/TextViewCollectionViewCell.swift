@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol TextViewItem: UpdatableStringContentsItem {
+protocol TextViewItem: UpdatableTitleContentsItem {
 }
 
 class TextViewCollectionViewCell: CollectionViewCell {

@@ -115,7 +115,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct PublishUpdateableLabelItem: UpdateableLabelItem {
+    struct PublishUpdateableLabelItem: UpdatableTitleContentsItem {
         init(itemType: PublishItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -128,7 +128,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let itemType: ItemType
         var contents: String
         var reuseIdentifier: String {
-            return UpdateableLabelCollectionViewCell.reuseIdentifier
+            return LabelCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -209,7 +209,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let publishButton: TargetSelector = (self, #selector(self.publishButtonTapped(_:)))
         dataSource = PublishDataSource(publishButton: publishButton)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
