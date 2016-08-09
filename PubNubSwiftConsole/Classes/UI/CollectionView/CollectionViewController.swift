@@ -451,7 +451,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                     switch (alertDecision) {
                     case .OK:
                         self.collectionView?.performBatchUpdates({
-                            self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                            self.dataSource?.updateTitleContents(indexPath, updatedContents: updatedTextFieldString)
                             self.collectionView?.reloadItemsAtIndexPaths([indexPath])
                             self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
                             }, completion: nil)
@@ -474,7 +474,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             fatalError()
         }
         self.collectionView?.performBatchUpdates({
-            self.dataSource?.updateLabelContentsString(textViewCellIndexPath, updatedContents: textView.text)
+            self.dataSource?.updateTitleContents(textViewCellIndexPath, updatedContents: textView.text)
             self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
             }, completion: nil)
     }

@@ -509,8 +509,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func updateSubscribableLabelCells() {
         collectionView?.performBatchUpdates({ 
-            self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
-            self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
+            self.dataSource?.updateTitleContents(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
+            self.dataSource?.updateTitleContents(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
             self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
             }, completion: nil)
     }
