@@ -38,5 +38,7 @@ PubNubSwiftConsole is available under the MIT license. See the LICENSE file for 
 - [ ] Add error handling for publish
 - [ ] Add Realm support
 - [ ] Add behavior around presence buttons during subscribe
-- [ ] Redo UI
+- [ ] Paint UI
 - [ ] Add localization
+- [ ] Add presence transactional calls
+- [ ] Add history support
