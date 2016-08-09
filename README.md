@@ -30,4 +30,7 @@ PubNubSwiftConsole is available under the MIT license. See the LICENSE file for 
 
 ## To Do
 
-* Add activity indicator spinner to subscribe button
+- [ ] Add activity indicator spinner to subscribe button
+- [ ] Fix memory warning for console view controller overflow
+- [ ] Vet for Objective-C compatibility
+- [ ] Add tests
