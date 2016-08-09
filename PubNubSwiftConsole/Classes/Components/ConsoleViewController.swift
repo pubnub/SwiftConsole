@@ -20,7 +20,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         convenience init(client: PubNub, subscribeButton: TargetSelector, channelPresenceButton: TargetSelector, channelGroupPresenceButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
             let clientConfigSection = BasicSection(items: [ConsoleLabelItem(itemType: .PublishKey, client: client), ConsoleLabelItem(itemType: .SubscribeKey, client: client)])
-            let subscribablesSection = BasicSection(items: [ConsoleUpdateableLabelItem(itemType: .Channels, client: client), ConsoleUpdateableLabelItem(itemType: .ChannelGroups, client: client)])
+            let subscribablesSection = BasicSection(items: [ConsoleUpdatableLabelItem(itemType: .Channels, client: client), ConsoleUpdatableLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
             let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
             let channelGroupPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelGroupPresenceButton, targetSelector: channelGroupPresenceButton)
@@ -84,7 +84,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleUpdateableLabelItem: UpdatableTitleContentsItem {
+    struct ConsoleUpdatableLabelItem: UpdatableTitleContentsItem {
         let itemType: ItemType
         var contents: String
         init(itemType: ConsoleItemType) {
@@ -424,7 +424,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             client?.unsubscribeFromAll()
             return
         }
-        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleUpdateableLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleUpdateableLabelItem else {
+        guard let currentDataSource = dataSource, let channelsItem = currentDataSource[ConsoleItemType.Channels] as? ConsoleUpdatableLabelItem, let channelGroupsItem = currentDataSource[ConsoleItemType.ChannelGroups] as? ConsoleUpdatableLabelItem else {
             return
         }
         var channelPresence: Bool
@@ -509,8 +509,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func updateSubscribableLabelCells() {
         collectionView?.performBatchUpdates({ 
-            self.dataSource?.updateLabelContentsString(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
-            self.dataSource?.updateLabelContentsString(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
+            self.dataSource?.updateTitleContents(ConsoleItemType.Channels.indexPath, updatedContents: self.client?.channelsString())
+            self.dataSource?.updateTitleContents(ConsoleItemType.ChannelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
             self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.Channels.indexPath, ConsoleItemType.ChannelGroups.indexPath])
             }, completion: nil)
     }
