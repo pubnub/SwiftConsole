@@ -20,7 +20,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     // MARK: - DataSource
     
     enum PublishSectionType: Int, ItemSectionType {
-        case Channel = 0, PayloadInput, PublishButton, PublishStatusConsole
+        case Configuration = 0, PayloadInput, PublishStatusConsole
     }
     
     enum PublishItemType: ItemType {
@@ -36,7 +36,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             case .PayloadInput:
                 return CGSize(width: 300.0, height: 300.0)
             case .PublishButton:
-                return CGSize(width: 200.0, height: 100.0)
+                return CGSize(width: 125.0, height: 100.0)
             case .PublishStatus:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
             }
@@ -62,11 +62,11 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         var sectionType: ItemSectionType {
             switch self {
             case .ChannelLabel:
-                return PublishSectionType.Channel
+                return PublishSectionType.Configuration
             case .PayloadInput:
                 return PublishSectionType.PayloadInput
             case .PublishButton:
-                return PublishSectionType.PublishButton
+                return PublishSectionType.Configuration
             case .PublishStatus:
                 return PublishSectionType.PublishStatusConsole
             }
@@ -90,7 +90,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             case .PayloadInput:
                 return 0
             case .PublishButton:
-                return 0
+                return 1
             case .PublishStatus:
                 return 0
             }
@@ -158,11 +158,10 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             let publishButtonItem = PublishButtonItem(itemType: .PublishButton, targetSelector: publishButton)
             let channelLabelItem = PublishUpdateableLabelItem(itemType: .ChannelLabel)
             let textViewItem = PublishTextViewItem(itemType: .PayloadInput)
-            let channelLabelSection = BasicSection(items: [channelLabelItem])
+            let configSection = BasicSection(items: [channelLabelItem, publishButtonItem])
             let payloadSection = BasicSection(items: [textViewItem])
-            let publishButtonSection = BasicSection(items: [publishButtonItem])
             let publishStatusSection = ScrollingSection()
-            self.init(sections: [channelLabelSection, payloadSection, publishButtonSection, publishStatusSection])
+            self.init(sections: [configSection, payloadSection, publishStatusSection])
         }
         var message: String {
             guard let payloadItem = self[PublishItemType.PayloadInput.indexPath] as? PublishTextViewItem else {

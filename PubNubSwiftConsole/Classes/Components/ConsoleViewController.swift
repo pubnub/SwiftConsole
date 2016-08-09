@@ -67,7 +67,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleLabelItem: UpdatableTitleContentsItem {
+    struct ConsoleLabelItem: TitleContentsItem {
         let itemType: ItemType
         var contents: String
         init(itemType: ConsoleItemType, contents: String) {
