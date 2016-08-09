@@ -24,7 +24,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
     }
     
-    struct ClientCreationUpdateableLabelItem: LabelItem {
+    struct ClientCreationUpdateableLabelItem: UpdatableLabelItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
