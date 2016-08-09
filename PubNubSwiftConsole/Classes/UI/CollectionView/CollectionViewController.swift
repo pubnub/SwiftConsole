@@ -445,24 +445,25 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
             return
         }
         // FIXME: probably need to handle text views here
-        guard var selectedItem = dataSource?[indexPath] as? UpdateableLabelItem else {
-            return
-        }
-        let alertController = UIAlertController.updateItemWithAlertController(selectedItem) { (action, updatedTextFieldString) in
-            if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
-                switch (alertDecision) {
-                case .OK:
-                    self.collectionView?.performBatchUpdates({
-                        self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
-                        self.collectionView?.reloadItemsAtIndexPaths([indexPath])
-                        self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
-                        }, completion: nil)
-                default:
-                    return
+        if var selectedTextViewItem = dataSource?[indexPath] as? TextViewItem {
+            
+        } else if var selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdateableLabelItem {
+            let alertController = UIAlertController.updateItemWithAlertController(selectedUpdateableLabelItem) { (action, updatedTextFieldString) in
+                if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
+                    switch (alertDecision) {
+                    case .OK:
+                        self.collectionView?.performBatchUpdates({
+                            self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                            self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+                            self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
+                            }, completion: nil)
+                    default:
+                        return
+                    }
                 }
             }
+            self.presentViewController(alertController, animated: true, completion: nil)
         }
-        self.presentViewController(alertController, animated: true, completion: nil)
     }
     
 }

@@ -8,15 +8,13 @@
 
 import Foundation
 
-protocol UpdateableLabelItem: Item {
+protocol UpdatableStringContentsItem: Item {
     var contents: String {get set}
     var defaultContents: String {get}
-    var alertControllerTitle: String? {get}
-    var alertControllerTextFieldValue: String? {get}
     mutating func updateContentsString(updatedContents: String?)
 }
 
-extension UpdateableLabelItem {
+extension UpdatableStringContentsItem {
     mutating func updateContentsString(updatedContents: String?) {
         self.contents = updatedContents ?? defaultContents
     }
@@ -26,6 +24,15 @@ extension UpdateableLabelItem {
     var title: String {
         return itemType.title
     }
+}
+
+protocol UpdateableLabelItem: UpdatableStringContentsItem {
+    var alertControllerTitle: String? {get}
+    var alertControllerTextFieldValue: String? {get}
+    mutating func updateContentsString(updatedContents: String?)
+}
+
+extension UpdateableLabelItem {
     var alertControllerTitle: String? {
         return title
     }

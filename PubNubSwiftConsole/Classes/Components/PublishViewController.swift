@@ -77,7 +77,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             case .ChannelLabel:
                 return ""
             case .PayloadInput:
-                return ""
+                return "Hello, world!"
             default:
                 return ""
             }
