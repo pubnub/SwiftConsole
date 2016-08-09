@@ -274,20 +274,30 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let channel = currentDataSource.channel
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
         // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
-        self.client?.publish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
-            guard let completionDataSource = self.dataSource as? PublishDataSource else {
-                return
-            }
-            self.collectionView?.performBatchUpdates({ 
-                let insertedPublishCell = completionDataSource.push(publishStatus)
-                self.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
-                }, completion: nil)
-            // now try to send this publish status to the console view controller
-            self.publishDelegate?.publishView?(self, receivedPublishStatus: publishStatus)
-//            if let publishDelegate = self.delegate as? PublishViewControllerDelegate {
-//                publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
-//            }
-        })
+        do {
+            try self.client?.safePublish(message, toChannel: channel, withCompletion: { [unowned self](publishStatus) in
+                guard let completionDataSource = self.dataSource as? PublishDataSource else {
+                    return
+                }
+                self.collectionView?.performBatchUpdates({
+                    let insertedPublishCell = completionDataSource.push(publishStatus)
+                    self.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
+                    }, completion: nil)
+                // now try to send this publish status to the console view controller
+                self.publishDelegate?.publishView?(self, receivedPublishStatus: publishStatus)
+                //if let publishDelegate = self.delegate as? PublishViewControllerDelegate {
+                //    publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
+                //}
+            })
+        } catch let channelParsingError as PubNubSubscribableStringParsingError {
+            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError("channel", error: channelParsingError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
+        } catch let publishError as PubNubPublishError {
+            let alertController = UIAlertController.alertControllerForPubNubPublishingError(publishError, handler: nil)
+            presentViewController(alertController, animated: true, completion: nil)
+        } catch {
+            fatalError()
+        }
     }
     
     // MARK: - CollectionViewControllerDelegate
