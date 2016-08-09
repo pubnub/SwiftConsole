@@ -165,11 +165,11 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
 
         let pubKey = stringForItem(.PublishKey)
-        let pubKeyProperty = PNConfiguration.KeyValue(.PublishKey, pubKey)
+        let pubKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.PublishKey, pubKey)
         let subKey = stringForItem(.SubscribeKey)
-        let subKeyProperty = PNConfiguration.KeyValue(.SubscribeKey, subKey)
+        let subKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.SubscribeKey, subKey)
         let origin = stringForItem(.Origin)
-        let originProperty = PNConfiguration.KeyValue(.Origin, origin)
+        let originProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.Origin, origin)
         do {
             let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
             return PubNub.clientWithConfiguration(config)

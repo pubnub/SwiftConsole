@@ -155,12 +155,9 @@ extension SelectableItemSection {
             })
         }
         set {
-            self.items = newValue.map({ (item) -> ItemSection in
-                guard let castedItem = item as? ItemSection else {
-                    fatalError()
-                }
-                return castedItem
-            })
+            self.items = newValue.map {
+                $0 as Item // always succeeds (ItemSection extends Item)
+            }
         }
     }
     var count: Int {
@@ -353,11 +350,8 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                 self.selectedSectionIndex = 0
             }
             init(selectableItemSections: [ItemSection]) {
-                let items = selectableItemSections.map { (itemSection) -> Item in
-                    guard let castedItem = itemSection as? Item else {
-                        fatalError()
-                    }
-                    return castedItem
+                let items = selectableItemSections.map {
+                    $0 as Item // always succeeds (ItemSection extends Item)
                 }
                 self.init(items: items)
             }
@@ -445,7 +439,9 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         guard let currentCollectionView = self.collectionView else {
             return
         }
-        // FIXME: probably need to handle text views here
+        // We don't have any special behavior for text views as of now, this is really just a check
+        // to make sure that we don't treat UpdatableTitleContentsItem types as a TextViewItem because
+        // TextViewItem protocol does inherit from UpdatableTitleContentsItem
         if let _ = dataSource?[indexPath] as? TextViewItem {
             // are we going to handle text view differently?
             // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
