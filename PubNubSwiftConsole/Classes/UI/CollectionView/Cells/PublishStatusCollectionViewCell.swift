@@ -16,7 +16,7 @@ protocol PublishStatusItem: Item {
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var information: String {get}
-    var timeToken: NSNumber {get}
+    var timeToken: NSNumber? {get}
     var error: AnyObject? {get}
 }
 
@@ -33,7 +33,7 @@ struct PublishStatus: PublishStatusItem {
     let creationDate: NSDate
     let statusCode: Int
     let information: String
-    let timeToken: NSNumber
+    let timeToken: NSNumber?
     let error: AnyObject?
     init(itemType: ItemType, publishStatus: PNPublishStatus) {
         self.itemType = itemType
@@ -90,7 +90,12 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
         informationLabel.text = "Response message: \(item.information)"
-        timeTokenLabel.text = "Time token: \(item.timeToken)"
+        if let publishTimeToken = item.timeToken {
+            timeTokenLabel.hidden = false
+            timeTokenLabel.text = "Time token: \(publishTimeToken)"
+        } else {
+            timeTokenLabel.hidden = true
+        }
         if let publishError = item.error {
             errorLabel.hidden = false
             errorLabel.text = "Error: \(publishError)"
