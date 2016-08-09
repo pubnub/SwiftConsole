@@ -10,7 +10,7 @@ import UIKit
 import PubNub
 
 protocol MessageItem: Item {
-    init(message: PNMessageResult)
+    init(itemType: ItemType, message: PNMessageResult)
     var payload: AnyObject? {get}
 }
 
@@ -20,6 +20,18 @@ extension MessageItem {
             return "Cannot display message"
         }
         return "\(currentPayload)"
+    }
+}
+
+struct Message: MessageItem {
+    let itemType: ItemType
+    let payload: AnyObject?
+    init(itemType: ItemType, message: PNMessageResult) {
+        self.itemType = itemType
+        self.payload = message.data.message
+    }
+    var reuseIdentifier: String {
+        return MessageCollectionViewCell.reuseIdentifier
     }
 }
 

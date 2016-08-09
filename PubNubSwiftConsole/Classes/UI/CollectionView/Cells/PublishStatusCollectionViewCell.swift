@@ -9,13 +9,35 @@
 import UIKit
 import PubNub
 
-protocol PublishStatus: Item {
-    init(publishStatus: PNPublishStatus)
+protocol PublishStatusItem: Item {
+    init(itemType: ItemType, publishStatus: PNPublishStatus)
+    var category: String {get}
+    var operation: String {get}
+    var creationDate: NSDate {get}
+    var statusCode: Int {get}
 }
 
-extension PublishStatus {
+extension PublishStatusItem {
     var title: String {
-        return "publish"
+        return category
+    }
+}
+
+struct PublishStatus: PublishStatusItem {
+    let itemType: ItemType
+    let category: String
+    let operation: String
+    let creationDate: NSDate
+    let statusCode: Int
+    init(itemType: ItemType, publishStatus: PNPublishStatus) {
+        self.itemType = itemType
+        self.category = publishStatus.stringifiedCategory()
+        self.operation = publishStatus.stringifiedOperation()
+        self.creationDate = NSDate()
+        self.statusCode = publishStatus.statusCode
+    }
+    var reuseIdentifier: String {
+        return PublishStatusCollectionViewCell.reuseIdentifier
     }
 }
 

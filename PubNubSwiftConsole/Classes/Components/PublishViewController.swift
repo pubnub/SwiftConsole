@@ -150,19 +150,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct PublishStatusItem: PublishStatus {
-        let itemType: ItemType
-        init(itemType: PublishItemType, publishStatus: PNPublishStatus) {
-            self.itemType = itemType
-        }
-        init(publishStatus: PNPublishStatus) {
-            self.init(itemType: .PublishStatus, publishStatus: publishStatus)
-        }
-        var reuseIdentifier: String {
-            return PublishStatusCollectionViewCell.reuseIdentifier
-        }
-    }
-    
     final class PublishDataSource: BasicDataSource {
         required override init(sections: [ItemSection]) {
             super.init(sections: sections)
@@ -190,7 +177,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             return channelItem.contents
         }
         func push(publishStatus: PNPublishStatus) -> NSIndexPath {
-            let publishItem = PublishStatusItem(publishStatus: publishStatus)
+            let publishItem = PublishStatus(itemType: PublishItemType.PublishStatus, publishStatus: publishStatus)
             return push(PublishItemType.PublishStatus.section, item: publishItem)
         }
     }
