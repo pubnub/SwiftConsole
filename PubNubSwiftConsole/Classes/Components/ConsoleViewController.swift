@@ -453,7 +453,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 client?.subscribeToChannels(currentSubscribables.Channels!, withPresence: channelPresence)
                 client?.subscribeToChannelGroups(currentSubscribables.ChannelGroups!, withPresence: channelGroupPresence)
             }
-        } catch let pubNubError as PubNubStringParsingError {
+        } catch let pubNubError as PubNubSubscribableStringParsingError {
             let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelsItem.title, error: pubNubError, handler: nil)
             presentViewController(alertController, animated: true, completion: nil)
             return
