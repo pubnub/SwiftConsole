@@ -445,13 +445,13 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         if let _ = dataSource?[indexPath] as? TextViewItem {
             // are we going to handle text view differently?
             // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
-        } else if let selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
-            let alertController = UIAlertController.updateItemWithAlertController(selectedUpdateableLabelItem) { (action, updatedTextFieldString) in
+        } else if let selectedUpdatableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
+            let alertController = UIAlertController.updateItemWithAlertController(selectedUpdatableLabelItem) { (action, updatedTextFieldString) in
                 if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                     switch (alertDecision) {
                     case .OK:
                         self.collectionView?.performBatchUpdates({
-                            self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                            self.dataSource?.updateTitleContents(indexPath, updatedContents: updatedTextFieldString)
                             self.collectionView?.reloadItemsAtIndexPaths([indexPath])
                             self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
                             }, completion: nil)
@@ -474,7 +474,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             fatalError()
         }
         self.collectionView?.performBatchUpdates({
-            self.dataSource?.updateLabelContentsString(textViewCellIndexPath, updatedContents: textView.text)
+            self.dataSource?.updateTitleContents(textViewCellIndexPath, updatedContents: textView.text)
             self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
             }, completion: nil)
     }
