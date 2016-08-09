@@ -42,6 +42,7 @@ extension UpdatableTitleContentsItem {
 }
 
 extension ItemSection {
+    // TODO: rename this
     mutating func updateLabelContentsString(item: Int, updatedContents: String?) {
         guard var selectedLabelItem = self[item] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")

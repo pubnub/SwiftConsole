@@ -11,11 +11,11 @@ import Foundation
 protocol TextViewItem: UpdatableTitleContentsItem {
 }
 
-@objc public protocol TextViewCollectionViewCellDelegate: UITextViewDelegate {
-    
+@objc public protocol TextViewCollectionViewCellDelegate: NSObjectProtocol {
+    optional func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView)
 }
 
-class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
+public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
     
     var delegate: TextViewCollectionViewCellDelegate?
     
@@ -34,7 +34,7 @@ class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
         contentView.layer.borderWidth = 3
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -55,6 +55,6 @@ class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
     
     public func textViewDidEndEditing(textView: UITextView) {
         print(#function)
-        self.delegate?.textViewDidEndEditing?(textView)
+        self.delegate?.textViewCell?(self, textViewDidEndEditing: textView)
     }
 }

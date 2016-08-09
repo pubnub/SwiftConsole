@@ -473,11 +473,19 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // MARK: - TextViewCollectionViewCellDelegate
     
-    public func textViewDidEndEditing(textView: UITextView) {
+    public func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView) {
         print(#file)
         print(#function)
-        // TODO: clean this up
-        self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: NSIndexPath(), textView: textView, updatedTextFieldString: textView.text)
+        guard let currentCollectionView = self.collectionView else {
+            return
+        }
+        guard let textViewCellIndexPath = currentCollectionView.indexPathForCell(cell) else {
+            fatalError()
+        }
+        self.collectionView?.performBatchUpdates({
+            self.dataSource?.updateLabelContentsString(textViewCellIndexPath, updatedContents: textView.text)
+            self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
+            }, completion: nil)
     }
     
 }
