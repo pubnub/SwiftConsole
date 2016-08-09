@@ -63,7 +63,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 fatalError()
             }
             selectableSection.updateSelectedSection(selectedSection)
-//            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
+            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
         }
     }
     
