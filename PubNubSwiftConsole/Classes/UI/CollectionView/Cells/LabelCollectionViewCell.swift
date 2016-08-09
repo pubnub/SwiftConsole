@@ -8,7 +8,17 @@
 
 import Foundation
 
-protocol UpdateableLabelItem: Item {
+protocol LabelItem: Item {
+    var contents: String {get}
+}
+
+extension LabelItem {
+    var title: String {
+        return itemType.title
+    }
+}
+
+protocol UpdatableLabelItem: LabelItem {
     var contents: String {get set}
     var defaultContents: String {get}
     var alertControllerTitle: String? {get}
@@ -16,15 +26,12 @@ protocol UpdateableLabelItem: Item {
     mutating func updateContentsString(updatedContents: String?)
 }
 
-extension UpdateableLabelItem {
+extension UpdatableLabelItem {
     mutating func updateContentsString(updatedContents: String?) {
         self.contents = updatedContents ?? defaultContents
     }
     var defaultContents: String {
         return itemType.defaultValue
-    }
-    var title: String {
-        return itemType.title
     }
     var alertControllerTitle: String? {
         return title
@@ -36,7 +43,7 @@ extension UpdateableLabelItem {
 
 extension ItemSection {
     mutating func updateLabelContentsString(item: Int, updatedContents: String?) {
-        guard var selectedLabelItem = self[item] as? UpdateableLabelItem else {
+        guard var selectedLabelItem = self[item] as? UpdatableLabelItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedLabelItem.updateContentsString(updatedContents)
@@ -49,7 +56,7 @@ extension ItemSection {
 
 extension DataSource {
     mutating func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
-        guard var selectedItem = self[indexPath] as? UpdateableLabelItem else {
+        guard var selectedItem = self[indexPath] as? UpdatableLabelItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedItem.updateContentsString(updatedContents)
@@ -64,7 +71,7 @@ extension UIAlertController {
     enum ItemAction: String {
         case OK, Cancel
     }
-    static func updateItemWithAlertController(selectedItem: UpdateableLabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
+    static func updateItemWithAlertController(selectedItem: UpdatableLabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
         guard let item = selectedItem else {
             fatalError()
         }
@@ -85,7 +92,7 @@ extension UIAlertController {
     }
 }
 
-class UpdateableLabelCollectionViewCell: CollectionViewCell {
+class LabelCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
@@ -95,21 +102,17 @@ class UpdateableLabelCollectionViewCell: CollectionViewCell {
     }
     
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height/3))
-        contentsLabel = UILabel(frame: CGRect(x: 0, y: titleLabel.frame.size.height, width: frame.size.width, height: frame.size.height/3))
-    
+        titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/2))
+        contentsLabel = UILabel(frame: CGRect(x: 5, y: frame.size.height/2, width: frame.size.width, height: frame.size.height/2))
+        
         super.init(frame: frame)
         titleLabel.textAlignment = .Center
         titleLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
         
         contentsLabel.textAlignment = .Center
-        contentsLabel.font = UIFont.systemFontOfSize(UIFont.labelFontSize())
-        contentsLabel.translatesAutoresizingMaskIntoConstraints = false
-        contentsLabel.numberOfLines = 3
+        contentsLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
         contentView.addSubview(contentsLabel)
-        
         contentView.layer.borderWidth = 3
     }
     
@@ -117,14 +120,14 @@ class UpdateableLabelCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateLabels(item: UpdateableLabelItem) {
-        self.titleLabel.text = item.title
-        self.contentsLabel.text = item.contents
-        self.setNeedsLayout() // make sure this occurs during the next update cycle
+    func updateLabels(labelItem: LabelItem) {
+        self.titleLabel.text = labelItem.title
+        self.contentsLabel.text = labelItem.contents
+        self.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
-        guard let labelItem = item as? UpdateableLabelItem else {
+        guard let labelItem = item as? LabelItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateLabels(labelItem)

@@ -17,7 +17,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         required override init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
+        
         convenience init(client: PubNub, subscribeButton: TargetSelector, channelPresenceButton: TargetSelector, channelGroupPresenceButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
+            let clientConfigSection = BasicSection(items: [ConsoleLabelItem(itemType: .PublishKey, client: client), ConsoleLabelItem(itemType: .SubscribeKey, client: client)])
             let subscribablesSection = BasicSection(items: [ConsoleUpdateableLabelItem(itemType: .Channels, client: client), ConsoleUpdateableLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
             let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
@@ -29,7 +31,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let subscribeStatusSection = ScrollingSection()
             let messageSection = ScrollingSection()
             let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
-            self.init(sections: [subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
+            self.init(sections: [clientConfigSection, subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         }
         var selectedConsoleSegmentIndex: Int {
             guard let consoleSegment = self[ConsoleItemType.ConsoleSegmentedControl.indexPath] as? ConsoleSegmentedControlItem else {
@@ -50,6 +52,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
             selectableSection.updateSelectedSection(selectedSection)
 //            self[selectedConsoleSegmentItemType.section] = selectableSection // do i need this for classes?
+        }
+    }
+    
+    struct ConsoleLabelItem: LabelItem {
+        let itemType: ItemType
+        var contents: String
+        init(itemType: ConsoleItemType, contents: String) {
+            self.itemType = itemType
+            self.contents = contents
+        }
+        
+        init(itemType: ConsoleItemType, client: PubNub) {
+            self.init(itemType: itemType, contents: itemType.contents(client))
+        }
+        
+        var reuseIdentifier: String {
+            return LabelCollectionViewCell.reuseIdentifier
         }
     }
     
@@ -93,8 +112,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleUpdateableLabelItem: UpdateableLabelItem {
+    struct ConsoleUpdateableLabelItem: UpdatableLabelItem {
         let itemType: ItemType
+        var contents: String
         init(itemType: ConsoleItemType) {
             self.init(itemType: itemType, contents: itemType.defaultValue)
         }
@@ -108,9 +128,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.init(itemType: itemType, contents: itemType.contents(client))
         }
         
-        var contents: String
         var reuseIdentifier: String {
-            return UpdateableLabelCollectionViewCell.reuseIdentifier
+            return LabelCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -191,10 +210,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
-        case Subscribables = 0, SubscribeLoopControls, ConsoleSegmentedControl, Console
+        case ClientConfig = 0, Subscribables, SubscribeLoopControls, ConsoleSegmentedControl, Console
     }
     
     enum ConsoleItemType: ItemType {
+        case PublishKey
+        case SubscribeKey
         case Channels
         case ChannelGroups
         case SubscribeButton
@@ -208,6 +229,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         func size(collectionViewSize: CGSize) -> CGSize {
             switch self {
+            case .PublishKey, .SubscribeKey:
+                return CGSize(width: 150.0, height: 50.0)
             case .Channels, .ChannelGroups:
                 return CGSize(width: 150.0, height: 125.0)
             case .SubscribeButton:
@@ -228,9 +251,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
         }
         
-        
         func contents(client: PubNub) -> String {
             switch self {
+            case .PublishKey:
+                return client.currentConfiguration().publishKey
+            case .SubscribeKey:
+                return client.currentConfiguration().subscribeKey
             case .Channels:
                 return client.channelsString() ?? ""
             case .ChannelGroups:
@@ -242,6 +268,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var title: String {
             switch self {
+            case .PublishKey:
+                return "Publish Key"
+            case .SubscribeKey:
+                return "Subscribe Key"
             case .Channels:
                 return "Channels"
             case .ChannelGroups:
@@ -272,6 +302,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var sectionType: ItemSectionType {
             switch self {
+            case .PublishKey, .SubscribeKey:
+                return ConsoleSectionType.ClientConfig
             case .Channels, .ChannelGroups:
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton, .ChannelPresenceButton, .ChannelGroupPresenceButton:
@@ -300,6 +332,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var item: Int {
             switch self {
+            case .PublishKey:
+                return 0
+            case .SubscribeKey:
+                return 1
             case .Channels:
                 return 0
             case .ChannelGroups:
@@ -363,7 +399,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let consoleSegmentedControl: TargetSelector = (self, #selector(self.consoleSegmentedControlValueChanged(_:)))
         dataSource = ConsoleDataSource(client: currentClient, subscribeButton: subscribeButton, channelPresenceButton: channelPresenceButton, channelGroupPresenceButton: channelGroupPresenceButton, consoleSegmentedControl: consoleSegmentedControl)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
