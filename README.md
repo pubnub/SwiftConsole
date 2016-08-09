@@ -30,16 +30,16 @@ PubNubSwiftConsole is available under the MIT license. See the LICENSE file for 
 
 ## To Do
 
-- [ ] Finish channel info for messages and statuses
+- [ ] [Finish channel info for messages and statuses](https://github.com/pubnub/SwiftConsole/pull/20/files)
 - [ ] Add presence events support (separate segment and in all)
 - [ ] Add publish status info to cell (and struct)
 - [ ] Add publish and subscribe keys section to publish view controller (maybe time to make a dedicated config section?)
-- [ ] Add activity indicator spinner to subscribe button
 - [ ] Fix memory warning handling for console view controller overflow
+- [ ] Add error handling for publish
+- [ ] Add button to email logs as zip
+- [ ] Add activity indicator spinner to subscribe button
 - [ ] Vet for Objective-C compatibility
 - [ ] Add tests
-- [ ] Add button to email logs as zip
-- [ ] Add error handling for publish
 - [ ] Add Realm support
 - [ ] Add behavior around presence buttons during subscribe
 - [ ] Paint UI
