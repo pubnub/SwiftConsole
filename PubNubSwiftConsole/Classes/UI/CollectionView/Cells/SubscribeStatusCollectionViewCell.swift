@@ -10,7 +10,7 @@ import UIKit
 import PubNub
 
 protocol SubscribeStatusItem: Item {
-    init(status: PNStatus)
+    init(itemType: ItemType, status: PNStatus)
     var category: String {get}
     var operation: String {get}
     var creationDate: NSDate {get}
@@ -21,6 +21,28 @@ protocol SubscribeStatusItem: Item {
 extension SubscribeStatusItem {
     var title: String {
         return category
+    }
+}
+
+struct SubscribeStatus: SubscribeStatusItem {
+    let itemType: ItemType
+    let category: String
+    let operation: String
+    let creationDate: NSDate
+    let statusCode: Int
+    var timeToken: NSNumber?
+    init(itemType: ItemType, status: PNStatus) {
+        self.itemType = itemType
+        self.category = status.stringifiedCategory()
+        self.operation = status.stringifiedOperation()
+        self.creationDate = NSDate()
+        self.statusCode = status.statusCode
+        if let subscribeStatus = status as? PNSubscribeStatus {
+            self.timeToken = subscribeStatus.data.timetoken
+        }
+    }
+    var reuseIdentifier: String {
+        return SubscribeStatusCollectionViewCell.reuseIdentifier
     }
 }
 

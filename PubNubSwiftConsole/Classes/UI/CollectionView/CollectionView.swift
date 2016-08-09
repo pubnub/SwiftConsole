@@ -20,4 +20,8 @@ class CollectionView: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        endEditing(true)
+        super.touchesBegan(touches, withEvent: event)
+    }
 }

@@ -9,12 +9,16 @@
 import Foundation
 import PubNub
 
-public func modalClientCreationViewController() -> UINavigationController {
+public func modalClientCreationViewController() -> NavigationController {
     let rootViewController = ClientCreationViewController()
-    return UINavigationController.init(pubNubViewController: rootViewController)
+    return NavigationController(pubNubViewController: rootViewController)
 }
 
-public func modalConsoleViewController(client: PubNub) -> UINavigationController {
+public func modalConsoleViewController(client: PubNub) -> NavigationController {
     let rootViewController = ConsoleViewController(client: client)
-    return UINavigationController.init(pubNubViewController: rootViewController)
+    return NavigationController(pubNubViewController: rootViewController)
+}
+
+public func modalPublishViewController(client: PubNub) -> PublishViewController {
+    return PublishViewController(client: client)
 }

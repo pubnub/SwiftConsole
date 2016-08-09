@@ -52,24 +52,24 @@ extension ItemSection {
 }
 
 extension DataSource {
-    mutating func toggleSelected(indexPath: NSIndexPath) {
+    func toggleSelected(indexPath: NSIndexPath) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.toggleSelected()
         self[indexPath] = buttonItem
     }
-    mutating func updateSelected(indexPath: NSIndexPath, selected: Bool) {
+    func updateSelected(indexPath: NSIndexPath, selected: Bool) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.updateSelected(selected)
         self[indexPath] = buttonItem
     }
-    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+    func updateSelected(itemType: ItemType, selected: Bool) {
         updateSelected(itemType.indexPath, selected: selected)
     }
-    mutating func toggleSelected(itemType: ItemType) {
+    func toggleSelected(itemType: ItemType) {
         toggleSelected(itemType.indexPath)
     }
 }

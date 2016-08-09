@@ -24,7 +24,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
     }
     
-    struct ClientCreationUpdateableLabelItem: UpdatableLabelItem {
+    struct ClientCreationUpdateableLabelItem: UpdatableTitleContentsItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -37,7 +37,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         let itemType: ItemType
         var contents: String
         var reuseIdentifier: String {
-            return LabelCollectionViewCell.reuseIdentifier
+            return TitleContentsCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -140,7 +140,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         self.delegate = self
         dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }

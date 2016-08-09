@@ -43,10 +43,17 @@ public class ViewController: UIViewController, PNObjectEventListener {
     // MARK: - UINavigationItem
     
     func closeButtonPressed(sender: UIBarButtonItem!) {
-        self.navigationController?.close(sender)
+        guard let navController = self.navigationController as? NavigationController else {
+            return
+        }
+        navController.close(sender)
     }
     
     public var navBarTitle: String {
         return "PubNub"
-    }    
+    }
+    
+    public var showsToolbar: Bool {
+        return false
+    }
 }

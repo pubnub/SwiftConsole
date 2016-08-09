@@ -8,17 +8,17 @@
 
 import Foundation
 
-protocol LabelItem: Item {
-    var contents: String {get}
+protocol TitleContentsItem: Item {
+    var contents: String {get set}
 }
 
-extension LabelItem {
+extension TitleContentsItem {
     var title: String {
         return itemType.title
     }
 }
 
-protocol UpdatableLabelItem: LabelItem {
+protocol UpdatableTitleContentsItem: TitleContentsItem {
     var contents: String {get set}
     var defaultContents: String {get}
     var alertControllerTitle: String? {get}
@@ -26,10 +26,7 @@ protocol UpdatableLabelItem: LabelItem {
     mutating func updateContentsString(updatedContents: String?)
 }
 
-extension UpdatableLabelItem {
-    mutating func updateContentsString(updatedContents: String?) {
-        self.contents = updatedContents ?? defaultContents
-    }
+extension UpdatableTitleContentsItem {
     var defaultContents: String {
         return itemType.defaultValue
     }
@@ -39,11 +36,15 @@ extension UpdatableLabelItem {
     var alertControllerTextFieldValue: String? {
         return contents
     }
+    mutating func updateContentsString(updatedContents: String?) {
+        self.contents = updatedContents ?? defaultContents
+    }
 }
 
 extension ItemSection {
+    // TODO: rename this
     mutating func updateLabelContentsString(item: Int, updatedContents: String?) {
-        guard var selectedLabelItem = self[item] as? UpdatableLabelItem else {
+        guard var selectedLabelItem = self[item] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedLabelItem.updateContentsString(updatedContents)
@@ -55,14 +56,14 @@ extension ItemSection {
 }
 
 extension DataSource {
-    mutating func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
-        guard var selectedItem = self[indexPath] as? UpdatableLabelItem else {
+    func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
+        guard var selectedItem = self[indexPath] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")
         }
         selectedItem.updateContentsString(updatedContents)
         self[indexPath] = selectedItem
     }
-    mutating func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
+    func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
         updateLabelContentsString(itemType.indexPath, updatedContents: updatedContents)
     }
 }
@@ -71,7 +72,7 @@ extension UIAlertController {
     enum ItemAction: String {
         case OK, Cancel
     }
-    static func updateItemWithAlertController(selectedItem: UpdatableLabelItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
+    static func updateItemWithAlertController(selectedItem: UpdatableTitleContentsItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
         guard let item = selectedItem else {
             fatalError()
         }
@@ -92,7 +93,7 @@ extension UIAlertController {
     }
 }
 
-class LabelCollectionViewCell: CollectionViewCell {
+final class TitleContentsCollectionViewCell: CollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
@@ -120,14 +121,14 @@ class LabelCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateLabels(labelItem: LabelItem) {
+    func updateLabels(labelItem: TitleContentsItem) {
         self.titleLabel.text = labelItem.title
         self.contentsLabel.text = labelItem.contents
         self.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
-        guard let labelItem = item as? LabelItem else {
+        guard let labelItem = item as? TitleContentsItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateLabels(labelItem)

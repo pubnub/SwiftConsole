@@ -10,7 +10,7 @@ import UIKit
 import PubNub
 
 protocol MessageItem: Item {
-    init(message: PNMessageResult)
+    init(itemType: ItemType, message: PNMessageResult)
     var payload: AnyObject? {get}
 }
 
@@ -23,6 +23,18 @@ extension MessageItem {
     }
 }
 
+struct Message: MessageItem {
+    let itemType: ItemType
+    let payload: AnyObject?
+    init(itemType: ItemType, message: PNMessageResult) {
+        self.itemType = itemType
+        self.payload = message.data.message
+    }
+    var reuseIdentifier: String {
+        return MessageCollectionViewCell.reuseIdentifier
+    }
+}
+
 class MessageCollectionViewCell: CollectionViewCell {
     private let titleLabel: UILabel
     override class var reuseIdentifier: String {
@@ -31,7 +43,7 @@ class MessageCollectionViewCell: CollectionViewCell {
     override init(frame: CGRect) {
         titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/3))
         super.init(frame: frame)
-        self.addSubview(titleLabel)
+        contentView.addSubview(titleLabel)
         
         contentView.layer.borderWidth = 1
     }
