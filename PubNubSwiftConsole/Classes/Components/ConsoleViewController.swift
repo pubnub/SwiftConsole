@@ -9,7 +9,7 @@
 import UIKit
 import PubNub
 
-public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate {
+public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate {
     
     // MARK: - DataSource
     
@@ -500,6 +500,26 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
         }
+    }
+    
+    // MARK: - PublishViewControllerDelegate
+    
+    public func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
+        print(#function)
+        print(status.debugDescription)
+        self.collectionView?.performBatchUpdates({ 
+//            let publishStatus = publishStatus()
+//            guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+//                return
+//            }
+//            // the index path is the same for both calls
+//            let subscribeStatusIndexPath = currentDataSource.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
+//            currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
+//            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+//            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .SubscribeStatuses {
+//                self.collectionView?.insertItemsAtIndexPaths([subscribeStatusIndexPath])
+//            }
+            }, completion: nil)
     }
     
     // MARK: - Update from Client

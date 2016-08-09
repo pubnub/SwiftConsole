@@ -32,6 +32,9 @@ public class NavigationController: UINavigationController, UINavigationControlle
     }
     public func pushPublishViewController(client: PubNub) {
         let publishViewController = PublishViewController(client: client)
+        if let viewController = topViewController as? PublishViewControllerDelegate {
+            publishViewController.publishDelegate = viewController
+        }
         self.pushViewController(publishViewController, animated: true)
     }
     public var client: PubNub? {

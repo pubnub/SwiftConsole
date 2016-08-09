@@ -9,7 +9,14 @@
 import Foundation
 import PubNub
 
+@objc public protocol PublishViewControllerDelegate {
+    optional func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
+}
+
 public class PublishViewController: CollectionViewController, CollectionViewControllerDelegate {
+    // MARK: - Properties
+    var publishDelegate: PublishViewControllerDelegate?
+    
     // MARK: - DataSource
     
     enum PublishSectionType: Int, ItemSectionType {
@@ -235,14 +242,21 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let message = currentDataSource.message // eventually throw errors for feedback
         let channel = currentDataSource.channel
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
-        self.client?.publish(message, toChannel: channel, withCompletion: { [weak self] (publishStatus) in
+        // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
+        self.client?.publish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
             print(publishStatus.debugDescription)
-            guard var completionDataSource = self?.dataSource as? PublishDataSource else {
+            guard var completionDataSource = self.dataSource as? PublishDataSource else {
                 return
             }
-            let insertedPublishCell = completionDataSource.push(publishStatus)
-            self?.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
+            self.collectionView?.performBatchUpdates({ 
+                let insertedPublishCell = completionDataSource.push(publishStatus)
+                self.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
+                }, completion: nil)
             // now try to send this publish status to the console view controller
+            self.publishDelegate?.publishView?(self, receivedPublishStatus: publishStatus)
+//            if let publishDelegate = self.delegate as? PublishViewControllerDelegate {
+//                publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
+//            }
         })
     }
     
