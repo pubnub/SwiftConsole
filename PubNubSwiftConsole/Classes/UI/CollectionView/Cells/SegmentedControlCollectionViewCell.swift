@@ -130,13 +130,18 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         // this is called for reload, which probably means the caching is pointless
         // TODO: clean this up
         targetSelector = nil
+        segmentedControl?.removeFromSuperview()
         segmentedControl = nil
     }
     
     func updateSegmentedControl(item: SegmentedControlItem) {
+        if let oldSegmentedControl = segmentedControl {
+            oldSegmentedControl.removeFromSuperview()
+        }
+        segmentedControl = nil
         segmentedControl = UISegmentedControl(items: item.items)
         segmentedControl?.tintColor = UIColor.purpleColor()
-        segmentedControl?.selectedSegmentIndex = item.defaultSelectedSegmentIndex
+        segmentedControl?.selectedSegmentIndex = item.selectedSegmentIndex
         // only update the target selector if it's new
         if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
             targetSelector = item.targetSelector
