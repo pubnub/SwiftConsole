@@ -107,6 +107,7 @@ enum PubNubSubscribableStringParsingError: ErrorType, CustomStringConvertible {
     case ChannelNameContainsInvalidCharacters(channel: String)
     case ChannelNameTooLong(channel: String)
     case OnlyWhitespace(channel: String)
+    case Unknown(channel: String)
     var description: String {
         switch self {
         case .Empty:
@@ -117,16 +118,24 @@ enum PubNubSubscribableStringParsingError: ErrorType, CustomStringConvertible {
             return channel + " contains keywords that cannot be used with PubNub"
         case let .ChannelNameTooLong(channel):
             return channel + " is too long (over 92 characters)"
+        case let .Unknown(channel):
+            return channel + " is incorrect with unknown error"
         }
     }
 }
 
 enum PubNubPublishError: ErrorType, CustomStringConvertible {
     case NilMessage
+    case NilChannel
+    case MultipleChannels
     var description: String {
         switch self {
         case .NilMessage:
             return "Cannot publish without a message"
+        case .NilChannel:
+            return "Cannot publish without a channel"
+        case .MultipleChannels:
+            return "Cannot publish on multiple channels"
         }
     }
 }
@@ -150,14 +159,25 @@ extension UIAlertController {
 }
 
 extension PubNub {
-    func publish(message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
+    func safePublish(message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
         guard let actualMessage = message else {
             throw PubNubPublishError.NilMessage
         }
         do {
-            let channels = try? stringToSubscribablesArray(channel, commaDelimited: false)
+            guard let channels = try stringToSubscribablesArray(channel, commaDelimited: false) else {
+                throw PubNubPublishError.NilChannel
+            }
+            guard channels.count < 2 else {
+                throw PubNubPublishError.MultipleChannels
+            }
+            guard let publishChannel = channels.first else {
+                throw PubNubSubscribableStringParsingError.Unknown(channel: channel)
+            }
+            self.publish(actualMessage, toChannel: publishChannel, withCompletion: block)
         } catch let channelStringError as PubNubSubscribableStringParsingError {
-            
+            throw channelStringError
+        } catch let publishError as PubNubPublishError {
+            throw publishError // probably a better way than catching and throwing the same error (maybe rethrow?)
         } catch {
             fatalError()
         }
