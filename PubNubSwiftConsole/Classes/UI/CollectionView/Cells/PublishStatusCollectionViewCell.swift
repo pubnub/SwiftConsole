@@ -16,6 +16,8 @@ protocol PublishStatusItem: Item {
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var information: String {get}
+    var timeToken: NSNumber {get}
+    var error: AnyObject? {get}
 }
 
 extension PublishStatusItem {
@@ -31,6 +33,8 @@ struct PublishStatus: PublishStatusItem {
     let creationDate: NSDate
     let statusCode: Int
     let information: String
+    let timeToken: NSNumber
+    let error: AnyObject?
     init(itemType: ItemType, publishStatus: PNPublishStatus) {
         self.itemType = itemType
         self.category = publishStatus.stringifiedCategory()
@@ -38,6 +42,8 @@ struct PublishStatus: PublishStatusItem {
         self.creationDate = NSDate()
         self.statusCode = publishStatus.statusCode
         self.information = publishStatus.data.information
+        self.timeToken = publishStatus.data.timetoken
+        self.error = publishStatus.errorData.data
     }
     var reuseIdentifier: String {
         return PublishStatusCollectionViewCell.reuseIdentifier
@@ -50,6 +56,8 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
     private let creationDateLabel: UILabel
     private let statusCodeLabel: UILabel
     private let informationLabel: UILabel
+    private let timeTokenLabel: UILabel
+    private let errorLabel: UILabel
     
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
@@ -60,12 +68,16 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         creationDateLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/5))
         statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/5))
         informationLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/5))
+        timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 150, width: frame.size.width, height: frame.size.height/5))
+        errorLabel = UILabel(frame: CGRect(x: 5, y: 180, width: frame.size.width, height: frame.size.height/5))
         super.init(frame: frame)
         contentView.addSubview(titleLabel)
         contentView.addSubview(operationLabel)
         contentView.addSubview(creationDateLabel)
         contentView.addSubview(statusCodeLabel)
         contentView.addSubview(informationLabel)
+        contentView.addSubview(timeTokenLabel)
+        contentView.addSubview(errorLabel)
         contentView.layer.borderWidth = 1
     }
     
@@ -78,6 +90,13 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
         informationLabel.text = "Response message: \(item.information)"
+        timeTokenLabel.text = "Time token: \(item.timeToken)"
+        if let publishError = item.error {
+            errorLabel.hidden = false
+            errorLabel.text = "Error: \(publishError)"
+        } else {
+            errorLabel.hidden = true
+        }
         setNeedsLayout()
     }
     

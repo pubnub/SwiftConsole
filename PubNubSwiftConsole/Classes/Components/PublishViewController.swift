@@ -38,7 +38,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             case .PublishButton:
                 return CGSize(width: 125.0, height: 100.0)
             case .PublishStatus:
-                return CGSize(width: collectionViewSize.width, height: 150.0)
+                return CGSize(width: collectionViewSize.width, height: 220.0)
             }
         }
         
