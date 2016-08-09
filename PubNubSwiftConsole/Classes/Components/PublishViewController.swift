@@ -252,20 +252,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         } catch {
             fatalError()
         }
-//        self.client?.publish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
-//            guard let completionDataSource = self.dataSource as? PublishDataSource else {
-//                return
-//            }
-//            self.collectionView?.performBatchUpdates({ 
-//                let insertedPublishCell = completionDataSource.push(publishStatus)
-//                self.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
-//                }, completion: nil)
-//            // now try to send this publish status to the console view controller
-//            self.publishDelegate?.publishView?(self, receivedPublishStatus: publishStatus)
-////            if let publishDelegate = self.delegate as? PublishViewControllerDelegate {
-////                publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
-////            }
-//        })
     }
     
     // MARK: - CollectionViewControllerDelegate
