@@ -57,7 +57,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     struct ConsoleLabelItem: LabelItem {
         let itemType: ItemType
-        let contents: String
+        var contents: String
         init(itemType: ConsoleItemType, contents: String) {
             self.itemType = itemType
             self.contents = contents
@@ -66,6 +66,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         init(itemType: ConsoleItemType, client: PubNub) {
             self.init(itemType: itemType, contents: itemType.contents(client))
         }
+        
         var reuseIdentifier: String {
             return LabelCollectionViewCell.reuseIdentifier
         }
@@ -111,8 +112,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleUpdateableLabelItem: UpdateableLabelItem {
+    struct ConsoleUpdateableLabelItem: UpdatableLabelItem {
         let itemType: ItemType
+        var contents: String
         init(itemType: ConsoleItemType) {
             self.init(itemType: itemType, contents: itemType.defaultValue)
         }
@@ -126,9 +128,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.init(itemType: itemType, contents: itemType.contents(client))
         }
         
-        var contents: String
         var reuseIdentifier: String {
-            return UpdateableLabelCollectionViewCell.reuseIdentifier
+            return LabelCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -399,7 +400,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         dataSource = ConsoleDataSource(client: currentClient, subscribeButton: subscribeButton, channelPresenceButton: channelPresenceButton, channelGroupPresenceButton: channelGroupPresenceButton, consoleSegmentedControl: consoleSegmentedControl)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.registerClass(LabelCollectionViewCell.self, forCellWithReuseIdentifier: LabelCollectionViewCell.reuseIdentifier)
-        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SubscribeStatusCollectionViewCell.self, forCellWithReuseIdentifier: SubscribeStatusCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
