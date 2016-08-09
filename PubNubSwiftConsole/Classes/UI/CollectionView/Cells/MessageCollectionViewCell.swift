@@ -43,7 +43,7 @@ class MessageCollectionViewCell: CollectionViewCell {
     override init(frame: CGRect) {
         titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/3))
         super.init(frame: frame)
-        self.addSubview(titleLabel)
+        contentView.addSubview(titleLabel)
         
         contentView.layer.borderWidth = 1
     }
