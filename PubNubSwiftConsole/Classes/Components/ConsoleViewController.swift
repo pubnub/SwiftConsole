@@ -67,39 +67,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    struct ConsoleSubscribeStatusItem: SubscribeStatusItem {
-        let itemType: ItemType
-        let category: String
-        let operation: String
-        let creationDate: NSDate
-        let statusCode: Int
-        var timeToken: NSNumber?
-        var channel: [String]?
-        var channelGroup: [String]?
-        var client: PubNub
-        init(itemType: ConsoleItemType, status: PNStatus, client: PubNub) {
-            self.itemType = itemType
-            self.category = status.stringifiedCategory()
-            self.operation = status.stringifiedOperation()
-            self.creationDate = NSDate()
-            self.statusCode = status.statusCode
-            self.client = client
-            if let subscribeStatus = status as? PNSubscribeStatus {
-                self.timeToken = subscribeStatus.data.timetoken
-                // TODO: Change sdk variable names and descriptions for channel(s) and channel group
-            
-                self.channel = subscribeStatus.subscribedChannels
-                self.channelGroup = subscribeStatus.subscribedChannelGroups
-            }
-        }
-        init(status: PNStatus, client: PubNub) {
-            self.init(itemType: .SubscribeStatus, status: status, client: client)
-        }
-        var reuseIdentifier: String {
-            return SubscribeStatusCollectionViewCell.reuseIdentifier
-        }
-    }
-    
     struct ConsoleLabelItem: TitleContentsItem {
         let itemType: ItemType
         var contents: String
@@ -573,7 +540,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 // performBatchUpdates is nestable, so let's update other sections first
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
-                let subscribeStatus = ConsoleSubscribeStatusItem(status: status, client: client)
+                let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.SubscribeStatus, status: status, client: client)
                 guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
