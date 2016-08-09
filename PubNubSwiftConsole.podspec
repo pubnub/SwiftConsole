@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'PubNubSwiftConsole'
-  s.version          = '0.1.0'
+  s.version          = '0.5.0'
   s.summary          = 'A debug console for PubNub built entirely in Swift.'
 
 # This description is used to generate tags and improve search results.
