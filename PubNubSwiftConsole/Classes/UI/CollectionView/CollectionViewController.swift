@@ -297,9 +297,10 @@ extension DataSource {
 
 @objc public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
+    optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
 }
 
-public class CollectionViewController: ViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+public class CollectionViewController: ViewController, TextViewCollectionViewCellDelegate, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     // this is a class so that it can be subclassed and modified by subclasses of CollectionViewController
     class BasicDataSource: DataSource {
@@ -425,6 +426,9 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
         cell.updateCell(indexedItem)
+        if var textViewCell = cell as? TextViewCollectionViewCell {
+            textViewCell.delegate = self
+        }
         return cell
     }
     
@@ -446,7 +450,8 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
         }
         // FIXME: probably need to handle text views here
         if var selectedTextViewItem = dataSource?[indexPath] as? TextViewItem {
-            
+            // are we going to handle text view differently?
+            // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
         } else if var selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
             let alertController = UIAlertController.updateItemWithAlertController(selectedUpdateableLabelItem) { (action, updatedTextFieldString) in
                 if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
@@ -464,6 +469,15 @@ public class CollectionViewController: ViewController, UICollectionViewDelegateF
             }
             self.presentViewController(alertController, animated: true, completion: nil)
         }
+    }
+    
+    // MARK: - TextViewCollectionViewCellDelegate
+    
+    public func textViewDidEndEditing(textView: UITextView) {
+        print(#file)
+        print(#function)
+        // TODO: clean this up
+        self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: NSIndexPath(), textView: textView, updatedTextFieldString: textView.text)
     }
     
 }

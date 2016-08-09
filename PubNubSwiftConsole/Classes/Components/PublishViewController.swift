@@ -246,6 +246,15 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         })
     }
     
+    // MARK: - CollectionViewControllerDelegate
+    
+    public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
+        print(#file)
+        print(#line)
+        print(#function)
+        print(updatedString)
+    }
+    
     // MARK: - UINavigationItem
     
     public override var navBarTitle: String {

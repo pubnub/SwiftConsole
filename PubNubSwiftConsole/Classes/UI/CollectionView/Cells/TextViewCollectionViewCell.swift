@@ -11,7 +11,14 @@ import Foundation
 protocol TextViewItem: UpdatableTitleContentsItem {
 }
 
-class TextViewCollectionViewCell: CollectionViewCell {
+@objc public protocol TextViewCollectionViewCellDelegate: UITextViewDelegate {
+    
+}
+
+class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
+    
+    var delegate: TextViewCollectionViewCellDelegate?
+    
     private let textView: UITextView
     
     override class var reuseIdentifier: String {
@@ -21,6 +28,7 @@ class TextViewCollectionViewCell: CollectionViewCell {
     override init(frame: CGRect) {
         self.textView = UITextView(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: frame.size.height))
         super.init(frame: frame)
+        self.textView.delegate = self
         contentView.addSubview(self.textView)
         
         contentView.layer.borderWidth = 3
@@ -31,6 +39,7 @@ class TextViewCollectionViewCell: CollectionViewCell {
     }
     
     func updateTextView(item: TextViewItem) {
+        // TODO: investigate if this should always be replaced
         self.textView.text = item.contents
         self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
@@ -40,5 +49,12 @@ class TextViewCollectionViewCell: CollectionViewCell {
             fatalError("init(coder:) has not been implemented")
         }
         updateTextView(textViewItem)
+    }
+    
+    // MARK: - UITextViewDelegate
+    
+    public func textViewDidEndEditing(textView: UITextView) {
+        print(#function)
+        self.delegate?.textViewDidEndEditing?(textView)
     }
 }
