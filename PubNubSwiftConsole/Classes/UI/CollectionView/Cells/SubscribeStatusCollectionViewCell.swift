@@ -10,7 +10,7 @@ import UIKit
 import PubNub
 
 protocol SubscribeStatusItem: Item {
-    init(status: PNStatus)
+    init(status: PNStatus, client: PubNub)
     var category: String {get}
     var operation: String {get}
     var creationDate: NSDate {get}
@@ -18,6 +18,7 @@ protocol SubscribeStatusItem: Item {
     var timeToken: NSNumber? {get}
     var channel: [String] {get}
     var channelGroup: [String] {get}
+    var client: PubNub {get}
 }
 
 extension SubscribeStatusItem {
@@ -72,15 +73,15 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         } else {
             timeTokenLabel.hidden = true
         }
-        if !(item.channel.isEmpty) {
-            channelLabel.hidden = false
-            channelLabel.text = "Channel(s): \(item.channel.joinWithSeparator(", "))"
+        if item.client.isSubscribingToChannels, let channelsLabelString = item.client.channelsString() {
+                channelLabel.hidden = false
+                channelLabel.text = "Channel(s): \(channelsLabelString)"
         } else {
             channelLabel.hidden = true
         }
-        if !(item.channelGroup.isEmpty) {
+        if item.client.isSubscribingToChannelGroups, let channelGroupLabelString = item.client.channelGroupsString() {
             channelGroupLabel.hidden = false
-            channelGroupLabel.text = "Channel group: \(item.channelGroup.joinWithSeparator(", "))"
+            channelGroupLabel.text = "Channel group(s): \(channelGroupLabelString)"
         } else {
             channelGroupLabel.hidden = true
         }

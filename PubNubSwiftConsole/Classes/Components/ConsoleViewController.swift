@@ -62,21 +62,24 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         var timeToken: NSNumber?
         var channel: [String] = []
         var channelGroup: [String] = []
-        init(itemType: ConsoleItemType, status: PNStatus) {
+        var client: PubNub
+        init(itemType: ConsoleItemType, status: PNStatus, client: PubNub) {
             self.itemType = itemType
             self.category = status.stringifiedCategory()
             self.operation = status.stringifiedOperation()
             self.creationDate = NSDate()
             self.statusCode = status.statusCode
+            self.client = client
             if let subscribeStatus = status as? PNSubscribeStatus {
                 self.timeToken = subscribeStatus.data.timetoken
                 // TODO: Change sdk variable names and descriptions for channel(s) and channel group
+            
                 self.channel = subscribeStatus.subscribedChannels
                 self.channelGroup = subscribeStatus.subscribedChannelGroups
             }
         }
-        init(status: PNStatus) {
-            self.init(itemType: .SubscribeStatus, status: status)
+        init(status: PNStatus, client: PubNub) {
+            self.init(itemType: .SubscribeStatus, status: status, client: client)
         }
         var reuseIdentifier: String {
             return SubscribeStatusCollectionViewCell.reuseIdentifier
@@ -87,10 +90,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         let itemType: ItemType
         let payload: AnyObject?
         var channel: String?
-        var channelGroup: String?
         init(itemType: ConsoleItemType, message: PNMessageResult) {
             self.itemType = itemType
             self.payload = message.data.message
+            self.channel = message.data.subscribedChannel
         }
         init(message: PNMessageResult) {
             self.init(itemType: .Message, message: message)
@@ -514,7 +517,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 // performBatchUpdates is nestable, so let's update other sections first
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
-                let subscribeStatus = ConsoleSubscribeStatusItem(status: status)
+                let subscribeStatus = ConsoleSubscribeStatusItem(status: status, client: client)
                 guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
