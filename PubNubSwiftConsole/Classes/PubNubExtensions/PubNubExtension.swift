@@ -35,13 +35,14 @@ extension UIAlertController {
     }
 }
 
+enum PubNubConfigurationProperty: String {
+    case SubscribeKey = "Subscribe Key"
+    case PublishKey = "Publish Key"
+    case Origin
+}
+
 extension PNConfiguration {
-    enum Property: String {
-        case SubscribeKey = "Subscribe Key"
-        case PublishKey = "Publish Key"
-        case Origin
-    }
-    typealias KeyValue = (name: Property, value: String?)
+    typealias KeyValue = (name: PubNubConfigurationProperty, value: String?)
     // TODO: clean this up
     convenience init(properties: KeyValue...) throws {
         var pubKey: KeyValue = (.PublishKey, nil)
@@ -68,10 +69,10 @@ extension PNConfiguration {
             }
         }
         guard let finalPubKey = pubKey.value else {
-            throw PubNubConfigurationCreationError.NilValue(propertyName: Property.PublishKey.rawValue)
+            throw PubNubConfigurationCreationError.NilValue(propertyName: PubNubConfigurationProperty.PublishKey.rawValue)
         }
         guard let finalSubKey = subKey.value else {
-            throw PubNubConfigurationCreationError.NilValue(propertyName: Property.SubscribeKey.rawValue)
+            throw PubNubConfigurationCreationError.NilValue(propertyName: PubNubConfigurationProperty.SubscribeKey.rawValue)
         }
         self.init(publishKey: finalPubKey, subscribeKey: finalSubKey)
         for otherPropertyPair in otherProperties {

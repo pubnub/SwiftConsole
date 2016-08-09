@@ -13,7 +13,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     // MARK: - DataSource
     
     class ClientCreationDataSource: BasicDataSource {
-        required override init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
         convenience init(clientCreationButton: TargetSelector) {
@@ -24,7 +24,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
     }
     
-    struct ClientCreationUpdateableLabelItem: UpdateableLabelItem {
+    struct ClientCreationUpdateableLabelItem: UpdatableTitleContentsItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -37,7 +37,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         let itemType: ItemType
         var contents: String
         var reuseIdentifier: String {
-            return UpdateableLabelCollectionViewCell.reuseIdentifier
+            return TitleContentsCollectionViewCell.reuseIdentifier
         }
         
     }
@@ -140,7 +140,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         self.delegate = self
         dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(UpdateableLabelCollectionViewCell.self, forCellWithReuseIdentifier: UpdateableLabelCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
@@ -165,11 +165,11 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
 
         let pubKey = stringForItem(.PublishKey)
-        let pubKeyProperty = PNConfiguration.KeyValue(.PublishKey, pubKey)
+        let pubKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.PublishKey, pubKey)
         let subKey = stringForItem(.SubscribeKey)
-        let subKeyProperty = PNConfiguration.KeyValue(.SubscribeKey, subKey)
+        let subKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.SubscribeKey, subKey)
         let origin = stringForItem(.Origin)
-        let originProperty = PNConfiguration.KeyValue(.Origin, origin)
+        let originProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.Origin, origin)
         do {
             let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
             return PubNub.clientWithConfiguration(config)

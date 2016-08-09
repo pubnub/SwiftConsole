@@ -10,20 +10,47 @@ import UIKit
 import PubNub
 
 protocol SubscribeStatusItem: Item {
-    init(status: PNStatus, client: PubNub)
     var category: String {get}
     var operation: String {get}
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
-    var channel: [String] {get}
-    var channelGroup: [String] {get}
+    var channel: [String]? {get}
+    var channelGroup: [String]? {get}
     var client: PubNub {get}
 }
 
 extension SubscribeStatusItem {
     var title: String {
         return category
+    }
+}
+
+struct SubscribeStatus: SubscribeStatusItem {
+    let itemType: ItemType
+    let category: String
+    let operation: String
+    let creationDate: NSDate
+    let statusCode: Int
+    var timeToken: NSNumber?
+    var channel: [String]?
+    var channelGroup: [String]?
+    var client: PubNub
+    init(itemType: ItemType, status: PNStatus, client: PubNub) {
+        self.itemType = itemType
+        self.category = status.stringifiedCategory()
+        self.operation = status.stringifiedOperation()
+        self.creationDate = NSDate()
+        self.statusCode = status.statusCode
+        if let subscribeStatus = status as? PNSubscribeStatus {
+            self.timeToken = subscribeStatus.data.timetoken
+            self.channel = subscribeStatus.subscribedChannels
+            self.channelGroup = subscribeStatus.subscribedChannelGroups
+        }
+        self.client = client
+    }
+    var reuseIdentifier: String {
+        return SubscribeStatusCollectionViewCell.reuseIdentifier
     }
 }
 
@@ -74,8 +101,8 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
             timeTokenLabel.hidden = true
         }
         if item.client.isSubscribingToChannels, let channelsLabelString = item.client.channelsString() {
-                channelLabel.hidden = false
-                channelLabel.text = "Channel(s): \(channelsLabelString)"
+            channelLabel.hidden = false
+            channelLabel.text = "Channel(s): \(channelsLabelString)"
         } else {
             channelLabel.hidden = true
         }

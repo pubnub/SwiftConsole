@@ -14,7 +14,7 @@ protocol SegmentedControlItem: Item {
     var selectedSegmentIndex: Int {get set}
     var numberOfSegments: Int {get}
     var targetSelector: TargetSelector {get set}
-    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int)
+    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool // returns yes if the value changed, no if it stayed the same (for use in optimizing collection view reloads)
 }
 
 extension SegmentedControlItem {
@@ -24,8 +24,10 @@ extension SegmentedControlItem {
     var title: String {
         return ""
     }
-    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) {
+    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
+        let oldSelectedSegmentIndex = self.selectedSegmentIndex
         self.selectedSegmentIndex = index
+        return ((oldSelectedSegmentIndex != index) ? true : false)
     }
     var defaultSelectedSegmentIndex: Int {
         return 0
@@ -36,15 +38,16 @@ extension SegmentedControlItem {
 }
 
 extension ItemSection {
-    mutating func updateSelectedSegmentIndex(item: Int, updatedSelectedSegmentIndex index: Int) {
+    mutating func updateSelectedSegmentIndex(item: Int, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[item] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        segmentedControlItem.updateSelectedSegmentIndex(updatedSelectedSegmentIndex: index)
+        let result = segmentedControlItem.updateSelectedSegmentIndex(updatedSelectedSegmentIndex: index)
         self[item] = segmentedControlItem
+        return result
     }
-    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) {
-        updateSelectedSegmentIndex(itemType.item, updatedSelectedSegmentIndex: index)
+    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
+        return updateSelectedSegmentIndex(itemType.item, updatedSelectedSegmentIndex: index)
     }
 }
 
@@ -53,7 +56,7 @@ protocol SingleSegementedControlItemSection: ItemSection {
     init(segmentedControl: SegmentedControlItem)
     var segmentedControl: SegmentedControlItem {get}
     var selectedSegmentIndex: Int {get}
-    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int)
+    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool
 }
 
 extension SingleSegementedControlItemSection {
@@ -69,18 +72,19 @@ extension SingleSegementedControlItemSection {
     var selectedSegmentIndex: Int {
         return segmentedControl.selectedSegmentIndex
     }
-    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) {
-        self.updateSelectedSegmentIndex(segmentIndex, updatedSelectedSegmentIndex: index)
+    mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
+        return updateSelectedSegmentIndex(segmentIndex, updatedSelectedSegmentIndex: index)
     }
 }
 
 extension DataSource {
-    mutating func updateSelectedSegmentIndex(indexPath: NSIndexPath, updatedSelectedSegmentIndex index: Int) {
+    func updateSelectedSegmentIndex(indexPath: NSIndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        segmentedControlItem.updateSelectedSegmentIndex(updatedSelectedSegmentIndex: index)
+        let result = segmentedControlItem.updateSelectedSegmentIndex(updatedSelectedSegmentIndex: index)
         self[indexPath] = segmentedControlItem
+        return result
     }
     func selectedSegmentIndex(indexPath: NSIndexPath) -> Int {
         guard let segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
@@ -88,8 +92,8 @@ extension DataSource {
         }
         return segmentedControlItem.selectedSegmentIndex
     }
-    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) {
-        updateSelectedSegmentIndex(itemType.indexPath, updatedSelectedSegmentIndex: index)
+    func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
+        return updateSelectedSegmentIndex(itemType.indexPath, updatedSelectedSegmentIndex: index)
     }
     func selectedSegmentIndex(itemType: ItemType) -> Int {
         return selectedSegmentIndex(itemType.indexPath)
@@ -126,13 +130,18 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         // this is called for reload, which probably means the caching is pointless
         // TODO: clean this up
         targetSelector = nil
+        segmentedControl?.removeFromSuperview()
         segmentedControl = nil
     }
     
     func updateSegmentedControl(item: SegmentedControlItem) {
+        if let oldSegmentedControl = segmentedControl {
+            oldSegmentedControl.removeFromSuperview()
+        }
+        segmentedControl = nil
         segmentedControl = UISegmentedControl(items: item.items)
         segmentedControl?.tintColor = UIColor.purpleColor()
-        segmentedControl?.selectedSegmentIndex = item.defaultSelectedSegmentIndex
+        segmentedControl?.selectedSegmentIndex = item.selectedSegmentIndex
         // only update the target selector if it's new
         if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
             targetSelector = item.targetSelector
