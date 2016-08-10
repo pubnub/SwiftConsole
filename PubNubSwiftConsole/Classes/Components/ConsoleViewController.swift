@@ -43,27 +43,21 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             // forcefully unwrapped because let's catch any issue, this shouldn't cause a crash
             return ConsoleSegmentedControlItem.Segment(rawValue: selectedConsoleSegmentIndex)!
         }
-//        var selectedConsoleSegmentItemType: ConsoleItemType {
-//            return selectedConsoleSegment.consoleItemType
-//        }
         func updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
             return updateSelectedSegmentIndex(ConsoleItemType.ConsoleSegmentedControl, updatedSelectedSegmentIndex: index)
         }
         func updateConsoleSelectedSegmentIndex(updatedSelectedSegment segment: ConsoleSegmentedControlItem.Segment) -> Bool {
             return updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: segment.rawValue)
         }
-//        var selectedSectionIndex: Int {
-//            return selectedSectionIndex(ConsoleItemType.Console(selectedConsoleSegmentItemType).section)
-//        }
         func updateSelectedSection(selectedSegment: ConsoleSegmentedControlItem.Segment) {
             updateSelectedSection(selectedSegment.rawValue)
         }
         func updateSelectedSection(selectedSection: Int) {
-            guard var selectableSection = self[selectedConsoleSegmentIndex] as? SelectableSection else {
+            guard var selectableSection = self[ConsoleSectionType.Console.rawValue] as? SelectableSection else {
                 fatalError()
             }
             selectableSection.updateSelectedSection(selectedSection)
-            self[selectedConsoleSegmentIndex] = selectableSection // do i need this for classes?
+            self[ConsoleSectionType.Console.rawValue] = selectableSection // do i need this for classes?
         }
         func push(item: Item, consoleSection: ConsoleSegmentedControlItem.Segment) -> NSIndexPath {
             return push(ConsoleSectionType.Console.rawValue, subSection: consoleSection.rawValue, item: item)
@@ -80,10 +74,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         init(itemType: ConsoleItemType, client: PubNub) {
             self.init(itemType: itemType, contents: itemType.contents(client))
-        }
-        
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
         }
     }
     
@@ -102,11 +92,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         init(itemType: ConsoleItemType, client: PubNub) {
             self.init(itemType: itemType, contents: itemType.contents(client))
         }
-        
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
-        }
-        
     }
     
     struct ConsoleSegmentedControlItem: SegmentedControlItem {
@@ -158,9 +143,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         init(targetSelector: TargetSelector) {
             self.init(items: Segment.allValuesTitles, targetSelector: targetSelector)
         }
-        var reuseIdentifier: String {
-            return SegmentedControlCollectionViewCell.reuseIdentifier
-        }
         var defaultSelectedSegmentIndex: Int {
             return Segment.All.rawValue
         }
@@ -179,10 +161,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var selected: Bool = false
         var targetSelector: TargetSelector
-        
-        var reuseIdentifier: String {
-            return ButtonCollectionViewCell.reuseIdentifier
-        }
     }
     
     enum ConsoleSectionType: Int, ItemSectionType {
@@ -197,7 +175,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case SubscribeButton
         case ChannelPresenceButton
         case ChannelGroupPresenceButton
-//        case All
         case SubscribeStatus
         case PublishStatus
         case Message
@@ -231,31 +208,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 }
             }
         }
-        
-        
-//        func size(collectionViewSize: CGSize) -> CGSize {
-//            switch self {
-//            case .PublishKey, .SubscribeKey:
-//                return CGSize(width: 150.0, height: 125.0) // we need to fix this eventually
-//            case .Channels, .ChannelGroups:
-//                return CGSize(width: 150.0, height: 125.0)
-//            case .SubscribeButton:
-//                return CGSize(width: 150.0, height: 100.0)
-//            case .ChannelPresenceButton, .ChannelGroupPresenceButton:
-//                return CGSize(width: 200.0, height: 100.0)
-//            case .SubscribeStatus, .Message, .All, .PublishStatus:
-//                return CGSize(width: collectionViewSize.width, height: 150.0)
-//            case .ConsoleSegmentedControl:
-//                return CGSize(width: 300.0, height: 75.0)
-//            case let Console(consoleItemType):
-//                switch consoleItemType {
-//                case .SubscribeStatus, .Message, .All:
-//                    return consoleItemType.size(collectionViewSize)
-//                default:
-//                    fatalError("Invalid type passed in")
-//                }
-//            }
-//        }
         
         func contents(client: PubNub) -> String {
             switch self {
@@ -500,7 +452,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
             let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
             if (shouldUpdate) {
-//                currentDataSource.updateSelectedSection(sender.selectedSegmentIndex)
                 currentDataSource.updateSelectedSection(sender.selectedSegmentIndex)
                 self.collectionView?.reloadSections(ConsoleSectionType.Console.indexSet)
             }
@@ -529,7 +480,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             // the index path is the same for both calls
-//            let publishStatusIndexPath = currentDataSource.push(ConsoleItemType.PublishStatus.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: publishStatus)
             let publishStatusIndexPath = currentDataSource.push(publishStatus, consoleSection: .All)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .All {
@@ -576,8 +526,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return
                 }
                 // the index path is the same for both calls
-//                let subscribeStatusIndexPath = currentDataSource.push(ConsoleItemType.SubscribeStatus.section, subSection: ConsoleSegmentedControlItem.Segment.SubscribeStatuses.rawValue, item: subscribeStatus)
-//                currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: subscribeStatus)
                 let subscribeStatusIndexPath = currentDataSource.push(subscribeStatus, consoleSection: .SubscribeStatuses)
                 currentDataSource.push(subscribeStatus, consoleSection: .All)
                 let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
@@ -595,8 +543,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             // the indexPath is the same for both calls
-//            let messageIndexPath = currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: receivedMessage)
-//            currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: receivedMessage)
             let messageIndexPath = currentDataSource.push(receivedMessage, consoleSection: .Messages)
             currentDataSource.push(receivedMessage, consoleSection: .All)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment

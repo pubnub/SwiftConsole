@@ -36,10 +36,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         
         let itemType: ItemType
         var contents: String
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
-        }
-        
     }
     
     struct ClientCreationButtonItem: ButtonItem {
@@ -54,12 +50,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
         var selected: Bool = false
         var targetSelector: TargetSelector
-        
-        var reuseIdentifier: String {
-            return ButtonCollectionViewCell.reuseIdentifier
-        }
-        
-        
     }
     
     enum ClientCreationSectionType: Int, ItemSectionType {
@@ -81,15 +71,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
                 return TitleContentsCollectionViewCell.self
             }
         }
-        
-//        func size(collectionViewSize: CGSize) -> CGSize {
-//            switch self {
-//            case .PublishKey, .SubscribeKey, .Origin:
-//                return CGSize(width: 200.0, height: 150.0)
-//            case .ClientCreationButton:
-//                return CGSize(width: 250.0, height: 100.0)
-//            }
-//        }
         
         var selectedTitle: String? {
             return nil

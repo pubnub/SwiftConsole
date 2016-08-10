@@ -46,22 +46,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             }
         }
         
-        
-//        func size(collectionViewSize: CGSize) -> CGSize {
-//            switch self {
-//            case .PublishKey, .SubscribeKey:
-//                return CGSize(width: 150.0, height: 125.0)
-//            case .ChannelLabel:
-//                return CGSize(width: 100.0, height: 100.0)
-//            case .PayloadInput:
-//                return CGSize(width: 300.0, height: 300.0)
-//            case .PublishButton:
-//                return CGSize(width: 125.0, height: 100.0)
-//            case .PublishStatus:
-//                return CGSize(width: collectionViewSize.width, height: 150.0)
-//            }
-//        }
-        
         var selectedTitle: String? {
             return nil
         }
@@ -150,10 +134,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
         var selected: Bool = false
         var targetSelector: TargetSelector
-        
-        var reuseIdentifier: String {
-            return ButtonCollectionViewCell.reuseIdentifier
-        }
     }
     
     struct PublishUpdatableLabelItem: UpdatableTitleContentsItem {
@@ -168,10 +148,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         let itemType: ItemType
         var contents: String
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
-        }
-        
     }
     
     struct PublishLabelItem: TitleContentsItem {
@@ -183,9 +159,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
         init(itemType: PublishItemType, client: PubNub) {
             self.init(itemType: itemType, contents: itemType.contents(client))
-        }
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
         }
     }
     
@@ -201,9 +174,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         let itemType: ItemType
         var contents: String
-        var reuseIdentifier: String {
-            return TextViewCollectionViewCell.reuseIdentifier
-        }
     }
     
     final class PublishDataSource: BasicDataSource {

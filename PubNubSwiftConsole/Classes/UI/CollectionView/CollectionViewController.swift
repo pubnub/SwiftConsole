@@ -91,6 +91,9 @@ extension Item {
     func size(collectionViewSize: CGSize) -> CGSize {
         return itemType.size(collectionViewSize)
     }
+    var reuseIdentifier: String {
+        return itemType.cellClass.reuseIdentifier
+    }
 }
 
 public protocol ItemSection: Item {
@@ -441,10 +444,6 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // TODO: eventually we can probably drop this in favor of a better layout object
     public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-//        guard let cell = collectionView.cellForItemAtIndexPath(indexPath) as? CollectionViewCell else {
-//            fatalError()
-//        }
-//        return cell.dynamicType.size(collectionView.frame.size)
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
