@@ -403,6 +403,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }, completion: nil)
     }
     
+    // MARK: - Actions
+    
     enum SubscribePresenceChange {
         case Channels
         case ChannelGroups
@@ -418,8 +420,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return consoleItemType.indexPath
         }
     }
-    
-    // MARK: - Actions
     
     func toggleSubscribePresence(change: SubscribePresenceChange) {
         
