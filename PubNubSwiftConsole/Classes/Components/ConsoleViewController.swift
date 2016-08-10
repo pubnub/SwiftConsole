@@ -586,7 +586,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             // the indexPath is the same for both calls
-            let messageIndexPath = currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: receivedPresenceEvent)
+            let messageIndexPath = currentDataSource.push(ConsoleItemType.PresenceEvent.section, subSection: ConsoleSegmentedControlItem.Segment.PresenceEvents.rawValue, item: receivedPresenceEvent)
             currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: receivedPresenceEvent)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .All || currentSegmentedControlValue == .PresenceEvents {
