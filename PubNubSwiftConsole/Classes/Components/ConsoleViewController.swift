@@ -439,7 +439,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         do {
             typealias SubscribablesTuple = (Channels: [String]?, ChannelGroups: [String]?)
-            let currentSubscribables: SubscribablesTuple = (try client?.stringToSubscribablesArray(channelsItem.contents), try client?.stringToSubscribablesArray(channelGroupsItem.contents))
+            let currentSubscribables: SubscribablesTuple = (try PubNub.stringToSubscribablesArray(channelsItem.contents), try PubNub.stringToSubscribablesArray(channelGroupsItem.contents))
             switch currentSubscribables {
             case (nil, nil):
                 let alertController = UIAlertController(title: "Cannot subscribe", message: "Cannot subscribe with no channels and no channel grouups", preferredStyle: .Alert)

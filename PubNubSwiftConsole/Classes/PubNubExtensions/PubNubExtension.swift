@@ -164,7 +164,7 @@ extension PubNub {
             throw PubNubPublishError.NilMessage
         }
         do {
-            guard let channels = try stringToSubscribablesArray(channel, commaDelimited: false) else {
+            guard let channels = try PubNub.stringToSubscribablesArray(channel, commaDelimited: false) else {
                 throw PubNubPublishError.NilChannel
             }
             guard channels.count < 2 else {
@@ -183,7 +183,7 @@ extension PubNub {
         }
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
+    static func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
         guard let actualChannelsString = channels else {
             return nil
         }
@@ -215,12 +215,12 @@ extension PubNub {
     }
     
     func channelsString() -> String? {
-        return self.subscribablesToString(self.channels())
+        return PubNub.subscribablesToString(self.channels())
     }
     func channelGroupsString() -> String? {
-        return self.subscribablesToString(self.channelGroups())
+        return PubNub.subscribablesToString(self.channelGroups())
     }
-    internal func subscribablesToString(subscribables: [String]) -> String? {
+    internal static func subscribablesToString(subscribables: [String]) -> String? {
         if subscribables.isEmpty {
             return nil
         }
