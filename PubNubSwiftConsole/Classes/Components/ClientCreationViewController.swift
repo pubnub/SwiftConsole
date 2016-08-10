@@ -19,12 +19,12 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         convenience init(clientCreationButton: TargetSelector) {
             let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
             let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
-            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdateableLabelItem(itemType: .PublishKey), ClientCreationUpdateableLabelItem(itemType: .SubscribeKey), ClientCreationUpdateableLabelItem(itemType: .Origin)])
+            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdatableLabelItem(itemType: .PublishKey), ClientCreationUpdatableLabelItem(itemType: .SubscribeKey), ClientCreationUpdatableLabelItem(itemType: .Origin)])
             self.init(sections: [configSection, creationSection])
         }
     }
     
-    struct ClientCreationUpdateableLabelItem: UpdatableTitleContentsItem {
+    struct ClientCreationUpdatableLabelItem: UpdatableTitleContentsItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -158,7 +158,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType] as? ClientCreationUpdateableLabelItem where item.title == itemType.title else {
+            guard let item = dataSource?[itemType] as? ClientCreationUpdatableLabelItem where item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents
