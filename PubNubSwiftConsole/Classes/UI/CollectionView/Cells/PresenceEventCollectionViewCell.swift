@@ -10,6 +10,7 @@ import UIKit
 import PubNub
 
 protocol PresenceEventItem: Item {
+    init(itemType: ItemType, event: PNPresenceEventResult)
     var type: String {get}
     var occupancy: NSNumber? {get}
     var timeToken: NSNumber? {get}
@@ -18,6 +19,22 @@ protocol PresenceEventItem: Item {
 extension PresenceEventItem {
     var title: String {
         return type
+    }
+}
+
+struct Presence: PresenceEventItem {
+    let itemType: ItemType
+    let type: String
+    let occupancy: NSNumber?
+    let timeToken: NSNumber?
+    init(itemType: ItemType, event: PNPresenceEventResult) {
+        self.itemType = itemType
+        self.type = event.data.presenceEvent
+        self.occupancy = event.data.presence.occupancy
+        self.timeToken = event.data.presence.timetoken
+    }
+    var reuseIdentifier: String {
+        return PresenceEventCollectionViewCell.reuseIdentifier
     }
 }
 

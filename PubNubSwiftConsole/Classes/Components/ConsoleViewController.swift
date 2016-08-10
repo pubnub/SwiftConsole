@@ -107,21 +107,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
     }
     
-    struct ConsolePresenceEventItem: PresenceEventItem {
-        let itemType: ItemType
-        let type: String
-        let occupancy: NSNumber?
-        let timeToken: NSNumber?
-        init(itemType: ConsoleItemType, event: PNPresenceEventResult) {
-            self.itemType = itemType
-            self.type = event.data.presenceEvent
-            self.occupancy = event.data.presence.occupancy
-            self.timeToken = event.data.presence.timetoken
-        }
-        var reuseIdentifier: String {
-            return PresenceEventCollectionViewCell.reuseIdentifier
-        }
-    }
+    
     
     struct ConsoleSegmentedControlItem: SegmentedControlItem {
         enum Segment: Int {
@@ -581,7 +567,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
         collectionView?.performBatchUpdates({
-            let receivedPresenceEvent = ConsolePresenceEventItem(itemType: ConsoleItemType.PresenceEvent, event: event)
+            let receivedPresenceEvent = Presence(itemType: ConsoleItemType.PresenceEvent, event: event)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
