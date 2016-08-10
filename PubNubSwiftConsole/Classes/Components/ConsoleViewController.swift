@@ -30,7 +30,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let allSection = ScrollingSection()
             let subscribeStatusSection = ScrollingSection()
             let messageSection = ScrollingSection()
-            let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
+            let presenceEventSection = ScrollingSection()
+            let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection, presenceEventSection])
             self.init(sections: [clientConfigSection, subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         }
         var selectedConsoleSegmentIndex: Int {
@@ -106,9 +107,25 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
     }
     
+    struct ConsolePresenceEventItem: PresenceEventItem {
+        let itemType: ItemType
+        let type: String
+        let occupancy: NSNumber?
+        let timeToken: NSNumber?
+        init(itemType: ConsoleItemType, event: PNPresenceEventResult) {
+            self.itemType = itemType
+            self.type = event.data.presenceEvent
+            self.occupancy = event.data.presence.occupancy
+            self.timeToken = event.data.presence.timetoken
+        }
+        var reuseIdentifier: String {
+            return PresenceEventCollectionViewCell.reuseIdentifier
+        }
+    }
+    
     struct ConsoleSegmentedControlItem: SegmentedControlItem {
         enum Segment: Int {
-            case All, SubscribeStatuses, Messages
+            case All, SubscribeStatuses, Messages, PresenceEvents
             var title: String {
                 switch self {
                 case .All:
@@ -117,6 +134,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return "Subscribes"
                 case .Messages:
                     return "Messages"
+                case .PresenceEvents:
+                    return "Presence"
                 }
             }
             var consoleItemType: ConsoleItemType {
@@ -127,10 +146,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return ConsoleItemType.Message
                 case .SubscribeStatuses:
                     return ConsoleItemType.SubscribeStatus
+                case .PresenceEvents:
+                    return ConsoleItemType.PresenceEvent
                 }
             }
             static var allValues: [Segment] {
-                return [All, SubscribeStatuses, Messages]
+                return [All, SubscribeStatuses, Messages, PresenceEvents]
             }
             static var allValuesTitles: [String] {
                 return allValues.map({ (segment) -> String in
@@ -197,6 +218,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case SubscribeStatus
         case PublishStatus
         case Message
+        case PresenceEvent
         case ConsoleSegmentedControl
         indirect case Console(ConsoleItemType)
         
@@ -210,7 +232,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 150.0, height: 100.0)
             case .ChannelPresenceButton, .ChannelGroupPresenceButton:
                 return CGSize(width: 200.0, height: 100.0)
-            case .SubscribeStatus, .Message, .All, .PublishStatus:
+            case .SubscribeStatus, .Message, .All, .PublishStatus, .PresenceEvent:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
             case .ConsoleSegmentedControl:
                 return CGSize(width: 300.0, height: 75.0)
@@ -281,13 +303,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton, .ChannelPresenceButton, .ChannelGroupPresenceButton:
                 return ConsoleSectionType.SubscribeLoopControls
-            case .SubscribeStatus, .Message, .All, .PublishStatus:
+            case .SubscribeStatus, .Message, .All, .PublishStatus, .PresenceEvent:
                 return ConsoleSectionType.Console
             case .ConsoleSegmentedControl:
                 return ConsoleSectionType.ConsoleSegmentedControl
             case let .Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message, .All, .PublishStatus:
+                case .SubscribeStatus, .Message, .All, .PublishStatus, .PresenceEvent:
                     return consoleItemType.sectionType
                 default:
                     fatalError("Invalid type passed in")
@@ -327,11 +349,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .All:
                 return 0
+            case .PresenceEvent:
+                return 0
             case .ConsoleSegmentedControl:
                 return 0
             case let .Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message, .All, .PublishStatus:
+                case .SubscribeStatus, .Message, .All, .PublishStatus, .PresenceEvent:
                     return consoleItemType.item
                 default:
                     print("Invalid type passed in")
@@ -380,6 +404,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(PresenceEventCollectionViewCell.self, forCellWithReuseIdentifier: PresenceEventCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         guard let navController = self.navigationController as? NavigationController else {
             return
@@ -396,6 +421,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
             self.dataSource?.clear(ConsoleItemType.All.section)
+            self.dataSource?.clear(ConsoleItemType.PresenceEvent.section)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 fatalError()
             }
@@ -551,6 +577,22 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 }
                 }, completion: nil)
         }
+    }
+    
+    public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
+        collectionView?.performBatchUpdates({
+            let receivedPresenceEvent = ConsolePresenceEventItem(itemType: ConsoleItemType.PresenceEvent, event: event)
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                return
+            }
+            // the indexPath is the same for both calls
+            let messageIndexPath = currentDataSource.push(ConsoleItemType.Message.section, subSection: ConsoleSegmentedControlItem.Segment.Messages.rawValue, item: receivedPresenceEvent)
+            currentDataSource.push(ConsoleItemType.All.section, subSection: ConsoleSegmentedControlItem.Segment.All.rawValue, item: receivedPresenceEvent)
+            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .PresenceEvents {
+                self.collectionView?.insertItemsAtIndexPaths([messageIndexPath])
+            }
+            }, completion: nil)
     }
     
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
