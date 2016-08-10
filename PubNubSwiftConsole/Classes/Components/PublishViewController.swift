@@ -31,20 +31,36 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         case PublishButton
         case PublishStatus
         
-        func size(collectionViewSize: CGSize) -> CGSize {
+        var cellClass: CollectionViewCell.Type {
             switch self {
             case .PublishKey, .SubscribeKey:
-                return CGSize(width: 150.0, height: 125.0)
+                return TitleContentsCollectionViewCell.self
             case .ChannelLabel:
-                return CGSize(width: 100.0, height: 100.0)
+                return TitleContentsCollectionViewCell.self
             case .PayloadInput:
-                return CGSize(width: 300.0, height: 300.0)
+                return TextViewCollectionViewCell.self
             case .PublishButton:
-                return CGSize(width: 125.0, height: 100.0)
+                return ButtonCollectionViewCell.self
             case .PublishStatus:
-                return CGSize(width: collectionViewSize.width, height: 150.0)
+                return PublishStatusCollectionViewCell.self
             }
         }
+        
+        
+//        func size(collectionViewSize: CGSize) -> CGSize {
+//            switch self {
+//            case .PublishKey, .SubscribeKey:
+//                return CGSize(width: 150.0, height: 125.0)
+//            case .ChannelLabel:
+//                return CGSize(width: 100.0, height: 100.0)
+//            case .PayloadInput:
+//                return CGSize(width: 300.0, height: 300.0)
+//            case .PublishButton:
+//                return CGSize(width: 125.0, height: 100.0)
+//            case .PublishStatus:
+//                return CGSize(width: collectionViewSize.width, height: 150.0)
+//            }
+//        }
         
         var selectedTitle: String? {
             return nil

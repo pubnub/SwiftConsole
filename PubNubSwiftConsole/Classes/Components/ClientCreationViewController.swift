@@ -73,14 +73,23 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         case Origin
         case ClientCreationButton
         
-        func size(collectionViewSize: CGSize) -> CGSize {
+        var cellClass: CollectionViewCell.Type {
             switch self {
-            case .PublishKey, .SubscribeKey, .Origin:
-                return CGSize(width: 200.0, height: 150.0)
             case .ClientCreationButton:
-                return CGSize(width: 250.0, height: 100.0)
+                return ButtonCollectionViewCell.self
+            case .PublishKey, .SubscribeKey, .Origin:
+                return TitleContentsCollectionViewCell.self
             }
         }
+        
+//        func size(collectionViewSize: CGSize) -> CGSize {
+//            switch self {
+//            case .PublishKey, .SubscribeKey, .Origin:
+//                return CGSize(width: 200.0, height: 150.0)
+//            case .ClientCreationButton:
+//                return CGSize(width: 250.0, height: 100.0)
+//            }
+//        }
         
         var selectedTitle: String? {
             return nil

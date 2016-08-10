@@ -160,4 +160,8 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         }
         updateSegmentedControl(segmentedControlItem)
     }
+    
+    class override func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 300.0, height: 75.0)
+    }
 }
