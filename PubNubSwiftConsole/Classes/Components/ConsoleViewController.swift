@@ -386,21 +386,53 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }, completion: nil)
     }
     
-    func channelPresenceButtonPressed(sender: UIButton!) {
+    // MARK: - Actions
+    
+    enum SubscribePresenceChange {
+        case Channels
+        case ChannelGroups
+        var consoleItemType: ConsoleItemType {
+            switch self {
+            case .Channels:
+                return ConsoleItemType.ChannelPresenceButton
+            case .ChannelGroups:
+                return ConsoleItemType.ChannelGroupPresenceButton
+            }
+        }
+        var indexPath: NSIndexPath {
+            return consoleItemType.indexPath
+        }
+    }
+    
+    func toggleSubscribePresence(change: SubscribePresenceChange) {
+        
+        func alertControllerForInvalidPresenceChange() -> UIAlertController {
+            let alertController = UIAlertController(title: "Invalid Presence Change", message: "Cannot change presence while subscribing", preferredStyle: .Alert)
+            let okAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+            alertController.addAction(okAction)
+            return alertController
+        }
+        
+        guard let currentClient = self.client where !currentClient.isSubscribing else {
+            let alertController = alertControllerForInvalidPresenceChange()
+            presentViewController(alertController, animated: true, completion: nil)
+            return
+        }
+        
         collectionView?.performBatchUpdates({
-            self.dataSource?.toggleSelected(ConsoleItemType.ChannelPresenceButton)
-            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.ChannelPresenceButton.indexPath])
+            self.dataSource?.toggleSelected(change.consoleItemType)
+            self.collectionView?.reloadItemsAtIndexPaths([change.indexPath])
             }, completion: nil)
+    }
+    
+    func channelPresenceButtonPressed(sender: UIButton!) {
+        toggleSubscribePresence(.Channels)
     }
     
     func channelGroupPresenceButtonPressed(sender: UIButton!) {
-        collectionView?.performBatchUpdates({
-            self.dataSource?.toggleSelected(ConsoleItemType.ChannelGroupPresenceButton)
-            self.collectionView?.reloadItemsAtIndexPaths([ConsoleItemType.ChannelGroupPresenceButton.indexPath])
-            }, completion: nil)
+        toggleSubscribePresence(.ChannelGroups)
     }
     
-    // MARK: - Actions
     func subscribeButtonPressed(sender: UIButton!) {
         // TODO: clean this up
         if sender.selected {

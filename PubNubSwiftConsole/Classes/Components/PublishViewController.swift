@@ -256,6 +256,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         guard let currentDataSource = dataSource as? PublishDataSource else {
             return
         }
+        view.endEditing(true) // make sure the message value is updated before sending the publish (this may be a race?)
         let message = currentDataSource.message // eventually throw errors for feedback
         let channel = currentDataSource.channel
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
