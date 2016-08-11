@@ -22,7 +22,7 @@ extension PresenceEventItem {
     }
 }
 
-struct Presence: PresenceEventItem {
+struct PresenceEvent: PresenceEventItem {
     let itemType: ItemType
     let eventType: String
     let occupancy: NSNumber?

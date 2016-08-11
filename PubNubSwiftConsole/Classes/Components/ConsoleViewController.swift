@@ -583,7 +583,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
         collectionView?.performBatchUpdates({
-            let receivedPresenceEvent = Presence(itemType: ConsoleItemType.PresenceEvent, event: event)
+            let receivedPresenceEvent = PresenceEvent(itemType: ConsoleItemType.PresenceEvent, event: event)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
