@@ -9,10 +9,12 @@
 import Foundation
 import PubNub
 
-@objc public protocol PublishViewControllerDelegate {
+@objc(PNCPublishViewControllerDelegate)
+public protocol PublishViewControllerDelegate {
     optional func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
 }
 
+@objc(PNCPublishViewController)
 public class PublishViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - Properties
     var publishDelegate: PublishViewControllerDelegate?

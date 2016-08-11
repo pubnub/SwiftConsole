@@ -7,7 +7,7 @@
 //
 
 #import <PubNub/PubNub.h>
-@import PubNubSwiftConsole;
+#import <PubNubSwiftConsole/PubNubSwiftConsole-Swift.h>
 #import "ViewController.h"
 
 @interface ViewController ()

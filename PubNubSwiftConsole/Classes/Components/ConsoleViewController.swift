@@ -9,6 +9,7 @@
 import UIKit
 import PubNub
 
+@objc(PNCConsoleViewController)
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate {
     
     // MARK: - DataSource

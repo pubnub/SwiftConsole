@@ -294,6 +294,7 @@ extension DataSource {
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
 }
 
+@objc(PNCCollectionViewController)
 public class CollectionViewController: ViewController, TextViewCollectionViewCellDelegate, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     // this is a class so that it can be subclassed and modified by subclasses of CollectionViewController

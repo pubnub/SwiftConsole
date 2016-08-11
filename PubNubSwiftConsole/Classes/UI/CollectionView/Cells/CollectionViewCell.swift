@@ -8,6 +8,7 @@
 
 import UIKit
 
+@objc(PNCCollectionViewCell)
 public class CollectionViewCell: UICollectionViewCell {
     class var reuseIdentifier: String {
         return String(self.dynamicType)

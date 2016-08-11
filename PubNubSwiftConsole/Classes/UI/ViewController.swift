@@ -9,6 +9,7 @@
 import Foundation
 import PubNub
 
+@objc(PNCViewController)
 public class ViewController: UIViewController, PNObjectEventListener {
     
     public required init() {

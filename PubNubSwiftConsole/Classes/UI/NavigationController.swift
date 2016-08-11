@@ -9,6 +9,7 @@
 import UIKit
 import PubNub
 
+@objc(PNCNavigationController)
 public class NavigationController: UINavigationController, UINavigationControllerDelegate {
     public required init?(coder aDecoder: NSCoder) {
         fatalError()
