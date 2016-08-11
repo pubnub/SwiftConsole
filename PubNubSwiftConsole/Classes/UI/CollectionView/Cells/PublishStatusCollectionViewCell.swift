@@ -113,6 +113,6 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 150.0)
+        return CGSize(width: collectionViewSize.width, height: 220.0)
     }
 }
