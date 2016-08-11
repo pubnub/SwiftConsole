@@ -37,7 +37,8 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
-    func size(collectionViewSize: CGSize) -> CGSize
+    var cellClass: CollectionViewCell.Type {get}
+    func size(collectionViewFrame: CGSize) -> CGSize
 }
 
 extension ItemType {
@@ -52,6 +53,9 @@ extension ItemType {
     }
     var selectedTitle: String? {
         return title
+    }
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return cellClass.size(collectionViewSize)
     }
 }
 
@@ -71,12 +75,25 @@ struct EmptySectionItemType: ItemType {
     var item: Int {
         return 0
     }
+    var cellClass: CollectionViewCell.Type {
+        return CollectionViewCell.self
+    }
 }
 
 public protocol Item {
     var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
+    func size(collectionViewSize: CGSize) -> CGSize
+}
+
+extension Item {
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return itemType.size(collectionViewSize)
+    }
+    var reuseIdentifier: String {
+        return itemType.cellClass.reuseIdentifier
+    }
 }
 
 public protocol ItemSection: Item {
@@ -425,11 +442,12 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // MARK: - UICollectionViewDelegateFlowLayout
     
+    // TODO: eventually we can probably drop this in favor of a better layout object
     public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
-        return item.itemType.size(self.view.frame.size)
+        return item.size(collectionView.frame.size)
     }
     
     // MARK: - UICollectionViewDelegate
