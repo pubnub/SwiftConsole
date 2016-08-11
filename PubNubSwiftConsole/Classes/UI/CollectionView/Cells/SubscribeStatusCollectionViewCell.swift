@@ -10,12 +10,13 @@ import UIKit
 import PubNub
 
 protocol SubscribeStatusItem: Item {
-    init(itemType: ItemType, status: PNStatus)
     var category: String {get}
     var operation: String {get}
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
+    var channels: [String] {get}
+    var channelGroups: [String] {get}
 }
 
 extension SubscribeStatusItem {
@@ -31,6 +32,8 @@ struct SubscribeStatus: SubscribeStatusItem {
     let creationDate: NSDate
     let statusCode: Int
     var timeToken: NSNumber?
+    var channels: [String] = []
+    var channelGroups: [String] = []
     init(itemType: ItemType, status: PNStatus) {
         self.itemType = itemType
         self.category = status.stringifiedCategory()
@@ -39,6 +42,8 @@ struct SubscribeStatus: SubscribeStatusItem {
         self.statusCode = status.statusCode
         if let subscribeStatus = status as? PNSubscribeStatus {
             self.timeToken = subscribeStatus.data.timetoken
+            self.channels = subscribeStatus.subscribedChannels
+            self.channelGroups = subscribeStatus.subscribedChannelGroups
         }
     }
     var reuseIdentifier: String {
@@ -53,6 +58,8 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     private let timeStampLabel: UILabel
     private let statusCodeLabel: UILabel
     private let timeTokenLabel: UILabel
+    private let channelLabel: UILabel
+    private let channelGroupLabel: UILabel
     
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
@@ -63,12 +70,16 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         timeStampLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
         statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/4))
         timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/4))
+        channelLabel = UILabel(frame: CGRect(x: 5, y: 150, width: frame.size.width, height: frame.size.height/4))
+        channelGroupLabel = UILabel(frame: CGRect(x: 5, y: 180, width: frame.size.width, height: frame.size.height/4))
         super.init(frame: frame)
         contentView.addSubview(categoryLabel)
         contentView.addSubview(operationLabel)
         contentView.addSubview(timeStampLabel)
         contentView.addSubview(statusCodeLabel)
         contentView.addSubview(timeTokenLabel)
+        contentView.addSubview(channelLabel)
+        contentView.addSubview(channelGroupLabel)
         contentView.layer.borderWidth = 3
     }
     
@@ -85,6 +96,18 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
             timeTokenLabel.text = "Time token: \(timeToken)"
         } else {
             timeTokenLabel.hidden = true
+        }
+        if !item.channels.isEmpty {
+            channelLabel.hidden = false
+            channelLabel.text = "Channel(s): \(PubNub.subscribablesToString(item.channels))"
+        } else {
+            channelLabel.hidden = true
+        }
+        if !item.channelGroups.isEmpty {
+            channelGroupLabel.hidden = false
+            channelGroupLabel.text = "Channel group(s): \(PubNub.subscribablesToString(item.channelGroups))"
+        } else {
+            channelGroupLabel.hidden = true
         }
         setNeedsLayout()
     }
