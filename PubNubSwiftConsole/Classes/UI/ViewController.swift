@@ -37,7 +37,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         client?.removeListener(self) // not really necessary, just to be safe
     }
     
-    override public func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.redColor()
         self.navigationItem.title = navBarTitle
