@@ -63,7 +63,7 @@ class MessageCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateStatus(item: MessageItem) {
+    func updateMessage(item: MessageItem) {
         titleLabel.text = "Message: \(item.title)"
         if let channelName = item.channel, channelGroupName = item.channelData  {
             channelDataLabel.hidden = false
@@ -85,6 +85,6 @@ class MessageCollectionViewCell: CollectionViewCell {
         guard let messageItem = item as? MessageItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateStatus(messageItem)
+        updateMessage(messageItem)
     }
 }
