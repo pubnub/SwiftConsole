@@ -40,5 +40,10 @@ PubNubSwiftConsole is available under the MIT license. See the LICENSE file for 
 - [ ] Add presence transactional calls
 - [ ] Add history support
 - [ ] Add channel group management
+- [ ] Add client state support
+- [ ] Add PAM support
+- [ ] Add cipher key support
+- [ ] Add heartbeat statuses and log them (with heartbeat configuration as well)
 - [ ] Add APNS support
 - [ ] Add detailed views for all result/statuses
+- [ ] Add time token requests
