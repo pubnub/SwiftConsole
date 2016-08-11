@@ -39,3 +39,6 @@ PubNubSwiftConsole is available under the MIT license. See the LICENSE file for 
 - [ ] Add localization
 - [ ] Add presence transactional calls
 - [ ] Add history support
+- [ ] Add channel group management
+- [ ] Add APNS support
+- [ ] Add detailed views for all result/statuses
