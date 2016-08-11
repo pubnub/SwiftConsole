@@ -8,6 +8,7 @@
 
 import Foundation
 
+@objc(PNCCollectionViewFlowLayout)
 class CollectionViewFlowLayout: UICollectionViewFlowLayout {
     
     required override init() {

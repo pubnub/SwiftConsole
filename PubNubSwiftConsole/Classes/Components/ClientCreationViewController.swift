@@ -9,6 +9,7 @@
 import Foundation
 import PubNub
 
+@objc(PNCClientCreationViewController)
 public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - DataSource
 
@@ -18,8 +19,8 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
         convenience init(clientCreationButton: TargetSelector) {
             let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
-            let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
-            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdatableLabelItem(itemType: .PublishKey), ClientCreationUpdatableLabelItem(itemType: .SubscribeKey), ClientCreationUpdatableLabelItem(itemType: .Origin)])
+            let creationSection = BasicSection(items: [creationButtonItem])
+            let configSection = BasicSection(items: [ClientCreationUpdatableLabelItem(itemType: .PublishKey), ClientCreationUpdatableLabelItem(itemType: .SubscribeKey), ClientCreationUpdatableLabelItem(itemType: .Origin)])
             self.init(sections: [configSection, creationSection])
         }
     }
