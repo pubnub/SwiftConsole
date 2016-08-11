@@ -97,15 +97,15 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         } else {
             timeTokenLabel.hidden = true
         }
-        if !item.channels.isEmpty {
+        if let channelText = PubNub.subscribablesToString(item.channels) where !item.channels.isEmpty {
             channelLabel.hidden = false
-            channelLabel.text = "Channel(s): \(PubNub.subscribablesToString(item.channels))"
+            channelLabel.text = "Channel(s): \(channelText)"
         } else {
             channelLabel.hidden = true
         }
-        if !item.channelGroups.isEmpty {
+        if let channelGroupText = PubNub.subscribablesToString(item.channelGroups) where !item.channelGroups.isEmpty {
             channelGroupLabel.hidden = false
-            channelGroupLabel.text = "Channel group(s): \(PubNub.subscribablesToString(item.channelGroups))"
+            channelGroupLabel.text = "Channel group(s): \(channelGroupText)"
         } else {
             channelGroupLabel.hidden = true
         }
@@ -120,6 +120,6 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 150.0)
+        return CGSize(width: collectionViewSize.width, height: 250.0)
     }
 }
