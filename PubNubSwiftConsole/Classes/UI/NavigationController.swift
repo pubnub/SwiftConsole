@@ -9,11 +9,6 @@
 import UIKit
 import PubNub
 
-public enum Test: Int {
-    case One = 0
-    case Two = 1
-}
-
 @objc(PNCNavigationController)
 public class NavigationController: UINavigationController, UINavigationControllerDelegate {
     
