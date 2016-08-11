@@ -13,18 +13,18 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     // MARK: - DataSource
     
     class ClientCreationDataSource: BasicDataSource {
-        required override init(sections: [ItemSection]) {
+        required init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
         convenience init(clientCreationButton: TargetSelector) {
             let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
             let creationSection = BasicDataSource.BasicSection(items: [creationButtonItem])
-            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdateableLabelItem(itemType: .PublishKey), ClientCreationUpdateableLabelItem(itemType: .SubscribeKey), ClientCreationUpdateableLabelItem(itemType: .Origin)])
+            let configSection = BasicDataSource.BasicSection(items: [ClientCreationUpdatableLabelItem(itemType: .PublishKey), ClientCreationUpdatableLabelItem(itemType: .SubscribeKey), ClientCreationUpdatableLabelItem(itemType: .Origin)])
             self.init(sections: [configSection, creationSection])
         }
     }
     
-    struct ClientCreationUpdateableLabelItem: UpdatableTitleContentsItem {
+    struct ClientCreationUpdatableLabelItem: UpdatableTitleContentsItem {
         init(itemType: ClientCreationItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -36,10 +36,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         
         let itemType: ItemType
         var contents: String
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
-        }
-        
     }
     
     struct ClientCreationButtonItem: ButtonItem {
@@ -54,12 +50,6 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         }
         var selected: Bool = false
         var targetSelector: TargetSelector
-        
-        var reuseIdentifier: String {
-            return ButtonCollectionViewCell.reuseIdentifier
-        }
-        
-        
     }
     
     enum ClientCreationSectionType: Int, ItemSectionType {
@@ -73,12 +63,12 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         case Origin
         case ClientCreationButton
         
-        func size(collectionViewSize: CGSize) -> CGSize {
+        var cellClass: CollectionViewCell.Type {
             switch self {
-            case .PublishKey, .SubscribeKey, .Origin:
-                return CGSize(width: 200.0, height: 150.0)
             case .ClientCreationButton:
-                return CGSize(width: 250.0, height: 100.0)
+                return ButtonCollectionViewCell.self
+            case .PublishKey, .SubscribeKey, .Origin:
+                return TitleContentsCollectionViewCell.self
             }
         }
         
@@ -158,18 +148,18 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     func createPubNubClient() -> PubNub? {
 
         func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType] as? ClientCreationUpdateableLabelItem where item.title == itemType.title else {
+            guard let item = dataSource?[itemType] as? ClientCreationUpdatableLabelItem where item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents
         }
 
         let pubKey = stringForItem(.PublishKey)
-        let pubKeyProperty = PNConfiguration.KeyValue(.PublishKey, pubKey)
+        let pubKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.PublishKey, pubKey)
         let subKey = stringForItem(.SubscribeKey)
-        let subKeyProperty = PNConfiguration.KeyValue(.SubscribeKey, subKey)
+        let subKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.SubscribeKey, subKey)
         let origin = stringForItem(.Origin)
-        let originProperty = PNConfiguration.KeyValue(.Origin, origin)
+        let originProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.Origin, origin)
         do {
             let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
             return PubNub.clientWithConfiguration(config)

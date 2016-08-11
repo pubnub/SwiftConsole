@@ -37,7 +37,8 @@ public protocol ItemType {
     var section: Int {get}
     var item: Int {get}
     var indexPath: NSIndexPath {get}
-    func size(collectionViewSize: CGSize) -> CGSize
+    var cellClass: CollectionViewCell.Type {get}
+    func size(collectionViewFrame: CGSize) -> CGSize
 }
 
 extension ItemType {
@@ -52,6 +53,9 @@ extension ItemType {
     }
     var selectedTitle: String? {
         return title
+    }
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return cellClass.size(collectionViewSize)
     }
 }
 
@@ -71,12 +75,25 @@ struct EmptySectionItemType: ItemType {
     var item: Int {
         return 0
     }
+    var cellClass: CollectionViewCell.Type {
+        return CollectionViewCell.self
+    }
 }
 
 public protocol Item {
     var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
+    func size(collectionViewSize: CGSize) -> CGSize
+}
+
+extension Item {
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return itemType.size(collectionViewSize)
+    }
+    var reuseIdentifier: String {
+        return itemType.cellClass.reuseIdentifier
+    }
 }
 
 public protocol ItemSection: Item {
@@ -138,9 +155,6 @@ protocol SelectableItemSection: ItemSection {
     subscript(indexPath: NSIndexPath) -> Item { get set }
     subscript(section: Int) -> ItemSection {get set}
     subscript(section: Int, item: Int) -> Item {get set}
-//    mutating func push(section: Int, item: Item) -> NSIndexPath
-//    mutating func clear(section: Int)
-//    mutating func clearAllSections()
     mutating func updateSelectedSection(index: Int)
 }
 
@@ -158,18 +172,15 @@ extension SelectableItemSection {
             })
         }
         set {
-            self.items = newValue.map({ (item) -> ItemSection in
-                guard let castedItem = item as? ItemSection else {
-                    fatalError()
-                }
-                return castedItem
-            })
+            self.items = newValue.map {
+                $0 as Item // always succeeds (ItemSection extends Item)
+            }
         }
     }
-    public var count: Int {
+    var count: Int {
         return selectedSection.count
     }
-    public subscript(section: Int) -> ItemSection {
+    subscript(section: Int) -> ItemSection {
         get {
             return itemSections[section]
         }
@@ -178,7 +189,7 @@ extension SelectableItemSection {
         }
     }
     // FIXME: this seems wrong
-    public subscript(item: Int) -> Item {
+    subscript(item: Int) -> Item {
         get {
             return selectedSection[item]
         }
@@ -356,11 +367,8 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                 self.selectedSectionIndex = 0
             }
             init(selectableItemSections: [ItemSection]) {
-                let items = selectableItemSections.map { (itemSection) -> Item in
-                    guard let castedItem = itemSection as? Item else {
-                        fatalError()
-                    }
-                    return castedItem
+                let items = selectableItemSections.map {
+                    $0 as Item // always succeeds (ItemSection extends Item)
                 }
                 self.init(items: items)
             }
@@ -418,7 +426,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        guard var currentDataSource = dataSource else {
+        guard let currentDataSource = dataSource else {
             fatalError()
         }
         let indexedItem = currentDataSource[indexPath]
@@ -426,7 +434,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
         cell.updateCell(indexedItem)
-        if var textViewCell = cell as? TextViewCollectionViewCell {
+        if let textViewCell = cell as? TextViewCollectionViewCell {
             textViewCell.delegate = self
         }
         return cell
@@ -434,11 +442,12 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // MARK: - UICollectionViewDelegateFlowLayout
     
+    // TODO: eventually we can probably drop this in favor of a better layout object
     public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
-        return item.itemType.size(self.view.frame.size)
+        return item.size(collectionView.frame.size)
     }
     
     // MARK: - UICollectionViewDelegate
@@ -448,17 +457,19 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         guard let currentCollectionView = self.collectionView else {
             return
         }
-        // FIXME: probably need to handle text views here
-        if var selectedTextViewItem = dataSource?[indexPath] as? TextViewItem {
+        // We don't have any special behavior for text views as of now, this is really just a check
+        // to make sure that we don't treat UpdatableTitleContentsItem types as a TextViewItem because
+        // TextViewItem protocol does inherit from UpdatableTitleContentsItem
+        if let _ = dataSource?[indexPath] as? TextViewItem {
             // are we going to handle text view differently?
             // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
-        } else if var selectedUpdateableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
-            let alertController = UIAlertController.updateItemWithAlertController(selectedUpdateableLabelItem) { (action, updatedTextFieldString) in
+        } else if let selectedUpdatableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
+            let alertController = UIAlertController.updateItemWithAlertController(selectedUpdatableLabelItem) { (action, updatedTextFieldString) in
                 if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                     switch (alertDecision) {
                     case .OK:
                         self.collectionView?.performBatchUpdates({
-                            self.dataSource?.updateLabelContentsString(indexPath, updatedContents: updatedTextFieldString)
+                            self.dataSource?.updateTitleContents(indexPath, updatedContents: updatedTextFieldString)
                             self.collectionView?.reloadItemsAtIndexPaths([indexPath])
                             self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
                             }, completion: nil)
@@ -481,7 +492,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             fatalError()
         }
         self.collectionView?.performBatchUpdates({
-            self.dataSource?.updateLabelContentsString(textViewCellIndexPath, updatedContents: textView.text)
+            self.dataSource?.updateTitleContents(textViewCellIndexPath, updatedContents: textView.text)
             self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
             }, completion: nil)
     }

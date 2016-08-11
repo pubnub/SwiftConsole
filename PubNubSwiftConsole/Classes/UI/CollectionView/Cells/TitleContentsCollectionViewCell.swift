@@ -1,5 +1,5 @@
 //
-//  UpdateableLabelCollectionViewCell.swift
+//  TitleContentsCollectionViewCell.swift
 //  Pods
 //
 //  Created by Jordan Zucker on 7/13/16.
@@ -23,7 +23,7 @@ protocol UpdatableTitleContentsItem: TitleContentsItem {
     var defaultContents: String {get}
     var alertControllerTitle: String? {get}
     var alertControllerTextFieldValue: String? {get}
-    mutating func updateContentsString(updatedContents: String?)
+    mutating func updateContents(updatedContents: String?)
 }
 
 extension UpdatableTitleContentsItem {
@@ -36,35 +36,34 @@ extension UpdatableTitleContentsItem {
     var alertControllerTextFieldValue: String? {
         return contents
     }
-    mutating func updateContentsString(updatedContents: String?) {
+    mutating func updateContents(updatedContents: String?) {
         self.contents = updatedContents ?? defaultContents
     }
 }
 
 extension ItemSection {
-    // TODO: rename this
-    mutating func updateLabelContentsString(item: Int, updatedContents: String?) {
+    mutating func updateTitleContents(item: Int, updatedContents: String?) {
         guard var selectedLabelItem = self[item] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        selectedLabelItem.updateContentsString(updatedContents)
+        selectedLabelItem.updateContents(updatedContents)
         self[item] = selectedLabelItem
     }
-    mutating func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
-        updateLabelContentsString(itemType.item, updatedContents: updatedContents)
+    mutating func updateTitleContents(itemType: ItemType, updatedContents: String?) {
+        updateTitleContents(itemType.item, updatedContents: updatedContents)
     }
 }
 
 extension DataSource {
-    func updateLabelContentsString(indexPath: NSIndexPath, updatedContents: String?) {
+    func updateTitleContents(indexPath: NSIndexPath, updatedContents: String?) {
         guard var selectedItem = self[indexPath] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        selectedItem.updateContentsString(updatedContents)
+        selectedItem.updateContents(updatedContents)
         self[indexPath] = selectedItem
     }
-    func updateLabelContentsString(itemType: ItemType, updatedContents: String?) {
-        updateLabelContentsString(itemType.indexPath, updatedContents: updatedContents)
+    func updateTitleContents(itemType: ItemType, updatedContents: String?) {
+        updateTitleContents(itemType.indexPath, updatedContents: updatedContents)
     }
 }
 
@@ -82,7 +81,7 @@ extension UIAlertController {
             textField.text = item.alertControllerTextFieldValue!
         })
         alertController.addAction(UIAlertAction(title: ItemAction.OK.rawValue, style: .Default, handler: { (action) -> Void in
-            var updatedContentsString = alertController.textFields?[0].text
+            let updatedContentsString = alertController.textFields?[0].text
             completionHandler(action, updatedContentsString)
         }))
         alertController.addAction(UIAlertAction(title: ItemAction.Cancel.rawValue, style: .Default, handler: { (action) in
@@ -132,5 +131,9 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
             fatalError("init(coder:) has not been implemented")
         }
         updateLabels(labelItem)
+    }
+    
+    class override func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 150.0, height: 125.0)
     }
 }

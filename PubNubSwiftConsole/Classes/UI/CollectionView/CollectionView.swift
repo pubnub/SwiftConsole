@@ -10,7 +10,7 @@ import Foundation
 
 class CollectionView: UICollectionView {
     
-    public required override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
+    required override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
         assert((layout is CollectionViewFlowLayout), "How dare you use anything but CollectionViewFlowLayout: \(layout)")
         super.init(frame: frame, collectionViewLayout: layout)
         self.backgroundColor = UIColor.redColor()

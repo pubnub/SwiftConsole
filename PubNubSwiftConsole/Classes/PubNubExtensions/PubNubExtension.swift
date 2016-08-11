@@ -35,13 +35,14 @@ extension UIAlertController {
     }
 }
 
+enum PubNubConfigurationProperty: String {
+    case SubscribeKey = "Subscribe Key"
+    case PublishKey = "Publish Key"
+    case Origin
+}
+
 extension PNConfiguration {
-    enum Property: String {
-        case SubscribeKey = "Subscribe Key"
-        case PublishKey = "Publish Key"
-        case Origin
-    }
-    typealias KeyValue = (name: Property, value: String?)
+    typealias KeyValue = (name: PubNubConfigurationProperty, value: String?)
     // TODO: clean this up
     convenience init(properties: KeyValue...) throws {
         var pubKey: KeyValue = (.PublishKey, nil)
@@ -68,10 +69,10 @@ extension PNConfiguration {
             }
         }
         guard let finalPubKey = pubKey.value else {
-            throw PubNubConfigurationCreationError.NilValue(propertyName: Property.PublishKey.rawValue)
+            throw PubNubConfigurationCreationError.NilValue(propertyName: PubNubConfigurationProperty.PublishKey.rawValue)
         }
         guard let finalSubKey = subKey.value else {
-            throw PubNubConfigurationCreationError.NilValue(propertyName: Property.SubscribeKey.rawValue)
+            throw PubNubConfigurationCreationError.NilValue(propertyName: PubNubConfigurationProperty.SubscribeKey.rawValue)
         }
         self.init(publishKey: finalPubKey, subscribeKey: finalSubKey)
         for otherPropertyPair in otherProperties {
@@ -101,11 +102,12 @@ extension String {
     }
 }
 
-enum PubNubStringParsingError: ErrorType, CustomStringConvertible {
+enum PubNubSubscribableStringParsingError: ErrorType, CustomStringConvertible {
     case Empty
     case ChannelNameContainsInvalidCharacters(channel: String)
     case ChannelNameTooLong(channel: String)
     case OnlyWhitespace(channel: String)
+    case Unknown(channel: String)
     var description: String {
         switch self {
         case .Empty:
@@ -116,12 +118,37 @@ enum PubNubStringParsingError: ErrorType, CustomStringConvertible {
             return channel + " contains keywords that cannot be used with PubNub"
         case let .ChannelNameTooLong(channel):
             return channel + " is too long (over 92 characters)"
+        case let .Unknown(channel):
+            return channel + " is incorrect with unknown error"
+        }
+    }
+}
+
+enum PubNubPublishError: ErrorType, CustomStringConvertible {
+    case NilMessage
+    case NilChannel
+    case MultipleChannels
+    var description: String {
+        switch self {
+        case .NilMessage:
+            return "Cannot publish without a message"
+        case .NilChannel:
+            return "Cannot publish without a channel"
+        case .MultipleChannels:
+            return "Cannot publish on multiple channels"
         }
     }
 }
 
 extension UIAlertController {
-    static func alertControllerForPubNubStringParsingIntoSubscribablesArrayError(source: String?, error: PubNubStringParsingError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
+    static func alertControllerForPubNubPublishingError(error: PubNubPublishError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
+        let title = "Publish error"
+        let message = "Cannot publish because \(error)"
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
+        return alertController
+    }
+    static func alertControllerForPubNubStringParsingIntoSubscribablesArrayError(source: String?, error: PubNubSubscribableStringParsingError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
         let blame = source ?? "string Parsing"
         let title = "Issue with " + blame
         let message = "Could not parse " + blame + " into array because \(error)"
@@ -132,8 +159,31 @@ extension UIAlertController {
 }
 
 extension PubNub {
+    func safePublish(message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
+        guard let actualMessage = message else {
+            throw PubNubPublishError.NilMessage
+        }
+        do {
+            guard let channels = try PubNub.stringToSubscribablesArray(channel, commaDelimited: false) else {
+                throw PubNubPublishError.NilChannel
+            }
+            guard channels.count < 2 else {
+                throw PubNubPublishError.MultipleChannels
+            }
+            guard let publishChannel = channels.first else {
+                throw PubNubSubscribableStringParsingError.Unknown(channel: channel)
+            }
+            self.publish(actualMessage, toChannel: publishChannel, withCompletion: block)
+        } catch let channelStringError as PubNubSubscribableStringParsingError {
+            throw channelStringError
+        } catch let publishError as PubNubPublishError {
+            throw publishError // probably a better way than catching and throwing the same error (maybe rethrow?)
+        } catch {
+            fatalError()
+        }
+    }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
+    static func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
         guard let actualChannelsString = channels else {
             return nil
         }
@@ -149,28 +199,28 @@ extension PubNub {
         }
         for channel in channelsArray {
             guard !channel.isOnlyWhiteSpace else {
-                throw PubNubStringParsingError.OnlyWhitespace(channel: channel)
+                throw PubNubSubscribableStringParsingError.OnlyWhitespace(channel: channel)
             }
             guard channel.characters.count > 0 else {
-                throw PubNubStringParsingError.Empty
+                throw PubNubSubscribableStringParsingError.Empty
             }
             guard channel.characters.count <= 92 else {
-                throw PubNubStringParsingError.ChannelNameTooLong(channel: channel)
+                throw PubNubSubscribableStringParsingError.ChannelNameTooLong(channel: channel)
             }
             guard !channel.containsPubNubKeyWords else {
-                throw PubNubStringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
+                throw PubNubSubscribableStringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
             }
         }
         return channelsArray
     }
     
     func channelsString() -> String? {
-        return self.subscribablesToString(self.channels())
+        return PubNub.subscribablesToString(self.channels())
     }
     func channelGroupsString() -> String? {
-        return self.subscribablesToString(self.channelGroups())
+        return PubNub.subscribablesToString(self.channelGroups())
     }
-    internal func subscribablesToString(subscribables: [String]) -> String? {
+    internal static func subscribablesToString(subscribables: [String]) -> String? {
         if subscribables.isEmpty {
             return nil
         }
