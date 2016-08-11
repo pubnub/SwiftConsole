@@ -37,7 +37,6 @@ PubNubSwiftConsole is available under the MIT license. See the LICENSE file for 
 - [ ] Fix memory warning handling for console view controller overflow
 - [ ] Add button to email logs as zip
 - [ ] Add activity indicator spinner to subscribe button
-- [ ] Vet for Objective-C compatibility
 - [ ] Add tests
 - [ ] Add Realm support
 - [ ] Paint UI
