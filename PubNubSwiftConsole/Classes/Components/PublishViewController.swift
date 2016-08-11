@@ -26,6 +26,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     enum PublishItemType: ItemType {
         case PublishKey
         case SubscribeKey
+        case UUID
         case ChannelLabel
         case PayloadInput
         case PublishButton
@@ -33,7 +34,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         var cellClass: CollectionViewCell.Type {
             switch self {
-            case .PublishKey, .SubscribeKey:
+            case .PublishKey, .SubscribeKey, .UUID:
                 return TitleContentsCollectionViewCell.self
             case .ChannelLabel:
                 return TitleContentsCollectionViewCell.self
@@ -56,6 +57,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 return "Publish Key"
             case .SubscribeKey:
                 return "Subscribe Key"
+            case .UUID:
+                return "UUID"
             case .ChannelLabel:
                 return "Channel"
             case .PublishButton:
@@ -73,6 +76,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 return client.currentConfiguration().publishKey
             case .SubscribeKey:
                 return client.currentConfiguration().subscribeKey
+            case .UUID:
+                return client.currentConfiguration().uuid
             default:
                 return ""
             }
@@ -80,7 +85,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         var sectionType: ItemSectionType {
             switch self {
-            case .PublishKey, .SubscribeKey:
+            case .PublishKey, .SubscribeKey, .UUID:
                 return PublishSectionType.ClientConfiguration
             case .ChannelLabel:
                 return PublishSectionType.PublishConfiguration
@@ -110,6 +115,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .SubscribeKey:
                 return 1
+            case .UUID:
+                return 2
             case .ChannelLabel:
                 return 0
             case .PayloadInput:
@@ -183,13 +190,14 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         convenience init(client: PubNub, publishButton: TargetSelector) {
             let subscribeLabelItem = PublishLabelItem(itemType: .SubscribeKey, client: client)
             let publishLabelItem = PublishLabelItem(itemType: .PublishKey, client: client)
+            let uuidLabelItem = PublishLabelItem(itemType: .UUID, client: client)
             let publishButtonItem = PublishButtonItem(itemType: .PublishButton, targetSelector: publishButton)
             let channelLabelItem = PublishUpdatableLabelItem(itemType: .ChannelLabel)
             let textViewItem = PublishTextViewItem(itemType: .PayloadInput)
             let publishConfigSection = BasicSection(items: [channelLabelItem, publishButtonItem])
             let payloadSection = BasicSection(items: [textViewItem])
             let publishStatusSection = ScrollingSection()
-            let clientConfigSection = BasicSection(items: [publishLabelItem, subscribeLabelItem])
+            let clientConfigSection = BasicSection(items: [publishLabelItem, subscribeLabelItem, uuidLabelItem])
             self.init(sections: [clientConfigSection, publishConfigSection, payloadSection, publishStatusSection])
         }
         var message: String {
