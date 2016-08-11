@@ -36,6 +36,24 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection, presenceEventSection])
             self.init(sections: [clientConfigSection, subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         }
+        
+        func clearConsoleSelectableSection() {
+            guard var consoleSection = self[ConsoleSectionType.Console.rawValue] as? SelectableItemSection else {
+                fatalError()
+            }
+            // we know that all sections are of type StackItemSection
+            // because we built this ourselves
+            let clearedStackSections = consoleSection.itemSections.map { (itemSection) -> ItemSection in
+                guard var stackSection = itemSection as? StackItemSection else {
+                    fatalError()
+                }
+                stackSection.clear()
+                return stackSection as ItemSection
+            }
+            consoleSection.itemSections = clearedStackSections
+            self[ConsoleSectionType.Console.rawValue] = consoleSection
+        }
+        
         var selectedConsoleSegmentIndex: Int {
             guard let consoleSegment = self[ConsoleItemType.ConsoleSegmentedControl.indexPath] as? ConsoleSegmentedControlItem else {
                 fatalError()
@@ -393,18 +411,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         self.toolbarItems = [publishBarButtonItemItem]
     }
     
+    // MARK: - Memory Warning
+    
     public override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
         collectionView?.performBatchUpdates({
-            // FIXME: this seems off
-            self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
-            self.dataSource?.clear(ConsoleItemType.Message.section)
-            self.dataSource?.clear(ConsoleItemType.PresenceEvent.section)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 fatalError()
             }
-            self.collectionView?.reloadSections(currentDataSource.selectedConsoleSegment.consoleItemType.indexSet)
+            currentDataSource.clearConsoleSelectableSection()
+            self.collectionView?.reloadSections(ConsoleSectionType.Console.indexSet)
             }, completion: nil)
     }
     
