@@ -9,6 +9,7 @@
 import UIKit
 import PubNub
 
+// This needs the bottom toolbar to deal with publish and other actions
 @objc(PNCConsoleViewController)
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate {
     

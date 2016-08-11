@@ -14,6 +14,7 @@ public protocol PublishViewControllerDelegate {
     optional func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
 }
 
+// Intended to launch from the toolbar
 @objc(PNCPublishViewController)
 public class PublishViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - Properties

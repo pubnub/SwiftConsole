@@ -33,6 +33,10 @@ public class ViewController: UIViewController, PNObjectEventListener {
         }
     }
     
+    deinit {
+        client?.removeListener(self) // not really necessary, just to be safe
+    }
+    
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.redColor()
@@ -43,7 +47,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
     
     // MARK: - UINavigationItem
     
-    func closeButtonPressed(sender: UIBarButtonItem!) {
+    public func closeButtonPressed(sender: UIBarButtonItem!) {
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
@@ -54,6 +58,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         return "PubNub"
     }
     
+    // must be in a nav controller
     public var showsToolbar: Bool {
         return false
     }

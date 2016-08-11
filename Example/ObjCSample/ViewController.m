@@ -6,13 +6,14 @@
 //  Copyright © 2016 CocoaPods. All rights reserved.
 //
 
-#import <PubNub/PubNub.h>
-#import <PubNubSwiftConsole/PubNubSwiftConsole-Swift.h>
+#import <PubNubSwiftConsole/PubNubSwiftConsole-Swift.h> // important this come before PubNub
+#import <PubNub/PubNub.h> // important this come after
 #import "ViewController.h"
 
 @interface ViewController ()
 @property (nonatomic, weak) IBOutlet UIButton *clientCreationButton;
 @property (nonatomic, weak) IBOutlet UIButton *consoleButton;
+@property (nonatomic, strong) PubNub *client;
 @end
 
 @implementation ViewController
@@ -26,19 +27,17 @@
     [self.consoleButton addTarget:self action:@selector(consoleButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 #pragma mark - Actions
 
 - (void)clientCreationButtonPressed:(UIButton *)sender {
-    
+    PNCNavigationController *navController = [PNCNavigationController clientCreationNavigationController];
+    [self presentViewController:navController animated:YES completion:nil];
 }
 
 - (void)consoleButtonPressed:(UIButton *)sender {
-    
+    self.client = [PubNub clientWithConfiguration:[PNConfiguration configurationWithPublishKey:@"demo-36" subscribeKey:@"demo-36"]];
+    PNCNavigationController *navController = [PNCNavigationController consoleNavigationController:self.client];
+    [self presentViewController:navController animated:YES completion:nil];
 }
 
 @end
