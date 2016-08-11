@@ -306,7 +306,8 @@ extension DataSource {
     }
 }
 
-@objc public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
+@objc(PNCCollectionViewControllerDelegate)
+public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
     optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
 }
