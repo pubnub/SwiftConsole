@@ -369,7 +369,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
-        let publishBarButtonItemItem = UIBarButtonItem(title: "Publish", style: .Plain, target: navController, action: #selector(navController.publishBarButtonItemTapped(_:)))
+        let publishBarButtonItemItem = navController.publishBarButtonItem()
+        // FIXME: this probably needs attention
         self.toolbarItems = [publishBarButtonItemItem]
     }
     

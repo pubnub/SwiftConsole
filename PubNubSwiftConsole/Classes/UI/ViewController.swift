@@ -45,7 +45,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         navigationItem.rightBarButtonItem = closeButton
     }
     
-    // MARK: - UINavigationItem
+    // MARK: - NavigationController Additions
     
     public func closeButtonPressed(sender: UIBarButtonItem!) {
         guard let navController = self.navigationController as? NavigationController else {

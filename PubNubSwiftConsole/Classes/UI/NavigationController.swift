@@ -59,11 +59,18 @@ public class NavigationController: UINavigationController, UINavigationControlle
         return NavigationController(rootViewControllerType: .Publish(client: client))
     }
     
+    // MARK: - Toolbar Items
+    
+    public func publishBarButtonItem() -> UIBarButtonItem {
+        return UIBarButtonItem(title: "Publish", style: .Plain, target: self, action: #selector(self.publishBarButtonItemTapped(_:)))
+    }
+    
     // MARK: - Actions
     
     public func close(sender: UIBarButtonItem!) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
+    
     public func publishBarButtonItemTapped(sender: UIBarButtonItem!) {
         guard let currentClient = self.client else {
             return

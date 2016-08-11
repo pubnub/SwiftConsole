@@ -38,7 +38,10 @@ class ViewController: UIViewController {
     func consoleButtonPressed(sender: UIButton!) {
         let config = PNConfiguration(publishKey: "demo-36", subscribeKey: "demo-36")
         client = PubNub.clientWithConfiguration(config)
-        let consoleViewController = PubNubSwiftConsole.modalConsoleViewController(client)
+        guard let currentClient = client else {
+            return
+        }
+        let consoleViewController = PubNubSwiftConsole.modalConsoleViewController(currentClient)
         self.presentViewController(consoleViewController, animated: true, completion: nil)
     }
 
