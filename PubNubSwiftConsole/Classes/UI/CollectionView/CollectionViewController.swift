@@ -382,7 +382,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        let layout = self.layout
+        let layout = CollectionViewFlowLayout()
         self.collectionView = CollectionView(frame: self.view.frame, collectionViewLayout: layout)
         guard let pubNubCollectionView = self.collectionView else {
             fatalError("We expected to have a collection view by now. Please contact support@pubnub.com")
@@ -390,10 +390,6 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         pubNubCollectionView.delegate = self
         pubNubCollectionView.dataSource = self
         self.view.addSubview(pubNubCollectionView)
-    }
-    
-    var layout: UICollectionViewLayout {
-        return CollectionViewFlowLayout()
     }
     
     // MARK: - UICollectionViewDataSource

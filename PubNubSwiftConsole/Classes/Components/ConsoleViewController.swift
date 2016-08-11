@@ -212,7 +212,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return CGSize(width: 200.0, height: 100.0)
             case .SubscribeStatus:
                 return CGSize(width: collectionViewSize.width, height: 230.0)
-            case .Message, .All, .PublishStatus:
+            case .PublishStatus:
+                return CGSize(width: collectionViewSize.width, height: 220.0)
+            case .Message, .All:
                 return CGSize(width: collectionViewSize.width, height: 150.0)
             case .ConsoleSegmentedControl:
                 return CGSize(width: 300.0, height: 75.0)
@@ -540,7 +542,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 // performBatchUpdates is nestable, so let's update other sections first
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
-                let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.SubscribeStatus, status: status, client: client)
+                let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.SubscribeStatus, status: status)
                 guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
