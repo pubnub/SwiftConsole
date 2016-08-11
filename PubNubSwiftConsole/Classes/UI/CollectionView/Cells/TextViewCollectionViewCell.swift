@@ -56,4 +56,8 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     public func textViewDidEndEditing(textView: UITextView) {
         self.delegate?.textViewCell?(self, textViewDidEndEditing: textView)
     }
+    
+    class override func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 300.0, height: 300.0)
+    }
 }

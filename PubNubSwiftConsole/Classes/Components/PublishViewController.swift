@@ -31,18 +31,18 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         case PublishButton
         case PublishStatus
         
-        func size(collectionViewSize: CGSize) -> CGSize {
+        var cellClass: CollectionViewCell.Type {
             switch self {
             case .PublishKey, .SubscribeKey:
-                return CGSize(width: 150.0, height: 125.0)
+                return TitleContentsCollectionViewCell.self
             case .ChannelLabel:
-                return CGSize(width: 100.0, height: 100.0)
+                return TitleContentsCollectionViewCell.self
             case .PayloadInput:
-                return CGSize(width: 300.0, height: 300.0)
+                return TextViewCollectionViewCell.self
             case .PublishButton:
-                return CGSize(width: 125.0, height: 100.0)
+                return ButtonCollectionViewCell.self
             case .PublishStatus:
-                return CGSize(width: collectionViewSize.width, height: 150.0)
+                return PublishStatusCollectionViewCell.self
             }
         }
         
@@ -134,10 +134,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
         var selected: Bool = false
         var targetSelector: TargetSelector
-        
-        var reuseIdentifier: String {
-            return ButtonCollectionViewCell.reuseIdentifier
-        }
     }
     
     struct PublishUpdatableLabelItem: UpdatableTitleContentsItem {
@@ -152,10 +148,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         let itemType: ItemType
         var contents: String
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
-        }
-        
     }
     
     struct PublishLabelItem: TitleContentsItem {
@@ -167,9 +159,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
         init(itemType: PublishItemType, client: PubNub) {
             self.init(itemType: itemType, contents: itemType.contents(client))
-        }
-        var reuseIdentifier: String {
-            return TitleContentsCollectionViewCell.reuseIdentifier
         }
     }
     
@@ -185,9 +174,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         let itemType: ItemType
         var contents: String
-        var reuseIdentifier: String {
-            return TextViewCollectionViewCell.reuseIdentifier
-        }
     }
     
     final class PublishDataSource: BasicDataSource {
@@ -270,6 +256,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         guard let currentDataSource = dataSource as? PublishDataSource else {
             return
         }
+        view.endEditing(true) // make sure the message value is updated before sending the publish (this may be a race?)
         let message = currentDataSource.message // eventually throw errors for feedback
         let channel = currentDataSource.channel
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind

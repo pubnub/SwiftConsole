@@ -132,4 +132,8 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         }
         updateLabels(labelItem)
     }
+    
+    class override func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 150.0, height: 125.0)
+    }
 }
