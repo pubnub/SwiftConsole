@@ -588,11 +588,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             // the indexPath is the same for both calls
-            let messageIndexPath = currentDataSource.push(receivedPresenceEvent, consoleSection: .PresenceEvents)
+            let presenceEventIndexPath = currentDataSource.push(receivedPresenceEvent, consoleSection: .PresenceEvents)
             currentDataSource.push(receivedPresenceEvent, consoleSection: .All)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .All || currentSegmentedControlValue == .PresenceEvents {
-                self.collectionView?.insertItemsAtIndexPaths([messageIndexPath])
+                self.collectionView?.insertItemsAtIndexPaths([presenceEventIndexPath])
             }
             }, completion: nil)
     }
