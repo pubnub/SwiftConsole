@@ -17,4 +17,8 @@ public class CollectionViewCell: UICollectionViewCell {
     func updateCell(item: Item) {
         // override in subclass, this used by the generic collection view subclass
     }
+    
+    class func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 300.0, height: 100.0)
+    }
 }

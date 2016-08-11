@@ -135,4 +135,8 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         }
         updateButton(buttonItem)
     }
+    
+    class override func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 150.0, height: 100.0)
+    }
 }
