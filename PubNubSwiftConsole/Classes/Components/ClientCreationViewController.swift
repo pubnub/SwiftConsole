@@ -11,7 +11,7 @@ import PubNub
 
 public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - DataSource
-    
+
     class ClientCreationDataSource: BasicDataSource {
         required init(sections: [ItemSection]) {
             super.init(sections: sections)
