@@ -15,8 +15,8 @@ protocol SubscribeStatusItem: Item {
     var creationDate: NSDate {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
-    var channel: [String] {get}
-    var channelGroup: [String] {get}
+    var channels: [String] {get}
+    var channelGroups: [String] {get}
 }
 
 extension SubscribeStatusItem {
@@ -32,8 +32,8 @@ struct SubscribeStatus: SubscribeStatusItem {
     let creationDate: NSDate
     let statusCode: Int
     var timeToken: NSNumber?
-    var channel: [String] = []
-    var channelGroup: [String] = []
+    var channels: [String] = []
+    var channelGroups: [String] = []
     init(itemType: ItemType, status: PNStatus) {
         self.itemType = itemType
         self.category = status.stringifiedCategory()
@@ -42,8 +42,8 @@ struct SubscribeStatus: SubscribeStatusItem {
         self.statusCode = status.statusCode
         if let subscribeStatus = status as? PNSubscribeStatus {
             self.timeToken = subscribeStatus.data.timetoken
-            self.channel = subscribeStatus.subscribedChannels
-            self.channelGroup = subscribeStatus.subscribedChannelGroups
+            self.channels = subscribeStatus.subscribedChannels
+            self.channelGroups = subscribeStatus.subscribedChannelGroups
         }
     }
     var reuseIdentifier: String {
@@ -97,15 +97,15 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         } else {
             timeTokenLabel.hidden = true
         }
-        if !item.channel.isEmpty {
+        if !item.channels.isEmpty {
             channelLabel.hidden = false
-            channelLabel.text = "Channel(s): \(PubNub.subscribablesToString(item.channel))"
+            channelLabel.text = "Channel(s): \(PubNub.subscribablesToString(item.channels))"
         } else {
             channelLabel.hidden = true
         }
-        if !item.channelGroup.isEmpty {
+        if !item.channelGroups.isEmpty {
             channelGroupLabel.hidden = false
-            channelGroupLabel.text = "Channel group(s): \(PubNub.subscribablesToString(item.channelGroup))"
+            channelGroupLabel.text = "Channel group(s): \(PubNub.subscribablesToString(item.channelGroups))"
         } else {
             channelGroupLabel.hidden = true
         }

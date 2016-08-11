@@ -554,7 +554,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
                 let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.SubscribeStatus, status: status)
-                guard var currentDataSource = self.dataSource as? ConsoleDataSource else {
+                guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                     return
                 }
                 // the index path is the same for both calls
