@@ -9,6 +9,8 @@
 import UIKit
 import PubNub
 
+// This needs the bottom toolbar to deal with publish and other actions
+@objc(PNCConsoleViewController)
 public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate {
     
     // MARK: - DataSource
@@ -19,7 +21,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         convenience init(client: PubNub, subscribeButton: TargetSelector, channelPresenceButton: TargetSelector, channelGroupPresenceButton: TargetSelector, consoleSegmentedControl: TargetSelector) {
-            let clientConfigSection = BasicSection(items: [ConsoleLabelItem(itemType: .PublishKey, client: client), ConsoleLabelItem(itemType: .SubscribeKey, client: client)])
+            let clientConfigSection = BasicSection(items: [ConsoleLabelItem(itemType: .PublishKey, client: client), ConsoleLabelItem(itemType: .SubscribeKey, client: client), ConsoleLabelItem(itemType: .UUID, client: client)])
             let subscribablesSection = BasicSection(items: [ConsoleUpdatableLabelItem(itemType: .Channels, client: client), ConsoleUpdatableLabelItem(itemType: .ChannelGroups, client: client)])
             let subscribeButtonItem = ConsoleButtonItem(itemType: .SubscribeButton, targetSelector: subscribeButton)
             let channelPresenceButtonItem = ConsoleButtonItem(itemType: .ChannelPresenceButton, targetSelector: channelPresenceButton)
@@ -177,6 +179,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     enum ConsoleItemType: ItemType {
         case PublishKey
         case SubscribeKey
+        case UUID
         case Channels
         case ChannelGroups
         case SubscribeButton
@@ -191,7 +194,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var cellClass: CollectionViewCell.Type {
             switch self {
-            case .PublishKey, .SubscribeKey:
+            case .PublishKey, .SubscribeKey, .UUID:
                 return TitleContentsCollectionViewCell.self
             case .Channels, .ChannelGroups:
                 return TitleContentsCollectionViewCell.self
@@ -225,6 +228,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return client.currentConfiguration().publishKey
             case .SubscribeKey:
                 return client.currentConfiguration().subscribeKey
+            case .UUID:
+                return client.currentConfiguration().uuid
             case .Channels:
                 return client.channelsString() ?? ""
             case .ChannelGroups:
@@ -240,6 +245,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return "Publish Key"
             case .SubscribeKey:
                 return "Subscribe Key"
+            case .UUID:
+                return "UUID"
             case .Channels:
                 return "Channels"
             case .ChannelGroups:
@@ -270,7 +277,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         var sectionType: ItemSectionType {
             switch self {
-            case .PublishKey, .SubscribeKey:
+            case .PublishKey, .SubscribeKey, .UUID:
                 return ConsoleSectionType.ClientConfig
             case .Channels, .ChannelGroups:
                 return ConsoleSectionType.Subscribables
@@ -287,7 +294,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 default:
                     fatalError("Invalid type passed in")
                 }
-
             }
         }
         
@@ -304,6 +310,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .SubscribeKey:
                 return 1
+            case .UUID:
+                return 2
             case .Channels:
                 return 0
             case .ChannelGroups:
@@ -380,7 +388,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
-        let publishBarButtonItemItem = UIBarButtonItem(title: "Publish", style: .Plain, target: navController, action: #selector(navController.publishBarButtonItemTapped(_:)))
+        let publishBarButtonItemItem = navController.publishBarButtonItem()
+        // FIXME: this probably needs attention
         self.toolbarItems = [publishBarButtonItemItem]
     }
     

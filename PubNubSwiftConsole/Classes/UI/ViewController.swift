@@ -9,6 +9,7 @@
 import Foundation
 import PubNub
 
+@objc(PNCViewController)
 public class ViewController: UIViewController, PNObjectEventListener {
     
     public required init() {
@@ -32,7 +33,11 @@ public class ViewController: UIViewController, PNObjectEventListener {
         }
     }
     
-    override public func viewDidLoad() {
+    deinit {
+        client?.removeListener(self) // not really necessary, just to be safe
+    }
+    
+    public override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.redColor()
         self.navigationItem.title = navBarTitle
@@ -40,9 +45,9 @@ public class ViewController: UIViewController, PNObjectEventListener {
         navigationItem.rightBarButtonItem = closeButton
     }
     
-    // MARK: - UINavigationItem
+    // MARK: - NavigationController Additions
     
-    func closeButtonPressed(sender: UIBarButtonItem!) {
+    public func closeButtonPressed(sender: UIBarButtonItem!) {
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
@@ -53,6 +58,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         return "PubNub"
     }
     
+    // must be in a nav controller
     public var showsToolbar: Bool {
         return false
     }

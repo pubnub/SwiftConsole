@@ -8,6 +8,7 @@
 
 import Foundation
 
+@objc(PNCCollectionView)
 class CollectionView: UICollectionView {
     
     required override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {

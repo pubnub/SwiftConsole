@@ -9,27 +9,75 @@
 import UIKit
 import PubNub
 
+@objc(PNCNavigationController)
 public class NavigationController: UINavigationController, UINavigationControllerDelegate {
+    
+    // MARK: - Constructors
     public required init?(coder aDecoder: NSCoder) {
         fatalError()
     }
+    
     public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
+    
     public required init(pubNubViewController: ViewController, showsToolbar: Bool = false) {
         super.init(rootViewController: pubNubViewController)
         self.delegate = self
         self.toolbarHidden = (!showsToolbar)
     }
+    
+    public enum PubNubRootViewControllerType {
+        case ClientCreation
+        case Console(client: PubNub)
+        case Publish(client: PubNub)
+        func create() -> ViewController {
+            switch self {
+            case .ClientCreation:
+                return ClientCreationViewController()
+            case .Console(let client):
+                return ConsoleViewController(client: client)
+            case .Publish(let client):
+                return PublishViewController(client: client)
+            }
+        }
+    }
+    
+    public convenience init(rootViewControllerType: PubNubRootViewControllerType) {
+        self.init(pubNubViewController: rootViewControllerType.create())
+    }
+    
+    public static func clientCreationNavigationController() -> NavigationController {
+        return NavigationController(rootViewControllerType: .ClientCreation)
+    }
+    
+    public static func consoleNavigationController(client: PubNub) -> NavigationController {
+        return NavigationController(rootViewControllerType: .Console(client: client))
+    }
+    
+    public static func publishNavigationController(client: PubNub) -> NavigationController {
+        return NavigationController(rootViewControllerType: .Publish(client: client))
+    }
+    
+    // MARK: - Toolbar Items
+    
+    public func publishBarButtonItem() -> UIBarButtonItem {
+        return UIBarButtonItem(title: "Publish", style: .Plain, target: self, action: #selector(self.publishBarButtonItemTapped(_:)))
+    }
+    
+    // MARK: - Actions
+    
     public func close(sender: UIBarButtonItem!) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
+    
     public func publishBarButtonItemTapped(sender: UIBarButtonItem!) {
         guard let currentClient = self.client else {
             return
         }
         pushPublishViewController(currentClient)
     }
+    
     public func pushPublishViewController(client: PubNub) {
         let publishViewController = PublishViewController(client: client)
         if let viewController = topViewController as? PublishViewControllerDelegate {
@@ -37,6 +85,9 @@ public class NavigationController: UINavigationController, UINavigationControlle
         }
         self.pushViewController(publishViewController, animated: true)
     }
+    
+    // MARK: - Properties
+        
     public var client: PubNub? {
         guard let topViewController = topViewController as? ViewController else {
             return nil

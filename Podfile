@@ -11,3 +11,13 @@ target 'PubNubSwiftConsole_Example' do
     
   end
 end
+
+target 'ObjCSample' do
+  pod 'PubNubSwiftConsole', :path => '.'
+
+  target 'ObjCSampleTests' do
+    inherit! :search_paths
+
+    
+  end
+end
