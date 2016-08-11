@@ -9,6 +9,7 @@
 import Foundation
 import PubNub
 
+@objc(PNCClientCreationViewController)
 public class ClientCreationViewController: CollectionViewController, CollectionViewControllerDelegate {
     // MARK: - DataSource
 
