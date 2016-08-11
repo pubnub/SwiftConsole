@@ -32,7 +32,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let allSection = ScrollingSection()
             let subscribeStatusSection = ScrollingSection()
             let messageSection = ScrollingSection()
-            let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection])
+            let presenceEventSection = ScrollingSection()
+            let consoleSection = SelectableSection(selectableItemSections: [allSection, subscribeStatusSection, messageSection, presenceEventSection])
             self.init(sections: [clientConfigSection, subscribablesSection, subscribeLoopButtonsSection, segmentedControlSection, consoleSection])
         }
         var selectedConsoleSegmentIndex: Int {
@@ -96,9 +97,11 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
+    
+    
     struct ConsoleSegmentedControlItem: SegmentedControlItem {
         enum Segment: Int {
-            case All, SubscribeStatuses, Messages
+            case All, SubscribeStatuses, Messages, PresenceEvents
             var title: String {
                 switch self {
                 case .All:
@@ -107,6 +110,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return "Subscribes"
                 case .Messages:
                     return "Messages"
+                case .PresenceEvents:
+                    return "Presence"
                 }
             }
             var consoleItemType: ConsoleItemType {
@@ -118,10 +123,12 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return ConsoleItemType.Message
                 case .SubscribeStatuses:
                     return ConsoleItemType.SubscribeStatus
+                case .PresenceEvents:
+                    return ConsoleItemType.PresenceEvent
                 }
             }
             static var allValues: [Segment] {
-                return [All, SubscribeStatuses, Messages]
+                return [All, SubscribeStatuses, Messages, PresenceEvents]
             }
             static var allValuesTitles: [String] {
                 return allValues.map({ (segment) -> String in
@@ -181,6 +188,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case SubscribeStatus
         case PublishStatus
         case Message
+        case PresenceEvent
         case ConsoleSegmentedControl
         indirect case Console(ConsoleItemType)
         
@@ -192,6 +200,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return TitleContentsCollectionViewCell.self
             case .ChannelPresenceButton, .ChannelGroupPresenceButton:
                 return ButtonCollectionViewCell.self
+            case .PresenceEvent:
+                return PresenceEventCollectionViewCell.self
             case .SubscribeButton:
                 return ButtonCollectionViewCell.self
             case .SubscribeStatus:
@@ -273,13 +283,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return ConsoleSectionType.Subscribables
             case .SubscribeButton, .ChannelPresenceButton, .ChannelGroupPresenceButton:
                 return ConsoleSectionType.SubscribeLoopControls
-            case .SubscribeStatus, .Message, .PublishStatus:
+            case .SubscribeStatus, .Message, .PublishStatus, .PresenceEvent:
                 return ConsoleSectionType.Console
             case .ConsoleSegmentedControl:
                 return ConsoleSectionType.ConsoleSegmentedControl
             case let .Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message, .PublishStatus:
+                case .SubscribeStatus, .Message, .PublishStatus, .PresenceEvent:
                     return consoleItemType.sectionType
                 default:
                     fatalError("Invalid type passed in")
@@ -318,11 +328,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return 0
             case .Message:
                 return 0
+            case .PresenceEvent:
+                return 0
             case .ConsoleSegmentedControl:
                 return 0
             case let .Console(consoleItemType):
                 switch consoleItemType {
-                case .SubscribeStatus, .Message, .PublishStatus:
+                case .SubscribeStatus, .Message, .PublishStatus, .PresenceEvent:
                     return consoleItemType.item
                 default:
                     print("Invalid type passed in")
@@ -371,6 +383,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView.registerClass(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
+        collectionView.registerClass(PresenceEventCollectionViewCell.self, forCellWithReuseIdentifier: PresenceEventCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         guard let navController = self.navigationController as? NavigationController else {
             return
@@ -387,7 +400,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             // FIXME: this seems off
             self.dataSource?.clear(ConsoleItemType.SubscribeStatus.section)
             self.dataSource?.clear(ConsoleItemType.Message.section)
-//            self.dataSource?.clear(ConsoleItemType.All.section)
+            self.dataSource?.clear(ConsoleItemType.PresenceEvent.section)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 fatalError()
             }
@@ -575,6 +588,22 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 }
                 }, completion: nil)
         }
+    }
+    
+    public func client(client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
+        collectionView?.performBatchUpdates({
+            let receivedPresenceEvent = PresenceEvent(itemType: ConsoleItemType.PresenceEvent, event: event)
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                return
+            }
+            // the indexPath is the same for both calls
+            let presenceEventIndexPath = currentDataSource.push(receivedPresenceEvent, consoleSection: .PresenceEvents)
+            currentDataSource.push(receivedPresenceEvent, consoleSection: .All)
+            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+            if currentSegmentedControlValue == .All || currentSegmentedControlValue == .PresenceEvents {
+                self.collectionView?.insertItemsAtIndexPaths([presenceEventIndexPath])
+            }
+            }, completion: nil)
     }
     
     public func client(client: PubNub, didReceiveMessage message: PNMessageResult) {
