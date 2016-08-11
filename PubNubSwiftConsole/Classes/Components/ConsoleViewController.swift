@@ -112,7 +112,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             var consoleItemType: ConsoleItemType {
                 switch self {
                 case .All:
-                    fatalError() // FIXME: come back to this
+                    // FIXME: come back to this, called by memory warning handler
                     return self.consoleItemType
                 case .Messages:
                     return ConsoleItemType.Message
