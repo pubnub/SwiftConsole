@@ -14,6 +14,7 @@ protocol MessageItem: Item {
     var payload: AnyObject? {get}
     var channelData: String? {get}
     var channel: String? {get}
+    var timetoken: NSNumber {get}
 }
 
 extension MessageItem {
@@ -27,10 +28,12 @@ extension MessageItem {
 
 struct Message: MessageItem {
     let itemType: ItemType
+    let timetoken: NSNumber
     let payload: AnyObject?
     var channelData: String?
     var channel: String?
     init(itemType: ItemType, message: PNMessageResult) {
+        self.timetoken = message.data.timetoken
         self.itemType = itemType
         self.payload = message.data.message
         self.channelData = message.data.subscribedChannel
@@ -42,20 +45,26 @@ struct Message: MessageItem {
 }
 
 class MessageCollectionViewCell: CollectionViewCell {
-    private let titleLabel: UILabel
+    private let messageLabel: UILabel
     private let channelDataLabel: UILabel
     private let channelLabel: UILabel
+    private let timeTokenLabel: UILabel
+    
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
     }
+    
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
+        messageLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
         channelDataLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
         channelLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
+        timeTokenLabel = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: 40.0))
         super.init(frame: frame)
-        contentView.addSubview(titleLabel)
+        contentView.addSubview(messageLabel)
         contentView.addSubview(channelDataLabel)
         contentView.addSubview(channelLabel)
+        timeTokenLabel.center = CGPoint(x: channelLabel.center.x, y: channelLabel.center.y + channelLabel.frame.size.height)
+        contentView.addSubview(timeTokenLabel)
         contentView.layer.borderWidth = 1
     }
     
@@ -64,7 +73,8 @@ class MessageCollectionViewCell: CollectionViewCell {
     }
     
     func updateMessage(item: MessageItem) {
-        titleLabel.text = "Message: \(item.title)"
+        messageLabel.text = "Message: \(item.title)"
+        timeTokenLabel.text = "Timetoken: \(item.timetoken)"
         if let channelName = item.channel, channelGroupName = item.channelData  {
             channelDataLabel.hidden = false
             channelDataLabel.text = "Channel group: \(channelGroupName)"
