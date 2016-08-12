@@ -70,18 +70,18 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         func updateConsoleSelectedSegmentIndex(updatedSelectedSegment segment: ConsoleSegmentedControlItem.Segment) -> Bool {
             return updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: segment.rawValue)
         }
-        func updateSelectedSection(_ selectedSegment: ConsoleSegmentedControlItem.Segment) {
-            updateSelectedSection(selectedSegment.rawValue)
+        func updateSelectedSection(selectedSegment: ConsoleSegmentedControlItem.Segment) {
+            updateSelectedSection(selectedSection: selectedSegment.rawValue)
         }
-        func updateSelectedSection(_ selectedSection: Int) {
+        func updateSelectedSection(selectedSection: Int) {
             guard var selectableSection = self[ConsoleSectionType.console.rawValue] as? SelectableSection else {
                 fatalError()
             }
-            selectableSection.updateSelectedSection(selectedSection)
+            selectableSection.updateSelectedSection(index: selectedSection)
             self[ConsoleSectionType.console.rawValue] = selectableSection // do i need this for classes?
         }
-        func push(_ item: Item, consoleSection: ConsoleSegmentedControlItem.Segment) -> IndexPath {
-            return push(ConsoleSectionType.console.rawValue, subSection: consoleSection.rawValue, item: item)
+        func push(item: Item, consoleSection: ConsoleSegmentedControlItem.Segment) -> IndexPath {
+            return push(section: ConsoleSectionType.console.rawValue, subSection: consoleSection.rawValue, item: item)
         }
     }
     
@@ -94,7 +94,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         init(itemType: ConsoleItemType, client: PubNub) {
-            self.init(itemType: itemType, contents: itemType.contents(client))
+            self.init(itemType: itemType, contents: itemType.contents(client: client))
         }
     }
     
@@ -111,7 +111,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         init(itemType: ConsoleItemType, client: PubNub) {
-            self.init(itemType: itemType, contents: itemType.contents(client))
+            self.init(itemType: itemType, contents: itemType.contents(client: client))
         }
     }
     
@@ -240,7 +240,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
         }
         
-        func contents(_ client: PubNub) -> String {
+        func contents(client: PubNub) -> String {
             switch self {
             case .publishKey:
                 return client.currentConfiguration().publishKey
@@ -389,10 +389,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         guard let currentClient = self.client else {
             return
         }
-        let subscribeButton: TargetSelector = (self, #selector(self.subscribeButtonPressed(_:)))
-        let channelPresenceButton: TargetSelector = (self, #selector(self.channelPresenceButtonPressed(_:)))
-        let channelGroupPresenceButton: TargetSelector = (self, #selector(self.channelGroupPresenceButtonPressed(_:)))
-        let consoleSegmentedControl: TargetSelector = (self, #selector(self.consoleSegmentedControlValueChanged(_:)))
+        let subscribeButton: TargetSelector = (self, #selector(self.subscribeButtonPressed(sender:)))
+        let channelPresenceButton: TargetSelector = (self, #selector(self.channelPresenceButtonPressed(sender:)))
+        let channelGroupPresenceButton: TargetSelector = (self, #selector(self.channelGroupPresenceButtonPressed(sender:)))
+        let consoleSegmentedControl: TargetSelector = (self, #selector(self.consoleSegmentedControlValueChanged(sender:)))
         dataSource = ConsoleDataSource(client: currentClient, subscribeButton: subscribeButton, channelPresenceButton: channelPresenceButton, channelGroupPresenceButton: channelGroupPresenceButton, consoleSegmentedControl: consoleSegmentedControl)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
@@ -443,7 +443,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    func toggleSubscribePresence(_ change: SubscribePresenceChange) {
+    func toggleSubscribePresence(change: SubscribePresenceChange) {
         
         func alertControllerForInvalidPresenceChange() -> UIAlertController {
             let alertController = UIAlertController(title: "Invalid Presence Change", message: "Cannot change presence for \(change.rawValue) while subscribing", preferredStyle: .alert)
@@ -459,20 +459,20 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
         
         collectionView?.performBatchUpdates({
-            self.dataSource?.toggleSelected(change.consoleItemType)
+            self.dataSource?.toggleSelected(itemType: change.consoleItemType)
             self.collectionView?.reloadItems(at: [change.indexPath])
             })
     }
     
-    func channelPresenceButtonPressed(_ sender: UIButton!) {
-        toggleSubscribePresence(.channels)
+    func channelPresenceButtonPressed(sender: UIButton!) {
+        toggleSubscribePresence(change: .channels)
     }
     
-    func channelGroupPresenceButtonPressed(_ sender: UIButton!) {
-        toggleSubscribePresence(.channelGroups)
+    func channelGroupPresenceButtonPressed(sender: UIButton!) {
+        toggleSubscribePresence(change: .channelGroups)
     }
     
-    func subscribeButtonPressed(_ sender: UIButton!) {
+    func subscribeButtonPressed(sender: UIButton!) {
         // TODO: clean this up
         if sender.isSelected {
             client?.unsubscribeFromAll()
@@ -518,23 +518,22 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         }
     }
     
-    func consoleSegmentedControlValueChanged(_ sender: UISegmentedControl!) {
-//        collectionView?.perfo
-//        collectionView?.performBatchUpdates() {
-//            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
-//                return
-//            }
-//            let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
-//            if (shouldUpdate) {
-//                currentDataSource.updateSelectedSection(sender.selectedSegmentIndex)
-//                self.collectionView?.reloadSections(ConsoleSectionType.console.indexSet as IndexSet)
-//            }
-//            }
+    func consoleSegmentedControlValueChanged(sender: UISegmentedControl!) {
+        collectionView?.performBatchUpdates({
+            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+                return
+            }
+            let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+            if (shouldUpdate) {
+                currentDataSource.updateSelectedSection(selectedSection: sender.selectedSegmentIndex)
+                self.collectionView?.reloadSections(ConsoleSectionType.console.indexSet as IndexSet)
+            }
+            })
     }
     
     // MARK: - CollectionViewControllerDelegate
     
-    public func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?) {
+    public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?) {
         if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
             switch (alertDecision) {
             case .OK:
@@ -547,14 +546,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - PublishViewControllerDelegate
     
-    public func publishView(_ publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
+    public func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
         self.collectionView?.performBatchUpdates({
             let publishStatus = PublishStatus(itemType: ConsoleItemType.publishStatus, publishStatus: status)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
             // the index path is the same for both calls
-            let publishStatusIndexPath = currentDataSource.push(publishStatus, consoleSection: .all)
+            let publishStatusIndexPath = currentDataSource.push(item: publishStatus, consoleSection: .all)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .all {
                 self.collectionView?.insertItems(at: [publishStatusIndexPath])
@@ -566,8 +565,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func updateSubscribableLabelCells() {
         collectionView?.performBatchUpdates({ 
-            self.dataSource?.updateTitleContents(ConsoleItemType.channels.indexPath, updatedContents: self.client?.channelsString())
-            self.dataSource?.updateTitleContents(ConsoleItemType.channelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
+            self.dataSource?.updateTitleContents(indexPath: ConsoleItemType.channels.indexPath, updatedContents: self.client?.channelsString())
+            self.dataSource?.updateTitleContents(indexPath: ConsoleItemType.channelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
             self.collectionView?.reloadItems(at: [ConsoleItemType.channels.indexPath as IndexPath, ConsoleItemType.channelGroups.indexPath as IndexPath])
             })
     }
@@ -579,7 +578,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView?.performBatchUpdates({ 
             let subscribing = currentClient.isSubscribing
             let indexPath = ConsoleItemType.subscribeButton.indexPath
-            self.dataSource?.updateSelected(indexPath, selected: subscribing)
+            self.dataSource?.updateSelected(indexPath: indexPath, selected: subscribing)
             self.collectionView?.reloadItems(at: [indexPath as IndexPath])
             })
     }
@@ -600,8 +599,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                     return
                 }
                 // the index path is the same for both calls
-                let subscribeStatusIndexPath = currentDataSource.push(subscribeStatus, consoleSection: .subscribeStatuses)
-                currentDataSource.push(subscribeStatus, consoleSection: .all)
+                let subscribeStatusIndexPath = currentDataSource.push(item: subscribeStatus, consoleSection: .subscribeStatuses)
+                currentDataSource.push(item: subscribeStatus, consoleSection: .all)
                 let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
                 if currentSegmentedControlValue == .all || currentSegmentedControlValue == .subscribeStatuses {
                     self.collectionView?.insertItems(at: [subscribeStatusIndexPath])
@@ -617,8 +616,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             // the indexPath is the same for both calls
-            let presenceEventIndexPath = currentDataSource.push(receivedPresenceEvent, consoleSection: .presenceEvents)
-            currentDataSource.push(receivedPresenceEvent, consoleSection: .all)
+            let presenceEventIndexPath = currentDataSource.push(item: receivedPresenceEvent, consoleSection: .presenceEvents)
+            currentDataSource.push(item: receivedPresenceEvent, consoleSection: .all)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .all || currentSegmentedControlValue == .presenceEvents {
                 self.collectionView?.insertItems(at: [presenceEventIndexPath])
@@ -633,8 +632,8 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 return
             }
             // the indexPath is the same for both calls
-            let messageIndexPath = currentDataSource.push(receivedMessage, consoleSection: .messages)
-            currentDataSource.push(receivedMessage, consoleSection: .all)
+            let messageIndexPath = currentDataSource.push(item: receivedMessage, consoleSection: .messages)
+            currentDataSource.push(item: receivedMessage, consoleSection: .all)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .all || currentSegmentedControlValue == .messages {
                 self.collectionView?.insertItems(at: [messageIndexPath])

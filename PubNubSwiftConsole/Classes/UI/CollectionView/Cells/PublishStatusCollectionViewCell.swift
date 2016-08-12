@@ -84,7 +84,7 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updatePublishStatus(_ item: PublishStatus) {
+    func updatePublishStatus(item: PublishStatus) {
         titleLabel.text = "Publish: \(item.title)"
         operationLabel.text = "Operation: \(item.operation)"
         creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
@@ -105,14 +105,14 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         setNeedsLayout()
     }
     
-    override func updateCell(_ item: Item) {
+    override func updateCell(item: Item) {
         guard let publishItem = item as? PublishStatus else {
             fatalError("init(coder:) has not been implemented")
         }
-        updatePublishStatus(publishItem)
+        updatePublishStatus(item: publishItem)
     }
     
-    class override func size(_ collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 220.0)
     }
 }

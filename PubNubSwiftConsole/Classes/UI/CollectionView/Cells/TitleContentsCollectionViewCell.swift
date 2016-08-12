@@ -23,7 +23,7 @@ protocol UpdatableTitleContentsItem: TitleContentsItem {
     var defaultContents: String {get}
     var alertControllerTitle: String? {get}
     var alertControllerTextFieldValue: String? {get}
-    mutating func updateContents(_ updatedContents: String?)
+    mutating func updateContents(updatedContents: String?)
 }
 
 extension UpdatableTitleContentsItem {
@@ -36,34 +36,34 @@ extension UpdatableTitleContentsItem {
     var alertControllerTextFieldValue: String? {
         return contents
     }
-    mutating func updateContents(_ updatedContents: String?) {
+    mutating func updateContents(updatedContents: String?) {
         self.contents = updatedContents ?? defaultContents
     }
 }
 
 extension ItemSection {
-    mutating func updateTitleContents(_ item: Int, updatedContents: String?) {
+    mutating func updateTitleContents(item: Int, updatedContents: String?) {
         guard var selectedLabelItem = self[item] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        selectedLabelItem.updateContents(updatedContents)
+        selectedLabelItem.updateContents(updatedContents: updatedContents)
         self[item] = selectedLabelItem
     }
-    mutating func updateTitleContents(_ itemType: ItemType, updatedContents: String?) {
-        updateTitleContents(itemType.item, updatedContents: updatedContents)
+    mutating func updateTitleContents(itemType: ItemType, updatedContents: String?) {
+        updateTitleContents(item: itemType.item, updatedContents: updatedContents)
     }
 }
 
 extension DataSource {
-    func updateTitleContents(_ indexPath: IndexPath, updatedContents: String?) {
+    func updateTitleContents(indexPath: IndexPath, updatedContents: String?) {
         guard var selectedItem = self[indexPath] as? UpdatableTitleContentsItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        selectedItem.updateContents(updatedContents)
+        selectedItem.updateContents(updatedContents: updatedContents)
         self[indexPath] = selectedItem
     }
-    func updateTitleContents(_ itemType: ItemType, updatedContents: String?) {
-        updateTitleContents(itemType.indexPath as IndexPath, updatedContents: updatedContents)
+    func updateTitleContents(itemType: ItemType, updatedContents: String?) {
+        updateTitleContents(indexPath: itemType.indexPath as IndexPath, updatedContents: updatedContents)
     }
 }
 
@@ -71,7 +71,7 @@ extension UIAlertController {
     enum ItemAction: String {
         case OK, Cancel
     }
-    static func updateItemWithAlertController(_ selectedItem: UpdatableTitleContentsItem?, completionHandler: ((UIAlertAction, String?) -> Void)? = nil) -> UIAlertController {
+    static func updateItemWithAlertController(selectedItem: UpdatableTitleContentsItem?, completionHandler: ((UIAlertAction, String?) -> Void)? = nil) -> UIAlertController {
         guard let item = selectedItem else {
             fatalError()
         }
@@ -120,20 +120,20 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateLabels(_ labelItem: TitleContentsItem) {
-        self.titleLabel.text = labelItem.title
-        self.contentsLabel.text = labelItem.contents
+    func updateLabels(item: TitleContentsItem) {
+        self.titleLabel.text = item.title
+        self.contentsLabel.text = item.contents
         self.setNeedsLayout()
     }
     
-    override func updateCell(_ item: Item) {
+    override func updateCell(item: Item) {
         guard let labelItem = item as? TitleContentsItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateLabels(labelItem)
+        updateLabels(item: labelItem)
     }
     
-    class override func size(_ collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 150.0, height: 125.0)
     }
 }

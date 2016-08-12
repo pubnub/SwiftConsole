@@ -38,7 +38,7 @@ public protocol ItemType {
     var item: Int {get}
     var indexPath: IndexPath {get}
     var cellClass: CollectionViewCell.Type {get}
-    func size(_ collectionViewFrame: CGSize) -> CGSize
+    func size(collectionViewSize: CGSize) -> CGSize
 }
 
 extension ItemType {
@@ -54,13 +54,13 @@ extension ItemType {
     var selectedTitle: String? {
         return title
     }
-    func size(_ collectionViewSize: CGSize) -> CGSize {
-        return cellClass.size(collectionViewSize)
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return cellClass.size(collectionViewSize: collectionViewSize)
     }
 }
 
 struct EmptySectionItemType: ItemType {
-    func size(_ collectionViewSize: CGSize) -> CGSize {
+    func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize.zero
     }
     var title: String {
@@ -84,12 +84,12 @@ public protocol Item {
     var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
-    func size(_ collectionViewSize: CGSize) -> CGSize
+    func size(collectionViewSize: CGSize) -> CGSize
 }
 
 extension Item {
-    func size(_ collectionViewSize: CGSize) -> CGSize {
-        return itemType.size(collectionViewSize)
+    func size(collectionViewSize: CGSize) -> CGSize {
+        return itemType.size(collectionViewSize: collectionViewSize)
     }
     var reuseIdentifier: String {
         return itemType.cellClass.reuseIdentifier
@@ -133,12 +133,12 @@ extension ItemSection {
 
 // should there be a protocol for pushable items?
 protocol StackItemSection: ItemSection {
-    mutating func push(_ item: Item) -> Int
+    mutating func push(item: Item) -> Int
     mutating func clear()
 }
 
 extension StackItemSection {
-    mutating func push(_ item: Item) -> Int {
+    mutating func push(item: Item) -> Int {
         self.items.insert(item, at: 0)
         return 0
     }
@@ -155,7 +155,7 @@ protocol SelectableItemSection: ItemSection {
     subscript(indexPath: IndexPath) -> Item { get set }
     subscript(section: Int) -> ItemSection {get set}
     subscript(section: Int, item: Int) -> Item {get set}
-    mutating func updateSelectedSection(_ index: Int)
+    mutating func updateSelectedSection(index: Int)
 }
 
 extension SelectableItemSection {
@@ -164,6 +164,7 @@ extension SelectableItemSection {
     }
     var itemSections: [ItemSection] {
         get {
+            // FIXME: pretty sure this will work in swift 3 with a cast
             return items.map({ (item) -> ItemSection in
                 guard let castedItem = item as? ItemSection else {
                     fatalError()
@@ -224,7 +225,7 @@ extension SelectableItemSection {
             self[section] = itemSection
         }
     }
-    mutating func updateSelectedSection(_ index: Int) {
+    mutating func updateSelectedSection(index: Int) {
         self.selectedSectionIndex = index
     }
 }
@@ -267,38 +268,38 @@ extension DataSource {
     public var count: Int {
         return sections.count
     }
-    public func push(_ section: Int, item: Item) -> IndexPath {
+    public func push(section: Int, item: Item) -> IndexPath {
         guard var stackSection = sections[section] as? StackItemSection else {
             fatalError()
         }
-        let pushedItemIndex = stackSection.push(item)
+        let pushedItemIndex = stackSection.push(item: item)
         sections[section] = stackSection
         return IndexPath(item: pushedItemIndex, section: section)
     }
-    public func push(_ section: Int, subSection: Int, item: Item) -> IndexPath {
+    public func push(section: Int, subSection: Int, item: Item) -> IndexPath {
         guard var selectableSection = sections[section] as? SelectableItemSection, var stackSection = selectableSection[subSection] as? StackItemSection else {
             fatalError()
         }
-        let index = stackSection.push(item)
+        let index = stackSection.push(item: item)
         selectableSection[subSection] = stackSection
         sections[section] = selectableSection
         return IndexPath(item: index, section: section) // we need to alter this value because we want to return the major section for use in collection view cell reloading and not the sub section value used by the data store
     }
-    public func clear(_ section: Int) {
+    public func clear(section: Int) {
         guard var stackSection = sections[section] as? StackItemSection else {
             return
         }
         stackSection.clear()
         self[section] = stackSection
     }
-    public func updateSelectedSection(_ section: Int, selectedSubSection: Int) {
+    public func updateSelectedSection(section: Int, selectedSubSection: Int) {
         guard var selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }
-        selectableSection.updateSelectedSection(selectedSubSection)
+        selectableSection.updateSelectedSection(index: selectedSubSection)
         sections[section] = selectableSection
     }
-    public func selectedSectionIndex(_ section: Int) -> Int {
+    public func selectedSectionIndex(section: Int) -> Int {
         guard let selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }
@@ -308,8 +309,8 @@ extension DataSource {
 
 @objc(PNCCollectionViewControllerDelegate)
 public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
-    @objc optional func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
-    @objc optional func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
+    @objc optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
+    @objc optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
 }
 
 @objc(PNCCollectionViewController)
@@ -435,7 +436,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: indexedItem.reuseIdentifier, for: indexPath) as? CollectionViewCell else {
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
-        cell.updateCell(indexedItem)
+        cell.updateCell(item: indexedItem)
         if let textViewCell = cell as? TextViewCollectionViewCell {
             textViewCell.delegate = self
         }
@@ -449,7 +450,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
-        return item.size(collectionView.frame.size)
+        return item.size(collectionViewSize: collectionView.frame.size)
     }
     
     // MARK: - UICollectionViewDelegate
@@ -466,14 +467,14 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             // are we going to handle text view differently?
             // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
         } else if let selectedUpdatableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
-            let alertController = UIAlertController.updateItemWithAlertController(selectedUpdatableLabelItem) { (action, updatedTextFieldString) in
+            let alertController = UIAlertController.updateItemWithAlertController(selectedItem: selectedUpdatableLabelItem) { (action, updatedTextFieldString) in
                 if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
                     switch (alertDecision) {
                     case .OK:
                         self.collectionView?.performBatchUpdates({
-                            self.dataSource?.updateTitleContents(indexPath, updatedContents: updatedTextFieldString)
+                            self.dataSource?.updateTitleContents(indexPath: indexPath, updatedContents: updatedTextFieldString)
                             self.collectionView?.reloadItems(at: [indexPath])
-                            self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
+                            self.delegate?.collectionView?(collectionView: currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
                             })
                     default:
                         return
@@ -486,7 +487,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // MARK: - TextViewCollectionViewCellDelegate
     
-    public func textViewCell(_ cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView) {
+    public func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView) {
         guard let currentCollectionView = self.collectionView else {
             return
         }
@@ -494,8 +495,8 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             fatalError()
         }
         self.collectionView?.performBatchUpdates({
-            self.dataSource?.updateTitleContents(textViewCellIndexPath, updatedContents: textView.text)
-            self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
+            self.dataSource?.updateTitleContents(indexPath: textViewCellIndexPath, updatedContents: textView.text)
+            self.delegate?.collectionView?(collectionView: self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
             })
     }
     

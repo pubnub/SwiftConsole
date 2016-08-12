@@ -41,13 +41,13 @@ public class ViewController: UIViewController, PNObjectEventListener {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.red
         self.navigationItem.title = navBarTitle
-        let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(self.closeButtonPressed(sender:)))
         navigationItem.rightBarButtonItem = closeButton
     }
     
     // MARK: - NavigationController Additions
     
-    public func closeButtonPressed(_ sender: UIBarButtonItem!) {
+    public func closeButtonPressed(sender: UIBarButtonItem!) {
         guard let navController = self.navigationController as? NavigationController else {
             return
         }

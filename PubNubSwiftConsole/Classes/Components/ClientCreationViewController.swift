@@ -129,7 +129,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-        dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
+        dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(sender:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
         collectionView.register(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
@@ -138,7 +138,7 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     
     // MARK: - Actions
     
-    func clientCreationButtonPressed(_ sender: UIButton!) {
+    func clientCreationButtonPressed(sender: UIButton!) {
         guard let client = createPubNubClient() else {
             return
         }
@@ -148,18 +148,18 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     
     func createPubNubClient() -> PubNub? {
 
-        func stringForItem(_ itemType: ClientCreationItemType) -> String {
+        func stringForItem(itemType: ClientCreationItemType) -> String {
             guard let item = dataSource?[itemType] as? ClientCreationUpdatableLabelItem, item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents
         }
 
-        let pubKey = stringForItem(.publishKey)
+        let pubKey = stringForItem(itemType: .publishKey)
         let pubKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.PublishKey, pubKey)
-        let subKey = stringForItem(.subscribeKey)
+        let subKey = stringForItem(itemType: .subscribeKey)
         let subKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.SubscribeKey, subKey)
-        let origin = stringForItem(.origin)
+        let origin = stringForItem(itemType: .origin)
         let originProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.Origin, origin)
         do {
             let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)

@@ -11,7 +11,7 @@ import PubNub
 
 @objc(PNCPublishViewControllerDelegate)
 public protocol PublishViewControllerDelegate {
-    @objc optional func publishView(_ publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
+    @objc optional func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
 }
 
 // Intended to launch from the toolbar
@@ -215,9 +215,9 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             }
             return channelItem.contents
         }
-        func push(_ publishStatus: PNPublishStatus) -> IndexPath {
+        func push(publishStatus: PNPublishStatus) -> IndexPath {
             let publishItem = PublishStatus(itemType: PublishItemType.publishStatus, publishStatus: publishStatus)
-            return push(PublishItemType.publishStatus.section, item: publishItem)
+            return push(section: PublishItemType.publishStatus.section, item: publishItem)
         }
     }
     
@@ -279,11 +279,11 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                     return
                 }
                 self.collectionView?.performBatchUpdates({
-                    let insertedPublishCell = completionDataSource.push(publishStatus)
+                    let insertedPublishCell = completionDataSource.push(publishStatus: publishStatus)
                     self.collectionView?.insertItems(at: [insertedPublishCell])
                     }, completion: nil)
                 // now try to send this publish status to the console view controller
-                self.publishDelegate?.publishView?(self, receivedPublishStatus: publishStatus)
+                self.publishDelegate?.publishView?(publishView: self, receivedPublishStatus: publishStatus)
                 //if let publishDelegate = self.delegate as? PublishViewControllerDelegate {
                 //    publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
                 //}

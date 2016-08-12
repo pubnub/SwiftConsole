@@ -134,7 +134,7 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         segmentedControl = nil
     }
     
-    func updateSegmentedControl(_ item: SegmentedControlItem) {
+    func updateSegmentedControl(item: SegmentedControlItem) {
         if let oldSegmentedControl = segmentedControl {
             oldSegmentedControl.removeFromSuperview()
         }
@@ -154,14 +154,14 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         setNeedsLayout()
     }
     
-    override func updateCell(_ item: Item) {
+    override func updateCell(item: Item) {
         guard let segmentedControlItem = item as? SegmentedControlItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateSegmentedControl(segmentedControlItem)
+        updateSegmentedControl(item: segmentedControlItem)
     }
     
-    class override func size(_ collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 300.0, height: 75.0)
     }
 }

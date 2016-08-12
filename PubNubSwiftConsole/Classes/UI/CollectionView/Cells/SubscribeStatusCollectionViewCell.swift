@@ -86,7 +86,7 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updateStatus(_ item: SubscribeStatusItem) {
+    func updateStatus(item: SubscribeStatusItem) {
         categoryLabel.text = "Category: \(item.title)"
         operationLabel.text = "Operation: \(item.operation)"
         timeStampLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
@@ -112,14 +112,14 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         setNeedsLayout()
     }
     
-    override func updateCell(_ item: Item) {
+    override func updateCell(item: Item) {
         guard let subscribeStatusItem = item as? SubscribeStatusItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateStatus(subscribeStatusItem)
+        updateStatus(item: subscribeStatusItem)
     }
     
-    class override func size(_ collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 250.0)
     }
 }

@@ -72,7 +72,7 @@ class MessageCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateMessage(_ item: MessageItem) {
+    func updateMessage(item: MessageItem) {
         messageLabel.text = "Message: \(item.title)"
         timeTokenLabel.text = "Timetoken: \(item.timetoken)"
         if let channelName = item.channel, let channelGroupName = item.channelData  {
@@ -91,14 +91,14 @@ class MessageCollectionViewCell: CollectionViewCell {
         setNeedsLayout()
     }
     
-    override func updateCell(_ item: Item) {
+    override func updateCell(item: Item) {
         guard let messageItem = item as? MessageItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateMessage(messageItem)
+        updateMessage(item: messageItem)
     }
     
-    class override func size(_ collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 150.0)
     }
 }

@@ -38,17 +38,17 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateTextView(_ item: TextViewItem) {
+    func updateTextView(item: TextViewItem) {
         // TODO: investigate if this should always be replaced
         self.textView.text = item.contents
         self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
     
-    override func updateCell(_ item: Item) {
+    override func updateCell(item: Item) {
         guard let textViewItem = item as? TextViewItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateTextView(textViewItem)
+        updateTextView(item: textViewItem)
     }
     
     // MARK: - UITextViewDelegate
@@ -57,7 +57,7 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
         self.delegate?.textViewCell?(self, textViewDidEndEditing: textView)
     }
     
-    class override func size(_ collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 300.0, height: 300.0)
     }
 }

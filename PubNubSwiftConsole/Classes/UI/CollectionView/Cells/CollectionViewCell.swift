@@ -14,11 +14,11 @@ public class CollectionViewCell: UICollectionViewCell {
         return String(self.dynamicType)
     }
     
-    func updateCell(_ item: Item) {
+    func updateCell(item: Item) {
         // override in subclass, this used by the generic collection view subclass
     }
     
-    class func size(_ collectionViewSize: CGSize) -> CGSize {
+    class func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 300.0, height: 100.0)
     }
 }
