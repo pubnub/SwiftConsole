@@ -22,7 +22,7 @@ class CollectionView: UICollectionView {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        endEditing(true)
+        endEditing(true) // this helps with text views
         super.touchesBegan(touches, with: event)
     }
 }
