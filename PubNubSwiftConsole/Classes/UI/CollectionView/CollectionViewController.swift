@@ -151,7 +151,7 @@ protocol SelectableItemSection: ItemSection {
     init(selectableItemSections: [ItemSection])
     var selectedSectionIndex: Int {get set}
     var selectedSection: ItemSection {get}
-    var itemSections: [ItemSection] {get}
+    var itemSections: [ItemSection] {get set}
     subscript(indexPath: NSIndexPath) -> Item { get set }
     subscript(section: Int) -> ItemSection {get set}
     subscript(section: Int, item: Int) -> Item {get set}
