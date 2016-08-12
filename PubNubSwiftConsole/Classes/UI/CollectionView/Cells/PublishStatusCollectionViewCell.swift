@@ -13,7 +13,7 @@ protocol PublishStatusItem: Item {
     init(itemType: ItemType, publishStatus: PNPublishStatus)
     var category: String {get}
     var operation: String {get}
-    var creationDate: NSDate {get}
+    var creationDate: Date {get}
     var statusCode: Int {get}
     var information: String {get}
     var timeToken: NSNumber? {get}
@@ -30,7 +30,7 @@ struct PublishStatus: PublishStatusItem {
     let itemType: ItemType
     let category: String
     let operation: String
-    let creationDate: NSDate
+    let creationDate: Date
     let statusCode: Int
     let information: String
     let timeToken: NSNumber?
@@ -39,7 +39,7 @@ struct PublishStatus: PublishStatusItem {
         self.itemType = itemType
         self.category = publishStatus.stringifiedCategory()
         self.operation = publishStatus.stringifiedOperation()
-        self.creationDate = NSDate()
+        self.creationDate = Date()
         self.statusCode = publishStatus.statusCode
         self.information = publishStatus.data.information
         self.timeToken = publishStatus.data.timetoken
@@ -84,35 +84,35 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updatePublishStatus(item: PublishStatus) {
+    func updatePublishStatus(_ item: PublishStatus) {
         titleLabel.text = "Publish: \(item.title)"
         operationLabel.text = "Operation: \(item.operation)"
         creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
         informationLabel.text = "Response message: \(item.information)"
         if let publishTimeToken = item.timeToken {
-            timeTokenLabel.hidden = false
+            timeTokenLabel.isHidden = false
             timeTokenLabel.text = "Time token: \(publishTimeToken)"
         } else {
-            timeTokenLabel.hidden = true
+            timeTokenLabel.isHidden = true
         }
         if let publishError = item.error {
-            errorLabel.hidden = false
+            errorLabel.isHidden = false
             errorLabel.text = "Error: \(publishError)"
         } else {
-            errorLabel.hidden = true
+            errorLabel.isHidden = true
         }
         setNeedsLayout()
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let publishItem = item as? PublishStatus else {
             fatalError("init(coder:) has not been implemented")
         }
         updatePublishStatus(publishItem)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 220.0)
     }
 }

@@ -72,33 +72,33 @@ class MessageCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateMessage(item: MessageItem) {
+    func updateMessage(_ item: MessageItem) {
         messageLabel.text = "Message: \(item.title)"
         timeTokenLabel.text = "Timetoken: \(item.timetoken)"
-        if let channelName = item.channel, channelGroupName = item.channelData  {
-            channelDataLabel.hidden = false
+        if let channelName = item.channel, let channelGroupName = item.channelData  {
+            channelDataLabel.isHidden = false
             channelDataLabel.text = "Channel group: \(channelGroupName)"
-            channelLabel.hidden = false
+            channelLabel.isHidden = false
             channelLabel.text = "Channel: \(channelName)"
         } else if let channelName = item.channelData {
-            channelDataLabel.hidden = false
+            channelDataLabel.isHidden = false
             channelDataLabel.text = "Channel: \(channelName)"
-            channelLabel.hidden = true
+            channelLabel.isHidden = true
         } else {
-            channelDataLabel.hidden = true
-            channelLabel.hidden = true
+            channelDataLabel.isHidden = true
+            channelLabel.isHidden = true
         }
         setNeedsLayout()
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let messageItem = item as? MessageItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateMessage(messageItem)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 150.0)
     }
 }

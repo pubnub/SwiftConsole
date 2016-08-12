@@ -13,14 +13,14 @@ protocol ButtonItem: Item {
     var targetSelector: TargetSelector {get set}
     var selected: Bool {get set}
     mutating func toggleSelected()
-    mutating func updateSelected(selected: Bool)
+    mutating func updateSelected(_ selected: Bool)
 }
 
 extension ButtonItem {
     mutating func toggleSelected() {
         selected = (!selected)
     }
-    mutating func updateSelected(selected: Bool) {
+    mutating func updateSelected(_ selected: Bool) {
         self.selected = selected
     }
     var title: String {
@@ -32,45 +32,45 @@ extension ButtonItem {
 }
 
 extension ItemSection {
-    mutating func toggleSelected(item: Int) {
+    mutating func toggleSelected(_ item: Int) {
         guard var buttonItem = self[item] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.toggleSelected()
         self[item] = buttonItem
     }
-    mutating func updateSelected(item: Int, selected: Bool) {
+    mutating func updateSelected(_ item: Int, selected: Bool) {
         guard var buttonItem = self[item] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.updateSelected(selected)
         self[item] = buttonItem
     }
-    mutating func updateSelected(itemType: ItemType, selected: Bool) {
+    mutating func updateSelected(_ itemType: ItemType, selected: Bool) {
         updateSelected(itemType.item, selected: selected)
     }
 }
 
 extension DataSource {
-    func toggleSelected(indexPath: NSIndexPath) {
+    func toggleSelected(_ indexPath: IndexPath) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.toggleSelected()
         self[indexPath] = buttonItem
     }
-    func updateSelected(indexPath: NSIndexPath, selected: Bool) {
+    func updateSelected(_ indexPath: IndexPath, selected: Bool) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.updateSelected(selected)
         self[indexPath] = buttonItem
     }
-    func updateSelected(itemType: ItemType, selected: Bool) {
-        updateSelected(itemType.indexPath, selected: selected)
+    func updateSelected(_ itemType: ItemType, selected: Bool) {
+        updateSelected(itemType.indexPath as IndexPath, selected: selected)
     }
-    func toggleSelected(itemType: ItemType) {
-        toggleSelected(itemType.indexPath)
+    func toggleSelected(_ itemType: ItemType) {
+        toggleSelected(itemType.indexPath as IndexPath)
     }
 }
 
@@ -82,7 +82,7 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         }
         didSet {
             if let updatedTargetSelector = targetSelector {
-                button.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, forControlEvents: .TouchUpInside)
+                button.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, for: .touchUpInside)
             }
         }
     }
@@ -92,9 +92,9 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     }
     
     override init(frame: CGRect) {
-        self.button = UIButton(type: .System)
+        self.button = UIButton(type: .system)
         super.init(frame: frame)
-        self.button.setTitle("Create Client", forState: .Normal)
+        self.button.setTitle("Create Client", for: UIControlState())
         self.button.sizeToFit()
         self.button.center = self.contentView.center
         self.contentView.addSubview(self.button)
@@ -112,31 +112,31 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         targetSelector = nil
     }
     
-    func updateButton(item: ButtonItem) {
-        button.setTitle(item.title, forState: .Normal)
+    func updateButton(_ item: ButtonItem) {
+        button.setTitle(item.title, for: UIControlState())
         if let selectedTitle = item.selectedTitle {
-            button.setTitle(selectedTitle, forState: .Selected)
+            button.setTitle(selectedTitle, for: .selected)
         }
         // only update the target selector if it's new
-        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
+        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target, !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
             targetSelector = item.targetSelector
         } else {
             // if there is no current target selector, then update our internal one (which sets it as well)
             targetSelector = item.targetSelector
         }
-        button.selected = item.selected
+        button.isSelected = item.selected
         button.sizeToFit()
         setNeedsLayout()
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let buttonItem = item as? ButtonItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateButton(buttonItem)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 150.0, height: 100.0)
     }
 }

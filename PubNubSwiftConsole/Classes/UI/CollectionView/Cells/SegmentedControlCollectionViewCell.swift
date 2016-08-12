@@ -18,7 +18,7 @@ protocol SegmentedControlItem: Item {
 }
 
 extension SegmentedControlItem {
-    mutating func segmentedControlValueChanged(sender: UISegmentedControl!) {
+    mutating func segmentedControlValueChanged(_ sender: UISegmentedControl!) {
         self.selectedSegmentIndex = sender.selectedSegmentIndex
     }
     var title: String {
@@ -38,7 +38,7 @@ extension SegmentedControlItem {
 }
 
 extension ItemSection {
-    mutating func updateSelectedSegmentIndex(item: Int, updatedSelectedSegmentIndex index: Int) -> Bool {
+    mutating func updateSelectedSegmentIndex(_ item: Int, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[item] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
@@ -46,7 +46,7 @@ extension ItemSection {
         self[item] = segmentedControlItem
         return result
     }
-    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
+    mutating func updateSelectedSegmentIndex(_ itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
         return updateSelectedSegmentIndex(itemType.item, updatedSelectedSegmentIndex: index)
     }
 }
@@ -78,7 +78,7 @@ extension SingleSegementedControlItemSection {
 }
 
 extension DataSource {
-    func updateSelectedSegmentIndex(indexPath: NSIndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
+    func updateSelectedSegmentIndex(_ indexPath: IndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
@@ -86,17 +86,17 @@ extension DataSource {
         self[indexPath] = segmentedControlItem
         return result
     }
-    func selectedSegmentIndex(indexPath: NSIndexPath) -> Int {
+    func selectedSegmentIndex(_ indexPath: IndexPath) -> Int {
         guard let segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError()
         }
         return segmentedControlItem.selectedSegmentIndex
     }
-    func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(itemType.indexPath, updatedSelectedSegmentIndex: index)
+    func updateSelectedSegmentIndex(_ itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
+        return updateSelectedSegmentIndex(itemType.indexPath as IndexPath, updatedSelectedSegmentIndex: index)
     }
-    func selectedSegmentIndex(itemType: ItemType) -> Int {
-        return selectedSegmentIndex(itemType.indexPath)
+    func selectedSegmentIndex(_ itemType: ItemType) -> Int {
+        return selectedSegmentIndex(itemType.indexPath as IndexPath)
     }
 }
 
@@ -108,7 +108,7 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         }
         didSet {
             if let updatedTargetSelector = targetSelector {
-                segmentedControl?.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, forControlEvents: .ValueChanged)
+                segmentedControl?.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, for: .valueChanged)
             }
         }
     }
@@ -134,16 +134,16 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         segmentedControl = nil
     }
     
-    func updateSegmentedControl(item: SegmentedControlItem) {
+    func updateSegmentedControl(_ item: SegmentedControlItem) {
         if let oldSegmentedControl = segmentedControl {
             oldSegmentedControl.removeFromSuperview()
         }
         segmentedControl = nil
         segmentedControl = UISegmentedControl(items: item.items)
-        segmentedControl?.tintColor = UIColor.purpleColor()
+        segmentedControl?.tintColor = UIColor.purple
         segmentedControl?.selectedSegmentIndex = item.selectedSegmentIndex
         // only update the target selector if it's new
-        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
+        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target, !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
             targetSelector = item.targetSelector
         } else {
             // if there is no current target selector, then update our internal one (which sets it as well)
@@ -154,14 +154,14 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         setNeedsLayout()
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let segmentedControlItem = item as? SegmentedControlItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateSegmentedControl(segmentedControlItem)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 300.0, height: 75.0)
     }
 }

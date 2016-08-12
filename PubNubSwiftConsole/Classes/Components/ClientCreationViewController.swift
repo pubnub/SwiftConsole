@@ -18,9 +18,9 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
             super.init(sections: sections)
         }
         convenience init(clientCreationButton: TargetSelector) {
-            let creationButtonItem = ClientCreationButtonItem(itemType: .ClientCreationButton, targetSelector: clientCreationButton)
+            let creationButtonItem = ClientCreationButtonItem(itemType: .clientCreationButton, targetSelector: clientCreationButton)
             let creationSection = BasicSection(items: [creationButtonItem])
-            let configSection = BasicSection(items: [ClientCreationUpdatableLabelItem(itemType: .PublishKey), ClientCreationUpdatableLabelItem(itemType: .SubscribeKey), ClientCreationUpdatableLabelItem(itemType: .Origin)])
+            let configSection = BasicSection(items: [ClientCreationUpdatableLabelItem(itemType: .publishKey), ClientCreationUpdatableLabelItem(itemType: .subscribeKey), ClientCreationUpdatableLabelItem(itemType: .origin)])
             self.init(sections: [configSection, creationSection])
         }
     }
@@ -54,21 +54,21 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     }
     
     enum ClientCreationSectionType: Int, ItemSectionType {
-        case ConfigurationLabels = 0
-        case ClientCreationButton = 1
+        case configurationLabels = 0
+        case clientCreationButton = 1
     }
     
     enum ClientCreationItemType: ItemType {
-        case PublishKey
-        case SubscribeKey
-        case Origin
-        case ClientCreationButton
+        case publishKey
+        case subscribeKey
+        case origin
+        case clientCreationButton
         
         var cellClass: CollectionViewCell.Type {
             switch self {
-            case .ClientCreationButton:
+            case .clientCreationButton:
                 return ButtonCollectionViewCell.self
-            case .PublishKey, .SubscribeKey, .Origin:
+            case .publishKey, .subscribeKey, .origin:
                 return TitleContentsCollectionViewCell.self
             }
         }
@@ -79,31 +79,31 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         
         var title: String {
             switch self {
-            case .PublishKey:
+            case .publishKey:
                 return "Publish Key"
-            case .SubscribeKey:
+            case .subscribeKey:
                 return "Subscribe Key"
-            case .Origin:
+            case .origin:
                 return "Origin"
-            case .ClientCreationButton:
+            case .clientCreationButton:
                 return "Create Client"
             }
         }
         
         var sectionType: ItemSectionType {
             switch self {
-            case .PublishKey, .SubscribeKey, .Origin:
-                return ClientCreationSectionType.ConfigurationLabels
-            case .ClientCreationButton:
-                return ClientCreationSectionType.ClientCreationButton
+            case .publishKey, .subscribeKey, .origin:
+                return ClientCreationSectionType.configurationLabels
+            case .clientCreationButton:
+                return ClientCreationSectionType.clientCreationButton
             }
         }
         
         var defaultValue: String {
             switch self {
-            case .PublishKey, .SubscribeKey:
+            case .publishKey, .subscribeKey:
                 return "demo-36"
-            case .Origin:
+            case .origin:
                 return "pubsub.pubnub.com"
             default:
                 return ""
@@ -112,13 +112,13 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         
         var item: Int {
             switch self {
-            case .PublishKey:
+            case .publishKey:
                 return 0
-            case .SubscribeKey:
+            case .subscribeKey:
                 return 1
-            case .Origin:
+            case .origin:
                 return 2
-            case .ClientCreationButton:
+            case .clientCreationButton:
                 return 0
             }
         }
@@ -131,14 +131,14 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
         self.delegate = self
         dataSource = ClientCreationDataSource(clientCreationButton: (self, #selector(self.clientCreationButtonPressed(_:))))
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
-        collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
+        collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
+        collectionView.register(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - Actions
     
-    func clientCreationButtonPressed(sender: UIButton!) {
+    func clientCreationButtonPressed(_ sender: UIButton!) {
         guard let client = createPubNubClient() else {
             return
         }
@@ -148,25 +148,25 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
     
     func createPubNubClient() -> PubNub? {
 
-        func stringForItem(itemType: ClientCreationItemType) -> String {
-            guard let item = dataSource?[itemType] as? ClientCreationUpdatableLabelItem where item.title == itemType.title else {
+        func stringForItem(_ itemType: ClientCreationItemType) -> String {
+            guard let item = dataSource?[itemType] as? ClientCreationUpdatableLabelItem, item.title == itemType.title else {
                 fatalError("oops, dataSourceIndex is probably out of whack")
             }
             return item.contents
         }
 
-        let pubKey = stringForItem(.PublishKey)
+        let pubKey = stringForItem(.publishKey)
         let pubKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.PublishKey, pubKey)
-        let subKey = stringForItem(.SubscribeKey)
+        let subKey = stringForItem(.subscribeKey)
         let subKeyProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.SubscribeKey, subKey)
-        let origin = stringForItem(.Origin)
+        let origin = stringForItem(.origin)
         let originProperty: PNConfiguration.KeyValue = PNConfiguration.KeyValue(.Origin, origin)
         do {
             let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
-            return PubNub.clientWithConfiguration(config)
+            return PubNub.client(with: config)
         } catch let pubNubError as PubNubConfigurationCreationError {
-            let alertController = UIAlertController.alertControllerForPubNubConfigurationCreationError(pubNubError, handler: nil)
-            presentViewController(alertController, animated: true, completion: nil)
+//            let alertController = UIAlertController.alertControllerForPubNubConfigurationCreationError(error: pubNubError, handler: nil)
+//            present(alertController, animated: true, completion: nil)
             return nil
         } catch {
             fatalError("\(error)")

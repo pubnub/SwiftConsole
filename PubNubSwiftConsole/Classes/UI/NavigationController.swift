@@ -17,27 +17,27 @@ public class NavigationController: UINavigationController, UINavigationControlle
         fatalError()
     }
     
-    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
     
     public required init(pubNubViewController: ViewController, showsToolbar: Bool = false) {
         super.init(rootViewController: pubNubViewController)
         self.delegate = self
-        self.toolbarHidden = (!showsToolbar)
+        self.isToolbarHidden = (!showsToolbar)
     }
     
     public enum PubNubRootViewControllerType {
-        case ClientCreation
-        case Console(client: PubNub)
-        case Publish(client: PubNub)
+        case clientCreation
+        case console(client: PubNub)
+        case publish(client: PubNub)
         func create() -> ViewController {
             switch self {
-            case .ClientCreation:
+            case .clientCreation:
                 return ClientCreationViewController()
-            case .Console(let client):
+            case .console(let client):
                 return ConsoleViewController(client: client)
-            case .Publish(let client):
+            case .publish(let client):
                 return PublishViewController(client: client)
             }
         }
@@ -48,37 +48,37 @@ public class NavigationController: UINavigationController, UINavigationControlle
     }
     
     public static func clientCreationNavigationController() -> NavigationController {
-        return NavigationController(rootViewControllerType: .ClientCreation)
+        return NavigationController(rootViewControllerType: .clientCreation)
     }
     
-    public static func consoleNavigationController(client: PubNub) -> NavigationController {
-        return NavigationController(rootViewControllerType: .Console(client: client))
+    public static func consoleNavigationController(_ client: PubNub) -> NavigationController {
+        return NavigationController(rootViewControllerType: .console(client: client))
     }
     
-    public static func publishNavigationController(client: PubNub) -> NavigationController {
-        return NavigationController(rootViewControllerType: .Publish(client: client))
+    public static func publishNavigationController(_ client: PubNub) -> NavigationController {
+        return NavigationController(rootViewControllerType: .publish(client: client))
     }
     
     // MARK: - Toolbar Items
     
     public func publishBarButtonItem() -> UIBarButtonItem {
-        return UIBarButtonItem(title: "Publish", style: .Plain, target: self, action: #selector(self.publishBarButtonItemTapped(_:)))
+        return UIBarButtonItem(title: "Publish", style: .plain, target: self, action: #selector(self.publishBarButtonItemTapped(_:)))
     }
     
     // MARK: - Actions
     
-    public func close(sender: UIBarButtonItem!) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    public func close(_ sender: UIBarButtonItem!) {
+        self.dismiss(animated: true, completion: nil)
     }
     
-    public func publishBarButtonItemTapped(sender: UIBarButtonItem!) {
+    public func publishBarButtonItemTapped(_ sender: UIBarButtonItem!) {
         guard let currentClient = self.client else {
             return
         }
         pushPublishViewController(currentClient)
     }
     
-    public func pushPublishViewController(client: PubNub) {
+    public func pushPublishViewController(_ client: PubNub) {
         let publishViewController = PublishViewController(client: client)
         if let viewController = topViewController as? PublishViewControllerDelegate {
             publishViewController.publishDelegate = viewController
@@ -96,7 +96,7 @@ public class NavigationController: UINavigationController, UINavigationControlle
     }
     // can use this for the publish?
     public var firstClient: PubNub? {
-        for viewController in viewControllers.reverse() {
+        for viewController in viewControllers.reversed() {
             guard let pubNubViewController = viewController as? ViewController, let client = pubNubViewController.client else {
                 continue
             }
@@ -107,7 +107,7 @@ public class NavigationController: UINavigationController, UINavigationControlle
     
     // MARK: - UINavigationControllerDelegate
     
-    public func navigationController(navigationController: UINavigationController, willShowViewController viewController: UIViewController, animated: Bool) {
+    public func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         guard let pubNubViewController = viewController as? ViewController else {
             return
         }
@@ -117,7 +117,7 @@ public class NavigationController: UINavigationController, UINavigationControlle
         }
     }
     
-    public func navigationController(navigationController: UINavigationController, didShowViewController viewController: UIViewController, animated: Bool) {
+    public func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
         guard let pubNubViewController = viewController as? ViewController else {
             return
         }

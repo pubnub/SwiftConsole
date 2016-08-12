@@ -12,7 +12,7 @@ import PubNub
 protocol SubscribeStatusItem: Item {
     var category: String {get}
     var operation: String {get}
-    var creationDate: NSDate {get}
+    var creationDate: Date {get}
     var statusCode: Int {get}
     var timeToken: NSNumber? {get}
     var channels: [String] {get}
@@ -29,7 +29,7 @@ struct SubscribeStatus: SubscribeStatusItem {
     let itemType: ItemType
     let category: String
     let operation: String
-    let creationDate: NSDate
+    let creationDate: Date
     let statusCode: Int
     var timeToken: NSNumber?
     var channels: [String] = []
@@ -38,7 +38,7 @@ struct SubscribeStatus: SubscribeStatusItem {
         self.itemType = itemType
         self.category = status.stringifiedCategory()
         self.operation = status.stringifiedOperation()
-        self.creationDate = NSDate()
+        self.creationDate = Date()
         self.statusCode = status.statusCode
         if let subscribeStatus = status as? PNSubscribeStatus {
             self.timeToken = subscribeStatus.data.timetoken
@@ -86,40 +86,40 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updateStatus(item: SubscribeStatusItem) {
+    func updateStatus(_ item: SubscribeStatusItem) {
         categoryLabel.text = "Category: \(item.title)"
         operationLabel.text = "Operation: \(item.operation)"
         timeStampLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
         if let timeToken = item.timeToken {
-            timeTokenLabel.hidden = false
+            timeTokenLabel.isHidden = false
             timeTokenLabel.text = "Time token: \(timeToken)"
         } else {
-            timeTokenLabel.hidden = true
+            timeTokenLabel.isHidden = true
         }
-        if let channelText = PubNub.subscribablesToString(item.channels) where !item.channels.isEmpty {
-            channelLabel.hidden = false
+        if let channelText = PubNub.subscribablesToString(item.channels), !item.channels.isEmpty {
+            channelLabel.isHidden = false
             channelLabel.text = "Channel(s): \(channelText)"
         } else {
-            channelLabel.hidden = true
+            channelLabel.isHidden = true
         }
-        if let channelGroupText = PubNub.subscribablesToString(item.channelGroups) where !item.channelGroups.isEmpty {
-            channelGroupLabel.hidden = false
+        if let channelGroupText = PubNub.subscribablesToString(item.channelGroups), !item.channelGroups.isEmpty {
+            channelGroupLabel.isHidden = false
             channelGroupLabel.text = "Channel group(s): \(channelGroupText)"
         } else {
-            channelGroupLabel.hidden = true
+            channelGroupLabel.isHidden = true
         }
         setNeedsLayout()
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let subscribeStatusItem = item as? SubscribeStatusItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updateStatus(subscribeStatusItem)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 250.0)
     }
 }

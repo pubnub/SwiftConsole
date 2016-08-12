@@ -10,43 +10,43 @@ import Foundation
 
 public protocol ItemSectionType {
     var rawValue: Int {get}
-    var indexSet: NSIndexSet {get}
+    var indexSet: IndexSet {get}
 }
 
 struct EmptySectionType: ItemSectionType {
     var rawValue: Int {
         return 0
     }
-    var indexSet: NSIndexSet {
-        return NSIndexSet(index: 0)
+    var indexSet: IndexSet {
+        return IndexSet(integer: 0)
     }
 }
 
 extension ItemSectionType {
-    var indexSet: NSIndexSet {
-        return NSIndexSet(index: rawValue)
+    var indexSet: IndexSet {
+        return IndexSet(integer: rawValue)
     }
 }
 
 public protocol ItemType {
-    var indexSet: NSIndexSet {get}
+    var indexSet: IndexSet {get}
     var sectionType: ItemSectionType {get}
     var title: String {get}
     var selectedTitle: String? {get}
     var defaultValue: String {get}
     var section: Int {get}
     var item: Int {get}
-    var indexPath: NSIndexPath {get}
+    var indexPath: IndexPath {get}
     var cellClass: CollectionViewCell.Type {get}
-    func size(collectionViewFrame: CGSize) -> CGSize
+    func size(_ collectionViewFrame: CGSize) -> CGSize
 }
 
 extension ItemType {
-    var indexSet: NSIndexSet {
+    var indexSet: IndexSet {
         return sectionType.indexSet
     }
-    var indexPath: NSIndexPath {
-        return NSIndexPath(forItem: item, inSection: section)
+    var indexPath: IndexPath {
+        return IndexPath(item: item, section: section)
     }
     var section: Int {
         return sectionType.rawValue
@@ -54,14 +54,14 @@ extension ItemType {
     var selectedTitle: String? {
         return title
     }
-    func size(collectionViewSize: CGSize) -> CGSize {
+    func size(_ collectionViewSize: CGSize) -> CGSize {
         return cellClass.size(collectionViewSize)
     }
 }
 
 struct EmptySectionItemType: ItemType {
-    func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSizeZero
+    func size(_ collectionViewSize: CGSize) -> CGSize {
+        return CGSize.zero
     }
     var title: String {
         return ""
@@ -84,11 +84,11 @@ public protocol Item {
     var title: String {get}
     var reuseIdentifier: String {get}
     var itemType: ItemType {get}
-    func size(collectionViewSize: CGSize) -> CGSize
+    func size(_ collectionViewSize: CGSize) -> CGSize
 }
 
 extension Item {
-    func size(collectionViewSize: CGSize) -> CGSize {
+    func size(_ collectionViewSize: CGSize) -> CGSize {
         return itemType.size(collectionViewSize)
     }
     var reuseIdentifier: String {
@@ -133,13 +133,13 @@ extension ItemSection {
 
 // should there be a protocol for pushable items?
 protocol StackItemSection: ItemSection {
-    mutating func push(item: Item) -> Int
+    mutating func push(_ item: Item) -> Int
     mutating func clear()
 }
 
 extension StackItemSection {
-    mutating func push(item: Item) -> Int {
-        self.items.insert(item, atIndex: 0)
+    mutating func push(_ item: Item) -> Int {
+        self.items.insert(item, at: 0)
         return 0
     }
     mutating func clear() {
@@ -152,10 +152,10 @@ protocol SelectableItemSection: ItemSection {
     var selectedSectionIndex: Int {get set}
     var selectedSection: ItemSection {get}
     var itemSections: [ItemSection] {get set}
-    subscript(indexPath: NSIndexPath) -> Item { get set }
+    subscript(indexPath: IndexPath) -> Item { get set }
     subscript(section: Int) -> ItemSection {get set}
     subscript(section: Int, item: Int) -> Item {get set}
-    mutating func updateSelectedSection(index: Int)
+    mutating func updateSelectedSection(_ index: Int)
 }
 
 extension SelectableItemSection {
@@ -206,12 +206,12 @@ extension SelectableItemSection {
             self[itemType.indexPath] = newValue
         }
     }
-    subscript(indexPath: NSIndexPath) -> Item {
+    subscript(indexPath: IndexPath) -> Item {
         get {
-            return self[indexPath.section, indexPath.item]
+            return self[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).item]
         }
         set {
-            self[indexPath.section, indexPath.item] = newValue
+            self[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).item] = newValue
         }
     }
     subscript(section: Int, item: Int) -> Item {
@@ -224,7 +224,7 @@ extension SelectableItemSection {
             self[section] = itemSection
         }
     }
-    mutating func updateSelectedSection(index: Int) {
+    mutating func updateSelectedSection(_ index: Int) {
         self.selectedSectionIndex = index
     }
 }
@@ -234,7 +234,7 @@ public protocol DataSource: class {
     var sections: [ItemSection] {get set}
     var count: Int {get}
     subscript(section: Int) -> ItemSection {get set}
-    subscript(indexPath: NSIndexPath) -> Item {get set}
+    subscript(indexPath: IndexPath) -> Item {get set}
     subscript(itemType: ItemType) -> Item {get set}
 }
 
@@ -248,12 +248,12 @@ extension DataSource {
             sections[section] = newValue
         }
     }
-    public subscript(indexPath: NSIndexPath) -> Item {
+    public subscript(indexPath: IndexPath) -> Item {
         get {
-            return self[indexPath.section][indexPath.row]
+            return self[(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row]
         }
         set {
-            self[indexPath.section][indexPath.row] = newValue
+            self[(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row] = newValue
         }
     }
     public subscript(itemType: ItemType) -> Item {
@@ -267,38 +267,38 @@ extension DataSource {
     public var count: Int {
         return sections.count
     }
-    public func push(section: Int, item: Item) -> NSIndexPath {
+    public func push(_ section: Int, item: Item) -> IndexPath {
         guard var stackSection = sections[section] as? StackItemSection else {
             fatalError()
         }
         let pushedItemIndex = stackSection.push(item)
         sections[section] = stackSection
-        return NSIndexPath(forItem: pushedItemIndex, inSection: section)
+        return IndexPath(item: pushedItemIndex, section: section)
     }
-    public func push(section: Int, subSection: Int, item: Item) -> NSIndexPath {
+    public func push(_ section: Int, subSection: Int, item: Item) -> IndexPath {
         guard var selectableSection = sections[section] as? SelectableItemSection, var stackSection = selectableSection[subSection] as? StackItemSection else {
             fatalError()
         }
         let index = stackSection.push(item)
         selectableSection[subSection] = stackSection
         sections[section] = selectableSection
-        return NSIndexPath(forItem: index, inSection: section) // we need to alter this value because we want to return the major section for use in collection view cell reloading and not the sub section value used by the data store
+        return IndexPath(item: index, section: section) // we need to alter this value because we want to return the major section for use in collection view cell reloading and not the sub section value used by the data store
     }
-    public func clear(section: Int) {
+    public func clear(_ section: Int) {
         guard var stackSection = sections[section] as? StackItemSection else {
             return
         }
         stackSection.clear()
         self[section] = stackSection
     }
-    public func updateSelectedSection(section: Int, selectedSubSection: Int) {
+    public func updateSelectedSection(_ section: Int, selectedSubSection: Int) {
         guard var selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }
         selectableSection.updateSelectedSection(selectedSubSection)
         sections[section] = selectableSection
     }
-    public func selectedSectionIndex(section: Int) -> Int {
+    public func selectedSectionIndex(_ section: Int) -> Int {
         guard let selectableSection = sections[section] as? SelectableItemSection else {
             fatalError()
         }
@@ -308,8 +308,8 @@ extension DataSource {
 
 @objc(PNCCollectionViewControllerDelegate)
 public protocol CollectionViewControllerDelegate: UICollectionViewDelegate {
-    optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: NSIndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
-    optional func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
+    @objc optional func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?)
+    @objc optional func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?)
 }
 
 @objc(PNCCollectionViewController)
@@ -413,26 +413,26 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // MARK: - UICollectionViewDataSource
     
-    public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+    public func numberOfSections(in collectionView: UICollectionView) -> Int {
         guard let currentDataSource = dataSource else {
             return 0
         }
         return currentDataSource.count
     }
     
-    public func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let currentDataSource = dataSource else {
             return 0
         }
         return currentDataSource[section].count
     }
     
-    public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let currentDataSource = dataSource else {
             fatalError()
         }
         let indexedItem = currentDataSource[indexPath]
-        guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier(indexedItem.reuseIdentifier, forIndexPath: indexPath) as? CollectionViewCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: indexedItem.reuseIdentifier, for: indexPath) as? CollectionViewCell else {
             fatalError("Failed to dequeue cell properly, please contact support@pubnub.com")
         }
         cell.updateCell(indexedItem)
@@ -445,7 +445,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     // MARK: - UICollectionViewDelegateFlowLayout
     
     // TODO: eventually we can probably drop this in favor of a better layout object
-    public func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         guard let item = dataSource?[indexPath] else {
             fatalError()
         }
@@ -454,7 +454,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
     
     // MARK: - UICollectionViewDelegate
     
-    public func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 
         guard let currentCollectionView = self.collectionView else {
             return
@@ -472,7 +472,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                     case .OK:
                         self.collectionView?.performBatchUpdates({
                             self.dataSource?.updateTitleContents(indexPath, updatedContents: updatedTextFieldString)
-                            self.collectionView?.reloadItemsAtIndexPaths([indexPath])
+                            self.collectionView?.reloadItems(at: [indexPath])
                             self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
                             }, completion: nil)
                     default:
@@ -480,17 +480,17 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                     }
                 }
             }
-            self.presentViewController(alertController, animated: true, completion: nil)
+            self.present(alertController, animated: true, completion: nil)
         }
     }
     
     // MARK: - TextViewCollectionViewCellDelegate
     
-    public func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView) {
+    public func textViewCell(_ cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView) {
         guard let currentCollectionView = self.collectionView else {
             return
         }
-        guard let textViewCellIndexPath = currentCollectionView.indexPathForCell(cell) else {
+        guard let textViewCellIndexPath = currentCollectionView.indexPath(for: cell) else {
             fatalError()
         }
         self.collectionView?.performBatchUpdates({

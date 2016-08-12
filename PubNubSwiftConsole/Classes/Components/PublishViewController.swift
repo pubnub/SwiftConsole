@@ -11,7 +11,7 @@ import PubNub
 
 @objc(PNCPublishViewControllerDelegate)
 public protocol PublishViewControllerDelegate {
-    optional func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
+    @objc optional func publishView(_ publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
 }
 
 // Intended to launch from the toolbar
@@ -23,29 +23,29 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     // MARK: - DataSource
     
     enum PublishSectionType: Int, ItemSectionType {
-        case ClientConfiguration = 0, PublishConfiguration, PayloadInput, PublishStatusConsole
+        case clientConfiguration = 0, publishConfiguration, payloadInput, publishStatusConsole
     }
     
     enum PublishItemType: ItemType {
-        case PublishKey
-        case SubscribeKey
-        case UUID
-        case ChannelLabel
-        case PayloadInput
-        case PublishButton
-        case PublishStatus
+        case publishKey
+        case subscribeKey
+        case uuid
+        case channelLabel
+        case payloadInput
+        case publishButton
+        case publishStatus
         
         var cellClass: CollectionViewCell.Type {
             switch self {
-            case .PublishKey, .SubscribeKey, .UUID:
+            case .publishKey, .subscribeKey, .uuid:
                 return TitleContentsCollectionViewCell.self
-            case .ChannelLabel:
+            case .channelLabel:
                 return TitleContentsCollectionViewCell.self
-            case .PayloadInput:
+            case .payloadInput:
                 return TextViewCollectionViewCell.self
-            case .PublishButton:
+            case .publishButton:
                 return ButtonCollectionViewCell.self
-            case .PublishStatus:
+            case .publishStatus:
                 return PublishStatusCollectionViewCell.self
             }
         }
@@ -56,30 +56,30 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         var title: String {
             switch self {
-            case .PublishKey:
+            case .publishKey:
                 return "Publish Key"
-            case .SubscribeKey:
+            case .subscribeKey:
                 return "Subscribe Key"
-            case .UUID:
+            case .uuid:
                 return "UUID"
-            case .ChannelLabel:
+            case .channelLabel:
                 return "Channel"
-            case .PublishButton:
+            case .publishButton:
                 return "Publish"
-            case .PayloadInput:
+            case .payloadInput:
                 return "Payload"
-            case .PublishStatus:
+            case .publishStatus:
                 return "Publish Statuses"
             }
         }
         
-        func contents(client: PubNub) -> String {
+        func contents(_ client: PubNub) -> String {
             switch self {
-            case .PublishKey:
+            case .publishKey:
                 return client.currentConfiguration().publishKey
-            case .SubscribeKey:
+            case .subscribeKey:
                 return client.currentConfiguration().subscribeKey
-            case .UUID:
+            case .uuid:
                 return client.currentConfiguration().uuid
             default:
                 return ""
@@ -88,24 +88,24 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         var sectionType: ItemSectionType {
             switch self {
-            case .PublishKey, .SubscribeKey, .UUID:
-                return PublishSectionType.ClientConfiguration
-            case .ChannelLabel:
-                return PublishSectionType.PublishConfiguration
-            case .PayloadInput:
-                return PublishSectionType.PayloadInput
-            case .PublishButton:
-                return PublishSectionType.PublishConfiguration
-            case .PublishStatus:
-                return PublishSectionType.PublishStatusConsole
+            case .publishKey, .subscribeKey, .uuid:
+                return PublishSectionType.clientConfiguration
+            case .channelLabel:
+                return PublishSectionType.publishConfiguration
+            case .payloadInput:
+                return PublishSectionType.payloadInput
+            case .publishButton:
+                return PublishSectionType.publishConfiguration
+            case .publishStatus:
+                return PublishSectionType.publishStatusConsole
             }
         }
         
         var defaultValue: String {
             switch self {
-            case .ChannelLabel:
+            case .channelLabel:
                 return ""
-            case .PayloadInput:
+            case .payloadInput:
                 return "Hello, world!"
             default:
                 return ""
@@ -114,19 +114,19 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         
         var item: Int {
             switch self {
-            case .PublishKey:
+            case .publishKey:
                 return 0
-            case .SubscribeKey:
+            case .subscribeKey:
                 return 1
-            case .UUID:
+            case .uuid:
                 return 2
-            case .ChannelLabel:
+            case .channelLabel:
                 return 0
-            case .PayloadInput:
+            case .payloadInput:
                 return 0
-            case .PublishButton:
+            case .publishButton:
                 return 1
-            case .PublishStatus:
+            case .publishStatus:
                 return 0
             }
         }
@@ -191,12 +191,12 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             super.init(sections: sections)
         }
         convenience init(client: PubNub, publishButton: TargetSelector) {
-            let subscribeLabelItem = PublishLabelItem(itemType: .SubscribeKey, client: client)
-            let publishLabelItem = PublishLabelItem(itemType: .PublishKey, client: client)
-            let uuidLabelItem = PublishLabelItem(itemType: .UUID, client: client)
-            let publishButtonItem = PublishButtonItem(itemType: .PublishButton, targetSelector: publishButton)
-            let channelLabelItem = PublishUpdatableLabelItem(itemType: .ChannelLabel)
-            let textViewItem = PublishTextViewItem(itemType: .PayloadInput)
+            let subscribeLabelItem = PublishLabelItem(itemType: .subscribeKey, client: client)
+            let publishLabelItem = PublishLabelItem(itemType: .publishKey, client: client)
+            let uuidLabelItem = PublishLabelItem(itemType: .uuid, client: client)
+            let publishButtonItem = PublishButtonItem(itemType: .publishButton, targetSelector: publishButton)
+            let channelLabelItem = PublishUpdatableLabelItem(itemType: .channelLabel)
+            let textViewItem = PublishTextViewItem(itemType: .payloadInput)
             let publishConfigSection = BasicSection(items: [channelLabelItem, publishButtonItem])
             let payloadSection = BasicSection(items: [textViewItem])
             let publishStatusSection = ScrollingSection()
@@ -204,20 +204,20 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             self.init(sections: [clientConfigSection, publishConfigSection, payloadSection, publishStatusSection])
         }
         var message: String {
-            guard let payloadItem = self[PublishItemType.PayloadInput.indexPath] as? PublishTextViewItem else {
+            guard let payloadItem = self[PublishItemType.payloadInput.indexPath] as? PublishTextViewItem else {
                 fatalError()
             }
             return payloadItem.contents
         }
         var channel: String {
-            guard let channelItem = self[PublishItemType.ChannelLabel.indexPath] as? PublishUpdatableLabelItem else {
+            guard let channelItem = self[PublishItemType.channelLabel.indexPath] as? PublishUpdatableLabelItem else {
                 fatalError()
             }
             return channelItem.contents
         }
-        func push(publishStatus: PNPublishStatus) -> NSIndexPath {
-            let publishItem = PublishStatus(itemType: PublishItemType.PublishStatus, publishStatus: publishStatus)
-            return push(PublishItemType.PublishStatus.section, item: publishItem)
+        func push(_ publishStatus: PNPublishStatus) -> IndexPath {
+            let publishItem = PublishStatus(itemType: PublishItemType.publishStatus, publishStatus: publishStatus)
+            return push(PublishItemType.publishStatus.section, item: publishItem)
         }
     }
     
@@ -229,7 +229,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     
     public required init() {
         super.init()
-        self.client?.addListener(self)
+        self.client?.add(self)
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -237,7 +237,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     }
     
     deinit {
-        self.client?.removeListener(self)
+        self.client?.remove(self)
     }
     
     // MARK: - View Lifecycle
@@ -251,15 +251,15 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let publishButton: TargetSelector = (self, #selector(self.publishButtonTapped(_:)))
         dataSource = PublishDataSource(client: currentClient, publishButton: publishButton)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
-        collectionView.registerClass(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
-        collectionView.registerClass(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier)
-        collectionView.registerClass(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
-        collectionView.registerClass(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
+        collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
+        collectionView.register(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier)
+        collectionView.register(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
+        collectionView.register(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - Actions
-    public func publishButtonTapped(sender: UIButton!) {
+    public func publishButtonTapped(_ sender: UIButton!) {
         publish()
     }
     
@@ -279,7 +279,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 }
                 self.collectionView?.performBatchUpdates({
                     let insertedPublishCell = completionDataSource.push(publishStatus)
-                    self.collectionView?.insertItemsAtIndexPaths([insertedPublishCell])
+                    self.collectionView?.insertItems(at: [insertedPublishCell])
                     }, completion: nil)
                 // now try to send this publish status to the console view controller
                 self.publishDelegate?.publishView?(self, receivedPublishStatus: publishStatus)
@@ -288,11 +288,11 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 //}
             })
         } catch let channelParsingError as PubNubSubscribableStringParsingError {
-            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError("channel", error: channelParsingError, handler: nil)
-            presentViewController(alertController, animated: true, completion: nil)
+//            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError("channel", error: channelParsingError, handler: nil)
+//            present(alertController, animated: true, completion: nil)
         } catch let publishError as PubNubPublishError {
-            let alertController = UIAlertController.alertControllerForPubNubPublishingError(publishError, handler: nil)
-            presentViewController(alertController, animated: true, completion: nil)
+//            let alertController = UIAlertController.alertControllerForPubNubPublishingError(publishError, handler: nil)
+//            present(alertController, animated: true, completion: nil)
         } catch {
             fatalError()
         }
@@ -300,7 +300,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - CollectionViewControllerDelegate
     
-    public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: NSIndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
+    public func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
     }
     
     // MARK: - UINavigationItem

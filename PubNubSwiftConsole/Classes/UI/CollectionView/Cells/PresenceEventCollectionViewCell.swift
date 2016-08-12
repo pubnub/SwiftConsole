@@ -61,31 +61,31 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updatePresence(item: PresenceEventItem) {
+    func updatePresence(_ item: PresenceEventItem) {
         eventTypeLabel.text = "Type: \(item.title)"
         if let channelOccupancy = item.occupancy {
-            occupancyLabel.hidden = false
+            occupancyLabel.isHidden = false
             occupancyLabel.text = "Occupancy: \(channelOccupancy)"
         } else {
-            occupancyLabel.hidden = true
+            occupancyLabel.isHidden = true
         }
         if let eventTimeToken = item.timeToken {
-            timeTokenLabel.hidden = false
+            timeTokenLabel.isHidden = false
             timeTokenLabel.text = "Time token: \(eventTimeToken)"
         } else {
-            timeTokenLabel.hidden = true
+            timeTokenLabel.isHidden = true
         }
         setNeedsLayout()
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let presenceEventItem = item as? PresenceEventItem else {
             fatalError("init(coder:) has not been implemented")
         }
         updatePresence(presenceEventItem)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: collectionViewSize.width, height: 150.0)
     }
     

@@ -12,7 +12,7 @@ protocol TextViewItem: UpdatableTitleContentsItem {
 }
 
 @objc public protocol TextViewCollectionViewCellDelegate: NSObjectProtocol {
-    optional func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView)
+    @objc optional func textViewCell(_ cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView)
 }
 
 public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
@@ -38,13 +38,13 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateTextView(item: TextViewItem) {
+    func updateTextView(_ item: TextViewItem) {
         // TODO: investigate if this should always be replaced
         self.textView.text = item.contents
         self.setNeedsLayout() // make sure this occurs during the next update cycle
     }
     
-    override func updateCell(item: Item) {
+    override func updateCell(_ item: Item) {
         guard let textViewItem = item as? TextViewItem else {
             fatalError("init(coder:) has not been implemented")
         }
@@ -53,11 +53,11 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     
     // MARK: - UITextViewDelegate
     
-    public func textViewDidEndEditing(textView: UITextView) {
+    public func textViewDidEndEditing(_ textView: UITextView) {
         self.delegate?.textViewCell?(self, textViewDidEndEditing: textView)
     }
     
-    class override func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(_ collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 300.0, height: 300.0)
     }
 }
