@@ -474,13 +474,13 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                             self.dataSource?.updateTitleContents(indexPath, updatedContents: updatedTextFieldString)
                             self.collectionView?.reloadItems(at: [indexPath])
                             self.delegate?.collectionView?(currentCollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath: indexPath, selectedAlertAction: action, updatedTextFieldString: updatedTextFieldString)
-                            }, completion: nil)
+                            })
                     default:
                         return
                     }
                 }
             }
-            self.present(alertController, animated: true, completion: nil)
+            self.present(alertController, animated: true)
         }
     }
     
@@ -496,7 +496,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         self.collectionView?.performBatchUpdates({
             self.dataSource?.updateTitleContents(textViewCellIndexPath, updatedContents: textView.text)
             self.delegate?.collectionView?(self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
-            }, completion: nil)
+            })
     }
     
 }

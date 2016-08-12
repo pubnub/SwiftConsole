@@ -422,7 +422,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             }
             currentDataSource.clearConsoleSelectableSection()
             self.collectionView?.reloadSections(ConsoleSectionType.console.indexSet as IndexSet)
-            }, completion: nil)
+            })
     }
     
     // MARK: - Actions
@@ -454,14 +454,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         guard let currentClient = self.client, !currentClient.isSubscribing else {
             let alertController = alertControllerForInvalidPresenceChange()
-            present(alertController, animated: true, completion: nil)
+            present(alertController, animated: true)
             return
         }
         
         collectionView?.performBatchUpdates({
             self.dataSource?.toggleSelected(change.consoleItemType)
             self.collectionView?.reloadItems(at: [change.indexPath])
-            }, completion: nil)
+            })
     }
     
     func channelPresenceButtonPressed(_ sender: UIButton!) {
@@ -498,7 +498,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             case (nil, nil):
                 let alertController = UIAlertController(title: "Cannot subscribe", message: "Cannot subscribe with no channels and no channel grouups", preferredStyle: .alert)
                 alertController.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
-                present(alertController, animated: true, completion: nil)
+                present(alertController, animated: true)
             case let (channels, nil) where channels != nil:
                 client?.subscribe(toChannels: channels!, withPresence: channelPresence)
             case let (nil, channelGroups) where channelGroups != nil:
@@ -511,7 +511,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             // TODO: add channel or channel group into error type here? or earlier?
             // this will enable us to build a better localizedDescription
             let alertController = UIAlertController.alertController(error: pubNubError)
-            present(alertController, animated: true, completion: nil)
+            present(alertController, animated: true)
             return
         } catch {
             fatalError(#function + " error: \(error)")
@@ -519,16 +519,17 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
     
     func consoleSegmentedControlValueChanged(_ sender: UISegmentedControl!) {
-        collectionView?.performBatchUpdates({
-            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
-                return
-            }
-            let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
-            if (shouldUpdate) {
-                currentDataSource.updateSelectedSection(sender.selectedSegmentIndex)
-                self.collectionView?.reloadSections(ConsoleSectionType.console.indexSet as IndexSet)
-            }
-            }, completion: nil)
+//        collectionView?.perfo
+//        collectionView?.performBatchUpdates() {
+//            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+//                return
+//            }
+//            let shouldUpdate = currentDataSource.updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: sender.selectedSegmentIndex)
+//            if (shouldUpdate) {
+//                currentDataSource.updateSelectedSection(sender.selectedSegmentIndex)
+//                self.collectionView?.reloadSections(ConsoleSectionType.console.indexSet as IndexSet)
+//            }
+//            }
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -547,7 +548,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - PublishViewControllerDelegate
     
     public func publishView(_ publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
-        self.collectionView?.performBatchUpdates({ 
+        self.collectionView?.performBatchUpdates({
             let publishStatus = PublishStatus(itemType: ConsoleItemType.publishStatus, publishStatus: status)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
@@ -558,7 +559,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             if currentSegmentedControlValue == .all {
                 self.collectionView?.insertItems(at: [publishStatusIndexPath])
             }
-            }, completion: nil)
+            })
     }
     
     // MARK: - Update from Client
@@ -568,7 +569,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             self.dataSource?.updateTitleContents(ConsoleItemType.channels.indexPath, updatedContents: self.client?.channelsString())
             self.dataSource?.updateTitleContents(ConsoleItemType.channelGroups.indexPath, updatedContents: self.client?.channelGroupsString())
             self.collectionView?.reloadItems(at: [ConsoleItemType.channels.indexPath as IndexPath, ConsoleItemType.channelGroups.indexPath as IndexPath])
-            }, completion: nil)
+            })
     }
     
     public func updateSubscribeButtonState() {
@@ -580,7 +581,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             let indexPath = ConsoleItemType.subscribeButton.indexPath
             self.dataSource?.updateSelected(indexPath, selected: subscribing)
             self.collectionView?.reloadItems(at: [indexPath as IndexPath])
-            }, completion: nil)
+            })
     }
     
     // MARK: - PNObjectEventListener
@@ -605,7 +606,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 if currentSegmentedControlValue == .all || currentSegmentedControlValue == .subscribeStatuses {
                     self.collectionView?.insertItems(at: [subscribeStatusIndexPath])
                 }
-                }, completion: nil)
+                })
         }
     }
     
@@ -622,7 +623,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             if currentSegmentedControlValue == .all || currentSegmentedControlValue == .presenceEvents {
                 self.collectionView?.insertItems(at: [presenceEventIndexPath])
             }
-            }, completion: nil)
+            })
     }
     
     public func client(_ client: PubNub, didReceiveMessage message: PNMessageResult) {
@@ -638,7 +639,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             if currentSegmentedControlValue == .all || currentSegmentedControlValue == .messages {
                 self.collectionView?.insertItems(at: [messageIndexPath])
             }
-            }, completion: nil)
+            })
     }
     
     // MARK: - UINavigationItem

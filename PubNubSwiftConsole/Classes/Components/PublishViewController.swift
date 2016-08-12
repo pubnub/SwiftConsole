@@ -272,8 +272,9 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         let channel = currentDataSource.channel
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
         // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
+        // do i really need unowned here? re-examine with swift 3 rules
         do {
-            try self.client?.safePublish(message, toChannel: channel, withCompletion: { [unowned self](publishStatus) in
+            try self.client?.safePublish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
                 guard let completionDataSource = self.dataSource as? PublishDataSource else {
                     return
                 }
@@ -289,10 +290,10 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             })
         } catch let channelParsingError as PubNubSubscribableStringParsingError {
             let alertController = UIAlertController.alertController(error: channelParsingError)
-            present(alertController, animated: true, completion: nil)
+            present(alertController, animated: true)
         } catch let publishError as PubNubPublishError {
             let alertController = UIAlertController.alertController(error: publishError)
-            present(alertController, animated: true, completion: nil)
+            present(alertController, animated: true)
         } catch {
             fatalError()
         }

@@ -68,7 +68,7 @@ public class NavigationController: UINavigationController, UINavigationControlle
     // MARK: - Actions
     
     public func close(_ sender: UIBarButtonItem!) {
-        self.dismiss(animated: true, completion: nil)
+        self.dismiss(animated: true)
     }
     
     public func publishBarButtonItemTapped(_ sender: UIBarButtonItem!) {
