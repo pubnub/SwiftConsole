@@ -165,8 +165,8 @@ public class ClientCreationViewController: CollectionViewController, CollectionV
             let config = try PNConfiguration(properties: pubKeyProperty, subKeyProperty, originProperty)
             return PubNub.client(with: config)
         } catch let pubNubError as PubNubConfigurationCreationError {
-//            let alertController = UIAlertController.alertControllerForPubNubConfigurationCreationError(error: pubNubError, handler: nil)
-//            present(alertController, animated: true, completion: nil)
+            let alertController = UIAlertController.alertController(error: pubNubError)
+            present(alertController, animated: true, completion: nil)
             return nil
         } catch {
             fatalError("\(error)")

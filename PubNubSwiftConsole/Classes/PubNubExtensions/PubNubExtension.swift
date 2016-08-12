@@ -9,11 +9,20 @@
 import Foundation
 import PubNub
 
-enum PubNubConfigurationCreationError: Error, CustomStringConvertible {
+enum PubNubConfigurationCreationError: CustomNSError, LocalizedError {
     case nilValue(propertyName: String)
     case emptyStringValue(propertyName: String)
     case originInvalid
-    var description: String {
+    public static var errorDomain: String {
+        return "PubNub"
+    }
+    public var errorCode: Int {
+        return 100
+    }
+    public var errorUserInfo: [String : AnyObject] {
+        return ["description": errorDescription!]
+    }
+    var errorDescription: String? {
         switch self {
         case let .nilValue(name):
             return "Value for " + name + " property is nil"
@@ -25,15 +34,28 @@ enum PubNubConfigurationCreationError: Error, CustomStringConvertible {
     }
 }
 
-//extension UIAlertController {
-//    static func alertControllerForPubNubConfigurationCreationError(error: PubNubConfigurationCreationError, handler: ((UIAlertAction) -> Swift.Void)? = nil) -> UIAlertController {
-//        let title = "Cannot create client with configuration"
-//        let message = error.description
-//        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: handler))
-//        return alertController
-//    }
-//}
+extension UIAlertController {
+    static func alertController(error: Error, handler: ((UIAlertAction) -> Void)? = nil) -> UIAlertController {
+        var title = "Unknown"
+        var message = "unknown"
+        switch error {
+        case let creation as PubNubConfigurationCreationError:
+            title = "Cannot create client with configuration"
+            message = creation.localizedDescription
+        case let publish as PubNubPublishError:
+            title = "Publish error"
+            message = "Cannot publish because \(publish.localizedDescription)"
+        case let stringParsing as PubNubSubscribableStringParsingError:
+            title = "what"
+            message = "Channel "
+        default:
+            fatalError()
+        }
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: handler))
+        return alertController
+    }
+}
 
 enum PubNubConfigurationProperty: String {
     case SubscribeKey = "Subscribe Key"
@@ -102,13 +124,22 @@ extension String {
     }
 }
 
-enum PubNubSubscribableStringParsingError: Error, CustomStringConvertible {
+enum PubNubSubscribableStringParsingError: CustomNSError, LocalizedError {
     case empty
     case channelNameContainsInvalidCharacters(channel: String)
     case channelNameTooLong(channel: String)
     case onlyWhitespace(channel: String)
     case unknown(channel: String)
-    var description: String {
+    public static var errorDomain: String {
+        return "PubNub"
+    }
+    public var errorCode: Int {
+        return 300
+    }
+    public var errorUserInfo: [String : AnyObject] {
+        return ["description": errorDescription!]
+    }
+    var errorDescription: String? {
         switch self {
         case .empty:
             return "string has no length"
@@ -124,11 +155,20 @@ enum PubNubSubscribableStringParsingError: Error, CustomStringConvertible {
     }
 }
 
-enum PubNubPublishError: Error, CustomStringConvertible {
+enum PubNubPublishError: CustomNSError, LocalizedError {
     case nilMessage
     case nilChannel
     case multipleChannels
-    var description: String {
+    public static var errorDomain: String {
+        return "PubNub"
+    }
+    public var errorCode: Int {
+        return 200
+    }
+    public var errorUserInfo: [String : AnyObject] {
+        return ["description": errorDescription!]
+    }
+    var errorDescription: String? {
         switch self {
         case .nilMessage:
             return "Cannot publish without a message"
@@ -139,24 +179,6 @@ enum PubNubPublishError: Error, CustomStringConvertible {
         }
     }
 }
-
-//extension UIAlertController {
-//    static func alertControllerForPubNubPublishingError(_ error: PubNubPublishError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
-//        let title = "Publish error"
-//        let message = "Cannot publish because \(error)"
-//        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: handler))
-//        return alertController
-//    }
-//    static func alertControllerForPubNubStringParsingIntoSubscribablesArrayError(_ source: String?, error: PubNubSubscribableStringParsingError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
-//        let blame = source ?? "string Parsing"
-//        let title = "Issue with " + blame
-//        let message = "Could not parse " + blame + " into array because \(error)"
-//        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: handler))
-//        return alertController
-//    }
-//}
 
 extension PubNub {
     func safePublish(_ message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {

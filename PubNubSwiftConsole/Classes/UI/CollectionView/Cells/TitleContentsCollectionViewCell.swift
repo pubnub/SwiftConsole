@@ -71,7 +71,7 @@ extension UIAlertController {
     enum ItemAction: String {
         case OK, Cancel
     }
-    static func updateItemWithAlertController(_ selectedItem: UpdatableTitleContentsItem?, completionHandler: ((UIAlertAction, String?) -> ())) -> UIAlertController {
+    static func updateItemWithAlertController(_ selectedItem: UpdatableTitleContentsItem?, completionHandler: ((UIAlertAction, String?) -> Void)? = nil) -> UIAlertController {
         guard let item = selectedItem else {
             fatalError()
         }
@@ -82,10 +82,10 @@ extension UIAlertController {
         })
         alertController.addAction(UIAlertAction(title: ItemAction.OK.rawValue, style: .default, handler: { (action) -> Void in
             let updatedContentsString = alertController.textFields?[0].text
-            completionHandler(action, updatedContentsString)
+            completionHandler?(action, updatedContentsString)
         }))
         alertController.addAction(UIAlertAction(title: ItemAction.Cancel.rawValue, style: .default, handler: { (action) in
-            completionHandler(action, nil)
+            completionHandler?(action, nil)
         }))
         alertController.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294
         return alertController

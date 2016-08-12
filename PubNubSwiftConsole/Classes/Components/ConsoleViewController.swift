@@ -427,9 +427,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - Actions
     
-    enum SubscribePresenceChange {
-        case channels
-        case channelGroups
+    enum SubscribePresenceChange: String {
+        case channels = "channels"
+        case channelGroups = "channel groups"
         var consoleItemType: ConsoleItemType {
             switch self {
             case .channels:
@@ -446,7 +446,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     func toggleSubscribePresence(_ change: SubscribePresenceChange) {
         
         func alertControllerForInvalidPresenceChange() -> UIAlertController {
-            let alertController = UIAlertController(title: "Invalid Presence Change", message: "Cannot change presence while subscribing", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Invalid Presence Change", message: "Cannot change presence for \(change.rawValue) while subscribing", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alertController.addAction(okAction)
             return alertController
@@ -508,8 +508,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 client?.subscribe(toChannelGroups: currentSubscribables.ChannelGroups!, withPresence: channelGroupPresence)
             }
         } catch let pubNubError as PubNubSubscribableStringParsingError {
-//            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError(channelsItem.title, error: pubNubError, handler: nil)
-//            present(alertController, animated: true, completion: nil)
+            // TODO: add channel or channel group into error type here? or earlier?
+            // this will enable us to build a better localizedDescription
+            let alertController = UIAlertController.alertController(error: pubNubError)
+            present(alertController, animated: true, completion: nil)
             return
         } catch {
             fatalError(#function + " error: \(error)")

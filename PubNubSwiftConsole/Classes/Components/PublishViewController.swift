@@ -288,11 +288,11 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 //}
             })
         } catch let channelParsingError as PubNubSubscribableStringParsingError {
-//            let alertController = UIAlertController.alertControllerForPubNubStringParsingIntoSubscribablesArrayError("channel", error: channelParsingError, handler: nil)
-//            present(alertController, animated: true, completion: nil)
+            let alertController = UIAlertController.alertController(error: channelParsingError)
+            present(alertController, animated: true, completion: nil)
         } catch let publishError as PubNubPublishError {
-//            let alertController = UIAlertController.alertControllerForPubNubPublishingError(publishError, handler: nil)
-//            present(alertController, animated: true, completion: nil)
+            let alertController = UIAlertController.alertController(error: publishError)
+            present(alertController, animated: true, completion: nil)
         } catch {
             fatalError()
         }
