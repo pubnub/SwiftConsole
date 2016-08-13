@@ -51,7 +51,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
-        navController.close(sender)
+        navController.close(sender: sender)
     }
     
     public var navBarTitle: String {

@@ -97,13 +97,13 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         } else {
             timeTokenLabel.isHidden = true
         }
-        if let channelText = PubNub.subscribablesToString(item.channels), !item.channels.isEmpty {
+        if let channelText = PubNub.subscribablesToString(subscribables: item.channels), !item.channels.isEmpty {
             channelLabel.isHidden = false
             channelLabel.text = "Channel(s): \(channelText)"
         } else {
             channelLabel.isHidden = true
         }
-        if let channelGroupText = PubNub.subscribablesToString(item.channelGroups), !item.channelGroups.isEmpty {
+        if let channelGroupText = PubNub.subscribablesToString(subscribables: item.channelGroups), !item.channelGroups.isEmpty {
             channelGroupLabel.isHidden = false
             channelGroupLabel.text = "Channel group(s): \(channelGroupText)"
         } else {

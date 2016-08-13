@@ -73,7 +73,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             }
         }
         
-        func contents(_ client: PubNub) -> String {
+        func contents(client: PubNub) -> String {
             switch self {
             case .publishKey:
                 return client.currentConfiguration().publishKey
@@ -168,7 +168,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             self.contents = contents
         }
         init(itemType: PublishItemType, client: PubNub) {
-            self.init(itemType: itemType, contents: itemType.contents(client))
+            self.init(itemType: itemType, contents: itemType.contents(client: client))
         }
     }
     
@@ -229,7 +229,6 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     
     public required init() {
         super.init()
-        self.client?.add(self)
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -248,7 +247,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             fatalError()
         }
         self.delegate = self
-        let publishButton: TargetSelector = (self, #selector(self.publishButtonTapped(_:)))
+        let publishButton: TargetSelector = (self, #selector(self.publishButtonTapped(sender:)))
         dataSource = PublishDataSource(client: currentClient, publishButton: publishButton)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
@@ -259,7 +258,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     }
     
     // MARK: - Actions
-    public func publishButtonTapped(_ sender: UIButton!) {
+    public func publishButtonTapped(sender: UIButton!) {
         publish()
     }
     
@@ -274,7 +273,7 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
         // do i really need unowned here? re-examine with swift 3 rules
         do {
-            try self.client?.safePublish(message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
+            try self.client?.safePublish(message: message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
                 guard let completionDataSource = self.dataSource as? PublishDataSource else {
                     return
                 }

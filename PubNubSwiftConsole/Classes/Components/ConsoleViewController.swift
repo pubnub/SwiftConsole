@@ -65,7 +65,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return ConsoleSegmentedControlItem.Segment(rawValue: selectedConsoleSegmentIndex)!
         }
         func updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
-            return updateSelectedSegmentIndex(ConsoleItemType.consoleSegmentedControl, updatedSelectedSegmentIndex: index)
+            return updateSelectedSegmentIndex(itemType: ConsoleItemType.consoleSegmentedControl, updatedSelectedSegmentIndex: index)
         }
         func updateConsoleSelectedSegmentIndex(updatedSelectedSegment segment: ConsoleSegmentedControlItem.Segment) -> Bool {
             return updateConsoleSelectedSegmentIndex(updatedSelectedSegmentIndex: segment.rawValue)
@@ -493,7 +493,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         
         do {
             typealias SubscribablesTuple = (Channels: [String]?, ChannelGroups: [String]?)
-            let currentSubscribables: SubscribablesTuple = (try PubNub.stringToSubscribablesArray(channelsItem.contents), try PubNub.stringToSubscribablesArray(channelGroupsItem.contents))
+            let currentSubscribables: SubscribablesTuple = (try PubNub.stringToSubscribablesArray(channels: channelsItem.contents), try PubNub.stringToSubscribablesArray(channels: channelGroupsItem.contents))
             switch currentSubscribables {
             case (nil, nil):
                 let alertController = UIAlertController(title: "Cannot subscribe", message: "Cannot subscribe with no channels and no channel grouups", preferredStyle: .alert)

@@ -181,12 +181,12 @@ enum PubNubPublishError: CustomNSError, LocalizedError {
 }
 
 extension PubNub {
-    func safePublish(_ message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
+    func safePublish(message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
         guard let actualMessage = message else {
             throw PubNubPublishError.nilMessage
         }
         do {
-            guard let channels = try PubNub.stringToSubscribablesArray(channel, commaDelimited: false) else {
+            guard let channels = try PubNub.stringToSubscribablesArray(channels: channel, commaDelimited: false) else {
                 throw PubNubPublishError.nilChannel
             }
             guard channels.count < 2 else {
@@ -205,7 +205,7 @@ extension PubNub {
         }
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    static func stringToSubscribablesArray(_ channels: String?, commaDelimited: Bool = true) throws -> [String]? {
+    static func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
         guard let actualChannelsString = channels else {
             return nil
         }
@@ -237,12 +237,12 @@ extension PubNub {
     }
     
     func channelsString() -> String? {
-        return PubNub.subscribablesToString(self.channels())
+        return PubNub.subscribablesToString(subscribables: self.channels())
     }
     func channelGroupsString() -> String? {
-        return PubNub.subscribablesToString(self.channelGroups())
+        return PubNub.subscribablesToString(subscribables: self.channelGroups())
     }
-    internal static func subscribablesToString(_ subscribables: [String]) -> String? {
+    internal static func subscribablesToString(subscribables: [String]) -> String? {
         if subscribables.isEmpty {
             return nil
         }

@@ -12,7 +12,7 @@ protocol TextViewItem: UpdatableTitleContentsItem {
 }
 
 @objc public protocol TextViewCollectionViewCellDelegate: NSObjectProtocol {
-    @objc optional func textViewCell(_ cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView)
+    @objc optional func textViewCell(cell: TextViewCollectionViewCell, textViewDidEndEditing textView: UITextView)
 }
 
 public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate {
@@ -54,7 +54,7 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     // MARK: - UITextViewDelegate
     
     public func textViewDidEndEditing(_ textView: UITextView) {
-        delegate?.textViewCell?(self, textViewDidEndEditing: textView)
+        delegate?.textViewCell?(cell: self, textViewDidEndEditing: textView)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

@@ -18,7 +18,7 @@ protocol SegmentedControlItem: Item {
 }
 
 extension SegmentedControlItem {
-    mutating func segmentedControlValueChanged(_ sender: UISegmentedControl!) {
+    mutating func segmentedControlValueChanged(sender: UISegmentedControl!) {
         self.selectedSegmentIndex = sender.selectedSegmentIndex
     }
     var title: String {
@@ -38,7 +38,7 @@ extension SegmentedControlItem {
 }
 
 extension ItemSection {
-    mutating func updateSelectedSegmentIndex(_ item: Int, updatedSelectedSegmentIndex index: Int) -> Bool {
+    mutating func updateSelectedSegmentIndex(item: Int, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[item] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
@@ -46,8 +46,8 @@ extension ItemSection {
         self[item] = segmentedControlItem
         return result
     }
-    mutating func updateSelectedSegmentIndex(_ itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(itemType.item, updatedSelectedSegmentIndex: index)
+    mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
+        return updateSelectedSegmentIndex(item: itemType.item, updatedSelectedSegmentIndex: index)
     }
 }
 
@@ -73,12 +73,12 @@ extension SingleSegementedControlItemSection {
         return segmentedControl.selectedSegmentIndex
     }
     mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(segmentIndex, updatedSelectedSegmentIndex: index)
+        return updateSelectedSegmentIndex(item: segmentIndex, updatedSelectedSegmentIndex: index)
     }
 }
 
 extension DataSource {
-    func updateSelectedSegmentIndex(_ indexPath: IndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
+    func updateSelectedSegmentIndex(indexPath: IndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
@@ -86,17 +86,17 @@ extension DataSource {
         self[indexPath] = segmentedControlItem
         return result
     }
-    func selectedSegmentIndex(_ indexPath: IndexPath) -> Int {
+    func selectedSegmentIndex(indexPath: IndexPath) -> Int {
         guard let segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError()
         }
         return segmentedControlItem.selectedSegmentIndex
     }
-    func updateSelectedSegmentIndex(_ itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(itemType.indexPath as IndexPath, updatedSelectedSegmentIndex: index)
+    func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
+        return updateSelectedSegmentIndex(indexPath: itemType.indexPath as IndexPath, updatedSelectedSegmentIndex: index)
     }
-    func selectedSegmentIndex(_ itemType: ItemType) -> Int {
-        return selectedSegmentIndex(itemType.indexPath as IndexPath)
+    func selectedSegmentIndex(itemType: ItemType) -> Int {
+        return selectedSegmentIndex(indexPath: itemType.indexPath as IndexPath)
     }
 }
 
