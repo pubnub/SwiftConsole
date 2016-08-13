@@ -481,7 +481,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
                     }
                 }
             }
-            self.present(alertController, animated: true)
+            present(alertController, animated: true)
         }
     }
     
@@ -491,12 +491,13 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         guard let currentCollectionView = self.collectionView else {
             return
         }
+        // there might be a better way to do this, what's the look up on a cell?
         guard let textViewCellIndexPath = currentCollectionView.indexPath(for: cell) else {
             fatalError()
         }
-        self.collectionView?.performBatchUpdates({
+        currentCollectionView.performBatchUpdates({
             self.dataSource?.updateTitleContents(indexPath: textViewCellIndexPath, updatedContents: textView.text)
-            self.delegate?.collectionView?(collectionView: self.collectionView!, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
+            self.delegate?.collectionView?(collectionView: currentCollectionView, didUpdateItemWithTextViewAtIndexPath: textViewCellIndexPath, textView: textView, updatedTextFieldString: textView.text)
             })
     }
     

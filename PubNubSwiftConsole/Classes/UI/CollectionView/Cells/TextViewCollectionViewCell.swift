@@ -28,8 +28,8 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     override init(frame: CGRect) {
         self.textView = UITextView(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: frame.size.height))
         super.init(frame: frame)
-        self.textView.delegate = self
-        contentView.addSubview(self.textView)
+        textView.delegate = self
+        contentView.addSubview(textView)
         
         contentView.layer.borderWidth = 3
     }
@@ -40,8 +40,8 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     
     func updateTextView(item: TextViewItem) {
         // TODO: investigate if this should always be replaced
-        self.textView.text = item.contents
-        self.setNeedsLayout() // make sure this occurs during the next update cycle
+        textView.text = item.contents
+        setNeedsLayout() // make sure this occurs during the next update cycle
     }
     
     override func updateCell(item: Item) {
@@ -54,7 +54,7 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     // MARK: - UITextViewDelegate
     
     public func textViewDidEndEditing(_ textView: UITextView) {
-        self.delegate?.textViewCell?(self, textViewDidEndEditing: textView)
+        delegate?.textViewCell?(self, textViewDidEndEditing: textView)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

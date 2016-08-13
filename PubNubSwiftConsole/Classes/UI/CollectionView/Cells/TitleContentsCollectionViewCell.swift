@@ -102,8 +102,8 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
     }
     
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/2))
-        contentsLabel = UILabel(frame: CGRect(x: 5, y: frame.size.height/2, width: frame.size.width, height: frame.size.height/2))
+        self.titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/2))
+        self.contentsLabel = UILabel(frame: CGRect(x: 5, y: frame.size.height/2, width: frame.size.width, height: frame.size.height/2))
         
         super.init(frame: frame)
         titleLabel.textAlignment = .center
@@ -121,9 +121,9 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
     }
     
     func updateLabels(item: TitleContentsItem) {
-        self.titleLabel.text = item.title
-        self.contentsLabel.text = item.contents
-        self.setNeedsLayout()
+        titleLabel.text = item.title
+        contentsLabel.text = item.contents
+        setNeedsLayout()
     }
     
     override func updateCell(item: Item) {

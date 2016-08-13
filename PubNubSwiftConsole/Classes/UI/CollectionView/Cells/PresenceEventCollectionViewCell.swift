@@ -48,9 +48,9 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
         return String(self.dynamicType)
     }
     override init(frame: CGRect) {
-        eventTypeLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        occupancyLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
+        self.eventTypeLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
+        self.occupancyLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
+        self.timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
         super.init(frame: frame)
         contentView.addSubview(eventTypeLabel)
         contentView.addSubview(occupancyLabel)

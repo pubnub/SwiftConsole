@@ -94,10 +94,10 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     override init(frame: CGRect) {
         self.button = UIButton(type: .system)
         super.init(frame: frame)
-        self.button.setTitle("Create Client", for: .normal)
-        self.button.sizeToFit()
-        self.button.center = self.contentView.center
-        self.contentView.addSubview(self.button)
+        button.setTitle("Create Client", for: .normal)
+        button.sizeToFit()
+        button.center = self.contentView.center
+        contentView.addSubview(self.button)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -106,7 +106,7 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     
     override public func prepareForReuse() {
         super.prepareForReuse()
-        self.button.center = self.contentView.center
+        button.center = self.contentView.center
         // this is called for reload, which probably means the caching is pointless
         // TODO: clean this up
         targetSelector = nil
