@@ -11,7 +11,7 @@ import PubNub
 
 protocol MessageItem: Item {
     init(itemType: ItemType, message: PNMessageResult)
-    var payload: AnyObject? {get}
+    var payload: Any? {get}
     var channelData: String? {get}
     var channel: String? {get}
     var timetoken: NSNumber {get}
@@ -29,7 +29,7 @@ extension MessageItem {
 struct Message: MessageItem {
     let itemType: ItemType
     let timetoken: NSNumber
-    let payload: AnyObject?
+    let payload: Any?
     var channelData: String?
     var channel: String?
     init(itemType: ItemType, message: PNMessageResult) {
@@ -49,10 +49,6 @@ class MessageCollectionViewCell: CollectionViewCell {
     private let channelDataLabel: UILabel
     private let channelLabel: UILabel
     private let timeTokenLabel: UILabel
-    
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
     
     override init(frame: CGRect) {
         self.messageLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))

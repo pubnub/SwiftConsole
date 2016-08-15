@@ -87,10 +87,6 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         }
     }
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
-    
     override init(frame: CGRect) {
         self.button = UIButton(type: .system)
         super.init(frame: frame)

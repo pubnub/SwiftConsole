@@ -21,10 +21,6 @@ public class TextViewCollectionViewCell: CollectionViewCell, UITextViewDelegate 
     
     private let textView: UITextView
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
-    
     override init(frame: CGRect) {
         self.textView = UITextView(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: frame.size.height))
         super.init(frame: frame)

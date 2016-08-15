@@ -113,10 +113,6 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         }
     }
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
     }

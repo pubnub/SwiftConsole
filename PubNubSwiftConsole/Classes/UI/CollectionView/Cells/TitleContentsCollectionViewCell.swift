@@ -97,10 +97,6 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
-    
     override init(frame: CGRect) {
         self.titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/2))
         self.contentsLabel = UILabel(frame: CGRect(x: 5, y: frame.size.height/2, width: frame.size.width, height: frame.size.height/2))

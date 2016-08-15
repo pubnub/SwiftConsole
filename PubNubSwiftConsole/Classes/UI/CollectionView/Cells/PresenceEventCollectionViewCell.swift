@@ -43,10 +43,7 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
     private let eventTypeLabel: UILabel
     private let occupancyLabel: UILabel
     private let timeTokenLabel: UILabel
-    
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
+
     override init(frame: CGRect) {
         self.eventTypeLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
         self.occupancyLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))

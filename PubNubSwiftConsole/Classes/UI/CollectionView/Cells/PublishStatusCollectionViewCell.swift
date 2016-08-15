@@ -17,7 +17,7 @@ protocol PublishStatusItem: Item {
     var statusCode: Int {get}
     var information: String {get}
     var timeToken: NSNumber? {get}
-    var error: AnyObject? {get}
+    var error: Any? {get}
 }
 
 extension PublishStatusItem {
@@ -34,7 +34,7 @@ struct PublishStatus: PublishStatusItem {
     let statusCode: Int
     let information: String
     let timeToken: NSNumber?
-    let error: AnyObject?
+    let error: Any?
     init(itemType: ItemType, publishStatus: PNPublishStatus) {
         self.itemType = itemType
         self.category = publishStatus.stringifiedCategory()
@@ -59,9 +59,6 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
     private let timeTokenLabel: UILabel
     private let errorLabel: UILabel
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
     override init(frame: CGRect) {
         self.titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/5))
         self.operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/5))

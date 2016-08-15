@@ -61,9 +61,6 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
     private let channelLabel: UILabel
     private let channelGroupLabel: UILabel
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
     override init(frame: CGRect) {
         self.categoryLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
         self.operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))

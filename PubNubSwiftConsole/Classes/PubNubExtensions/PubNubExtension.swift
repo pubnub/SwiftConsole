@@ -19,7 +19,7 @@ enum PubNubConfigurationCreationError: CustomNSError, LocalizedError {
     public var errorCode: Int {
         return 100
     }
-    public var errorUserInfo: [String : AnyObject] {
+    public var errorUserInfo: [String : Any] {
         return ["description": errorDescription!]
     }
     var errorDescription: String? {
@@ -136,7 +136,7 @@ enum PubNubSubscribableStringParsingError: CustomNSError, LocalizedError {
     public var errorCode: Int {
         return 300
     }
-    public var errorUserInfo: [String : AnyObject] {
+    public var errorUserInfo: [String : Any] {
         return ["description": errorDescription!]
     }
     var errorDescription: String? {
@@ -165,7 +165,7 @@ enum PubNubPublishError: CustomNSError, LocalizedError {
     public var errorCode: Int {
         return 200
     }
-    public var errorUserInfo: [String : AnyObject] {
+    public var errorUserInfo: [String : Any] {
         return ["description": errorDescription!]
     }
     var errorDescription: String? {
@@ -181,7 +181,7 @@ enum PubNubPublishError: CustomNSError, LocalizedError {
 }
 
 extension PubNub {
-    func safePublish(message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
+    func safePublish(message: Any?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
         guard let actualMessage = message else {
             throw PubNubPublishError.nilMessage
         }

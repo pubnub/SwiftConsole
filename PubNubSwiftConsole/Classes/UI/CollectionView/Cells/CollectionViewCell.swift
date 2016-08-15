@@ -10,8 +10,9 @@ import UIKit
 
 @objc(PNCCollectionViewCell)
 public class CollectionViewCell: UICollectionViewCell {
-    class var reuseIdentifier: String {
-        return String(self.dynamicType)
+    static var reuseIdentifier: String {
+//        return String(describing: type(of: self))
+        return NSStringFromClass(self)
     }
     
     func updateCell(item: Item) {
