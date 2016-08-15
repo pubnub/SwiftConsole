@@ -120,6 +120,8 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         contentView.layer.borderWidth = 3
         
         let titleLabelXConstraint = NSLayoutConstraint(item: titleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        titleLabelXConstraint.constant += 50
+        contentView.updateConstraintsIfNeeded()
         let contentsLabelXConstraint = NSLayoutConstraint(item: contentsLabel, attribute: .CenterX, relatedBy: .Equal, toItem: titleLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
         let views = [
             "titleLabel" : titleLabel,
@@ -133,11 +135,10 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         let titleLabelWidthContraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[titleLabel]-spacer-|", options: [], metrics: metrics, views: views)
         let contentsLabelWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[contentsLabel]-spacer-|", options: [], metrics: metrics, views: views)
         let labelsYConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[titleLabel(titleHeight)]-spacer-[contentsLabel(>=contentsHeight)]-spacer-|", options: [], metrics: metrics, views: views)
-        contentView.addConstraints([titleLabelXConstraint, contentsLabelXConstraint])
-        contentView.addConstraints(labelsYConstraints)
-        contentView.addConstraints(titleLabelWidthContraints)
-        contentView.addConstraints(contentsLabelWidthConstraints)
-        contentView.setNeedsUpdateConstraints()
+        NSLayoutConstraint.activateConstraints([titleLabelXConstraint, contentsLabelXConstraint])
+        NSLayoutConstraint.activateConstraints(labelsYConstraints)
+        NSLayoutConstraint.activateConstraints(titleLabelWidthContraints)
+        NSLayoutConstraint.activateConstraints(contentsLabelWidthConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -147,8 +148,7 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
     func updateLabels(labelItem: TitleContentsItem) {
         self.titleLabel.text = labelItem.title
         self.contentsLabel.text = labelItem.contents
-        contentView.setNeedsLayout()
-        contentView.setNeedsUpdateConstraints()
+        
     }
     
     override func updateCell(item: Item) {
