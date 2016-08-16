@@ -9,89 +9,6 @@
 import UIKit
 import PubNub
 
-protocol ResultItem: Item {
-    init(itemType: ItemType, result: PNResult)
-    var statusCode: Int {get}
-    var operation: String {get}
-    var creationDate: Date {get}
-    var uuid: String {get}
-    var clientRequest: String? {get}
-}
-
-extension ResultItem {
-    var title: String {
-        return operation
-    }
-}
-
-class Result: ResultItem {
-    let itemType: ItemType
-    let statusCode: Int
-    let operation: String
-    let creationDate: Date
-    let uuid: String
-    let clientRequest: String?
-    required init(itemType: ItemType, result: PNResult) {
-        self.itemType = itemType
-        self.operation = result.stringifiedOperation()
-        self.creationDate = Date()
-        self.uuid = result.uuid
-        self.statusCode = result.statusCode
-        self.clientRequest = result.clientRequest?.url?.absoluteString
-    }
-}
-
-protocol StatusItem: ResultItem {
-    var category: String {get}
-    var error: Bool {get}
-    init(itemType: ItemType, status: PNStatus)
-//    var timeToken: NSNumber? {get}
-//    var channels: [String] {get}
-//    var channelGroups: [String] {get}
-}
-
-class Status: Result, StatusItem {
-    let category: String
-    let error: Bool
-    required init(itemType: ItemType, status: PNStatus) {
-        self.category = status.stringifiedCategory()
-        self.error = status.isError
-        super.init(itemType: itemType, result: status)
-    }
-    
-    required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
-    }
-    
-}
-
-protocol ErrorStatusItem: StatusItem {
-    var channels: [String] {get}
-    var channelGroups: [String] {get}
-    var information: String {get}
-    init(itemType: ItemType, errorStatus: PNErrorStatus)
-}
-
-class ErrorStatus: Status, ErrorStatusItem {
-    let channels: [String]
-    let channelGroups: [String]
-    let information: String
-    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
-        self.channels = errorStatus.errorData.channels
-        self.channelGroups = errorStatus.errorData.channelGroups
-        self.information = errorStatus.errorData.information
-        super.init(itemType: itemType, status: errorStatus)
-    }
-    
-    required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
-    }
-    
-    required init(itemType: ItemType, status: PNStatus) {
-        fatalError("init(itemType:status:) has not been implemented")
-    }
-}
-
 protocol SubscriberData {
     var subscribedChannel: String? {get} // do we need these?
     var actualChannel: String? {get} // do we need these?
@@ -99,13 +16,6 @@ protocol SubscriberData {
 }
 
 protocol SubscribeStatusItem: ErrorStatusItem, SubscriberData {
-//    var category: String {get}
-//    var operation: String {get}
-//    var creationDate: Date {get}
-//    var statusCode: Int {get}
-//    var timeToken: NSNumber? {get}
-//    var channels: [String] {get}
-//    var channelGroups: [String] {get}
     var currentTimetoken: NSNumber {get}
     var lastTimetoken: NSNumber {get}
     var subscribedChannels: [String] {get}
@@ -113,12 +23,6 @@ protocol SubscribeStatusItem: ErrorStatusItem, SubscriberData {
     init(itemType: ItemType, subscribeStatus: PNSubscribeStatus)
     
 }
-
-//extension SubscribeStatusItem {
-//    var title: String {
-//        return category
-//    }
-//}
 
 class SubscribeStatus: ErrorStatus, SubscribeStatusItem {
     let subscribedChannel: String?
@@ -151,68 +55,83 @@ class SubscribeStatus: ErrorStatus, SubscribeStatusItem {
         fatalError("init(itemType:status:) has not been implemented")
     }
     
-    var reuseIdentifier: String {
+    override var reuseIdentifier: String {
         return SubscribeStatusCollectionViewCell.reuseIdentifier
     }
 }
 
 class SubscribeStatusCollectionViewCell: CollectionViewCell {
-    
-    private let categoryLabel: UILabel
+    private let timetokenLabel: UILabel
+    private let subscribedChannelsLabel: UILabel
+    private let subscribedChannelGroupsLabel: UILabel
     private let operationLabel: UILabel
-    private let timeStampLabel: UILabel
+    private let creationDateLabel: UILabel
     private let statusCodeLabel: UILabel
-    private let timeTokenLabel: UILabel
-    private let channelLabel: UILabel
-    private let channelGroupLabel: UILabel
+    private let uuidLabel: UILabel
+    private let clientRequestLabel: UILabel
+    private let categoryLabel: UILabel
     
     override init(frame: CGRect) {
-        self.categoryLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        self.operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        self.timeStampLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
-        self.statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/4))
-        self.timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/4))
-        self.channelLabel = UILabel(frame: CGRect(x: 5, y: 150, width: frame.size.width, height: frame.size.height/4))
-        self.channelGroupLabel = UILabel(frame: CGRect(x: 5, y: 180, width: frame.size.width, height: frame.size.height/4))
+        self.operationLabel = UILabel(frame: .zero)
+        self.creationDateLabel = UILabel(frame: .zero)
+        self.statusCodeLabel = UILabel(frame: .zero)
+        self.uuidLabel = UILabel(frame: .zero)
+        self.clientRequestLabel = UILabel(frame: .zero)
+        self.categoryLabel = UILabel(frame: .zero)
+        self.timetokenLabel = UILabel(frame: .zero)
+        self.subscribedChannelsLabel = UILabel(frame: .zero)
+        self.subscribedChannelGroupsLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(categoryLabel)
         contentView.addSubview(operationLabel)
-        contentView.addSubview(timeStampLabel)
+        contentView.addSubview(creationDateLabel)
         contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(timeTokenLabel)
-        contentView.addSubview(channelLabel)
-        contentView.addSubview(channelGroupLabel)
+        contentView.addSubview(uuidLabel)
+        contentView.addSubview(clientRequestLabel)
+        contentView.addSubview(categoryLabel)
+        contentView.addSubview(timetokenLabel)
+        contentView.addSubview(subscribedChannelsLabel)
+        contentView.addSubview(subscribedChannelGroupsLabel)
         contentView.layer.borderWidth = 3
+        contentView.setNeedsLayout()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func layoutSubviews() {
+        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
+        operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
+        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
+        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
+        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
+        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
+        timetokenLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
+        subscribedChannelsLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
+        subscribedChannelGroupsLabel.frame = subscribedChannelsLabel.frame.offsetBy(dx: 0.0, dy: subscribedChannelsLabel.frame.size.height)
+    }
+    
     func updateStatus(item: SubscribeStatusItem) {
         categoryLabel.text = "Category: \(item.category)"
         operationLabel.text = "Operation: \(item.operation)"
-        timeStampLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
+        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
-        // FIXME: update UI for new object
-//        if let timeToken = item.timeToken {
-//            timeTokenLabel.isHidden = false
-//            timeTokenLabel.text = "Time token: \(timeToken)"
-//        } else {
-//            timeTokenLabel.isHidden = true
-//        }
-//        if let channelText = PubNub.subscribablesToString(subscribables: item.channels), !item.channels.isEmpty {
-//            channelLabel.isHidden = false
-//            channelLabel.text = "Channel(s): \(channelText)"
-//        } else {
-//            channelLabel.isHidden = true
-//        }
-//        if let channelGroupText = PubNub.subscribablesToString(subscribables: item.channelGroups), !item.channelGroups.isEmpty {
-//            channelGroupLabel.isHidden = false
-//            channelGroupLabel.text = "Channel group(s): \(channelGroupText)"
-//        } else {
-//            channelGroupLabel.isHidden = true
-//        }
-        setNeedsLayout()
+        uuidLabel.text = "UUID: \(item.uuid)"
+        clientRequestLabel.text = "Client request: \(item.clientRequest)"
+        timetokenLabel.text = "Timetoken: \(item.timetoken)"
+        if !item.subscribedChannels.isEmpty {
+            subscribedChannelsLabel.text = "Subscribed channels: \(PubNub.subscribablesToString(subscribables: item.subscribedChannels))"
+            subscribedChannelsLabel.isHidden = false
+        } else {
+            subscribedChannelsLabel.isHidden = true
+        }
+        if !item.subscribedChannelGroups.isEmpty {
+            subscribedChannelGroupsLabel.text = "Subscribed channel groups: \(PubNub.subscribablesToString(subscribables: item.subscribedChannelGroups))"
+            subscribedChannelGroupsLabel.isHidden = false
+        } else {
+            subscribedChannelGroupsLabel.isHidden = true
+        }
+        contentView.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
