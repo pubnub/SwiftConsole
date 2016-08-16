@@ -6,6 +6,7 @@
 //  Copyright © 2016 CocoaPods. All rights reserved.
 //
 
+@import PubNubPersistence;
 #import <PubNubSwiftConsole/PubNubSwiftConsole-Swift.h> // important this come before PubNub
 #import <PubNub/PubNub.h> // important this come after
 #import "ViewController.h"
@@ -14,6 +15,7 @@
 @property (nonatomic, weak) IBOutlet UIButton *clientCreationButton;
 @property (nonatomic, weak) IBOutlet UIButton *consoleButton;
 @property (nonatomic, strong) PubNub *client;
+@property (nonatomic, strong) PubNubPersistence *persistence;
 @end
 
 @implementation ViewController
@@ -35,8 +37,10 @@
 }
 
 - (void)consoleButtonPressed:(UIButton *)sender {
+    PNPPersistenceConfiguration *persistenceConfig = [PNPPersistenceConfiguration persistenceConfigurationWithClient:self.client];
+    self.persistence = [PubNubPersistence persistenceWithConfiguration:persistenceConfig];
     self.client = [PubNub clientWithConfiguration:[PNConfiguration configurationWithPublishKey:@"demo-36" subscribeKey:@"demo-36"]];
-    PNCNavigationController *navController = [PNCNavigationController consoleNavigationController:self.client];
+    PNCNavigationController *navController = [PNCNavigationController consoleNavigationController:self.client persistence:self.persistence];
     [self presentViewController:navController animated:YES completion:nil];
 }
 

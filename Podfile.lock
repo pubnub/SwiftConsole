@@ -12,10 +12,18 @@ PODS:
     - PubNub/Core (= 4.4.1)
   - PubNub/Core (4.4.1):
     - CocoaLumberjack (= 2.3.0)
-  - PubNubSwiftConsole (0.6.0):
+  - PubNubPersistence (0.3.0):
     - PubNub
+    - Realm (~> 1.0.2)
+  - PubNubSwiftConsole (0.7.0):
+    - PubNub
+    - PubNubPersistence
+  - Realm (1.0.2):
+    - Realm/Headers (= 1.0.2)
+  - Realm/Headers (1.0.2)
 
 DEPENDENCIES:
+  - PubNubPersistence
   - PubNubSwiftConsole (from `.`)
 
 EXTERNAL SOURCES:
@@ -25,8 +33,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   CocoaLumberjack: 97fab7ee5f507fe54445cca7ea80f926729cfd15
   PubNub: 7c59158178877fed5004df938cd31d030856f54e
-  PubNubSwiftConsole: eb93b0afbb7823a3f41507f55fdc8700da07686b
+  PubNubPersistence: 6f0fdc0a2ded904823194e07aaa22eabe5d44320
+  PubNubSwiftConsole: 3e4c95d3e45eb3f286a68308529e92f4756b1d5d
+  Realm: 9d5c46a4d7d27958530a8dfc58f63a99e5c2cba3
 
-PODFILE CHECKSUM: d142081451d29d12707fed80dc5e53bf5f1dab50
+PODFILE CHECKSUM: 5791693da51ec6479d53b1a29a01a2a02a822f82
 
 COCOAPODS: 1.0.1

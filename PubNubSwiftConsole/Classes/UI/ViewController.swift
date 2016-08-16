@@ -8,11 +8,17 @@
 
 import Foundation
 import PubNub
+import PubNubPersistence
 
 @objc(PNCViewController)
 public class ViewController: UIViewController, PNObjectEventListener {
     
-    public required init() {
+    public convenience init() {
+        self.init(persistence: nil)
+    }
+    
+    public required init(persistence: PubNubPersistence?) {
+        self.persistence = persistence
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -32,6 +38,8 @@ public class ViewController: UIViewController, PNObjectEventListener {
             client?.addListener(self)
         }
     }
+    
+    public let persistence: PubNubPersistence?
     
     deinit {
         client?.removeListener(self) // not really necessary, just to be safe

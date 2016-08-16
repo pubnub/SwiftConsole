@@ -8,6 +8,7 @@
 
 import Foundation
 import PubNub
+import PubNubPersistence
 
 @objc(PNCPublishViewControllerDelegate)
 public protocol PublishViewControllerDelegate {
@@ -222,22 +223,24 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     }
     
     // MARK: - Constructors
-    public required init(client: PubNub) {
-        super.init()
+    public required init(client: PubNub, persistence: PubNubPersistence?) {
+        super.init(persistence: persistence)
         self.client = client
+        self.client?.addListener(self) // because didSet isn't called during initialization
+        
     }
     
-    public required init() {
-        super.init()
-        self.client?.addListener(self)
+    public convenience init(client: PubNub) {
+        // should i create a persistence object for here?
+        self.init(client: client, persistence: nil)
     }
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        self.client?.removeListener(self)
+    public required init(persistence: PubNubPersistence?) {
+        fatalError("init(persistence:) has not been implemented")
     }
     
     // MARK: - View Lifecycle

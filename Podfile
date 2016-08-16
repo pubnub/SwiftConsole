@@ -3,6 +3,7 @@ workspace 'SwiftConsole'
 use_frameworks!
 
 target 'PubNubSwiftConsole_Example' do
+  pod 'PubNubPersistence'
   pod 'PubNubSwiftConsole', :path => '.'
 
   target 'PubNubSwiftConsole_Tests' do
@@ -13,6 +14,7 @@ target 'PubNubSwiftConsole_Example' do
 end
 
 target 'ObjCSample' do
+  pod 'PubNubPersistence'
   pod 'PubNubSwiftConsole', :path => '.'
 
   target 'ObjCSampleTests' do
