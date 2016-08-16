@@ -9,35 +9,26 @@
 import UIKit
 import PubNub
 
-protocol MessageItem: Item {
+protocol MessageItem: ResultItem, SubscriberData {
     init(itemType: ItemType, message: PNMessageResult)
     var payload: Any? {get}
-    var channelData: String? {get}
-    var channel: String? {get}
-    var timetoken: NSNumber {get}
 }
 
-extension MessageItem {
-    var title: String {
-        guard let currentPayload = payload else {
-            return "Cannot display message"
-        }
-        return "\(currentPayload)"
-    }
-}
-
-struct Message: MessageItem {
-    let itemType: ItemType
-    let timetoken: NSNumber
+class Message: Result, MessageItem {
     let payload: Any?
-    var channelData: String?
-    var channel: String?
-    init(itemType: ItemType, message: PNMessageResult) {
+    let actualChannel: String?
+    let subscribedChannel: String?
+    let timetoken: NSNumber
+    required init(itemType: ItemType, message: PNMessageResult) {
+        self.actualChannel = message.data.actualChannel
+        self.subscribedChannel = message.data.subscribedChannel
         self.timetoken = message.data.timetoken
-        self.itemType = itemType
         self.payload = message.data.message
-        self.channelData = message.data.subscribedChannel
-        self.channel = message.data.actualChannel
+        super.init(itemType: itemType, result: message)
+    }
+    
+    required init(itemType: ItemType, result: PNResult) {
+        fatalError("init(itemType:result:) has not been implemented")
     }
     var reuseIdentifier: String {
         return MessageCollectionViewCell.reuseIdentifier
@@ -69,21 +60,22 @@ class MessageCollectionViewCell: CollectionViewCell {
     }
     
     func updateMessage(item: MessageItem) {
-        messageLabel.text = "Message: \(item.title)"
+        // FIXME: update UI for new object
+        messageLabel.text = "Message: \(item.payload)"
         timeTokenLabel.text = "Timetoken: \(item.timetoken)"
-        if let channelName = item.channel, let channelGroupName = item.channelData  {
-            channelDataLabel.isHidden = false
-            channelDataLabel.text = "Channel group: \(channelGroupName)"
-            channelLabel.isHidden = false
-            channelLabel.text = "Channel: \(channelName)"
-        } else if let channelName = item.channelData {
-            channelDataLabel.isHidden = false
-            channelDataLabel.text = "Channel: \(channelName)"
-            channelLabel.isHidden = true
-        } else {
-            channelDataLabel.isHidden = true
-            channelLabel.isHidden = true
-        }
+//        if let channelName = item.channel, let channelGroupName = item.channelData  {
+//            channelDataLabel.isHidden = false
+//            channelDataLabel.text = "Channel group: \(channelGroupName)"
+//            channelLabel.isHidden = false
+//            channelLabel.text = "Channel: \(channelName)"
+//        } else if let channelName = item.channelData {
+//            channelDataLabel.isHidden = false
+//            channelDataLabel.text = "Channel: \(channelName)"
+//            channelLabel.isHidden = true
+//        } else {
+//            channelDataLabel.isHidden = true
+//            channelLabel.isHidden = true
+//        }
         setNeedsLayout()
     }
     

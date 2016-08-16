@@ -9,30 +9,37 @@
 import UIKit
 import PubNub
 
-protocol PresenceEventItem: Item {
-    init(itemType: ItemType, event: PNPresenceEventResult)
-    var eventType: String {get}
-    var occupancy: NSNumber? {get}
-    var timeToken: NSNumber? {get}
+protocol PresenceEventItem: ResultItem, SubscriberData {
+    var presenceEvent: String {get}
+    var presenceTimetoken: NSNumber {get}
+    var presenceUUID: String? {get}
+    var occupancy: NSNumber {get}
+    init(itemType: ItemType, presenceEvent: PNPresenceEventResult)
 }
 
-extension PresenceEventItem {
-    var title: String {
-        return eventType
+class PresenceEvent: Result, PresenceEventItem {
+    let actualChannel: String?
+    let subscribedChannel: String?
+    let timetoken: NSNumber
+    let presenceEvent: String
+    let presenceTimetoken: NSNumber
+    let presenceUUID: String?
+    let occupancy: NSNumber
+    required init(itemType: ItemType, presenceEvent: PNPresenceEventResult) {
+        self.subscribedChannel = presenceEvent.data.subscribedChannel
+        self.actualChannel = presenceEvent.data.actualChannel
+        self.timetoken = presenceEvent.data.timetoken
+        self.presenceEvent = presenceEvent.data.presenceEvent
+        self.presenceTimetoken = presenceEvent.data.presence.timetoken
+        self.presenceUUID = presenceEvent.data.presence.uuid
+        self.occupancy = presenceEvent.data.presence.occupancy
+        super.init(itemType: itemType, result: presenceEvent)
     }
-}
-
-struct PresenceEvent: PresenceEventItem {
-    let itemType: ItemType
-    let eventType: String
-    let occupancy: NSNumber?
-    let timeToken: NSNumber?
-    init(itemType: ItemType, event: PNPresenceEventResult) {
-        self.itemType = itemType
-        self.eventType = event.data.presenceEvent
-        self.occupancy = event.data.presence.occupancy
-        self.timeToken = event.data.presence.timetoken
+    
+    required init(itemType: ItemType, result: PNResult) {
+        fatalError("init(itemType:result:) has not been implemented")
     }
+    
     var reuseIdentifier: String {
         return PresenceEventCollectionViewCell.reuseIdentifier
     }
@@ -59,19 +66,20 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     func updatePresence(item: PresenceEventItem) {
-        eventTypeLabel.text = "Type: \(item.title)"
-        if let channelOccupancy = item.occupancy {
-            occupancyLabel.isHidden = false
-            occupancyLabel.text = "Occupancy: \(channelOccupancy)"
-        } else {
-            occupancyLabel.isHidden = true
-        }
-        if let eventTimeToken = item.timeToken {
-            timeTokenLabel.isHidden = false
-            timeTokenLabel.text = "Time token: \(eventTimeToken)"
-        } else {
-            timeTokenLabel.isHidden = true
-        }
+        eventTypeLabel.text = "Type: \(item.presenceEvent)"
+        // FIXME: update UI for new object
+//        if let channelOccupancy = item.occupancy {
+//            occupancyLabel.isHidden = false
+//            occupancyLabel.text = "Occupancy: \(channelOccupancy)"
+//        } else {
+//            occupancyLabel.isHidden = true
+//        }
+//        if let eventTimeToken = item.timeToken {
+//            timeTokenLabel.isHidden = false
+//            timeTokenLabel.text = "Time token: \(eventTimeToken)"
+//        } else {
+//            timeTokenLabel.isHidden = true
+//        }
         setNeedsLayout()
     }
     

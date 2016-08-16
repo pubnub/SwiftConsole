@@ -594,13 +594,19 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 // performBatchUpdates is nestable, so let's update other sections first
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
-                let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.subscribeStatus, status: status)
-                guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
-                    return
+                var receivedStatus: Status? = nil
+                switch status {
+                case let subscribeStatus as PNSubscribeStatus:
+                    receivedStatus = SubscribeStatus(itemType: ConsoleItemType.subscribeStatus, subscribeStatus: subscribeStatus)
+                default:
+                    receivedStatus = Status(itemType: ConsoleItemType.subscribeStatus, status: status)
+                }
+                guard let currentDataSource = self.dataSource as? ConsoleDataSource, let addingStatus = receivedStatus else {
+                    fatalError()
                 }
                 // the index path is the same for both calls
-                let subscribeStatusIndexPath = currentDataSource.push(item: subscribeStatus, consoleSection: .subscribeStatuses)
-                currentDataSource.push(item: subscribeStatus, consoleSection: .all)
+                let subscribeStatusIndexPath = currentDataSource.push(item: addingStatus, consoleSection: .subscribeStatuses)
+                currentDataSource.push(item: addingStatus, consoleSection: .all)
                 let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
                 if currentSegmentedControlValue == .all || currentSegmentedControlValue == .subscribeStatuses {
                     self.collectionView?.insertItems(at: [subscribeStatusIndexPath])
@@ -611,7 +617,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func client(_ client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
         collectionView?.performBatchUpdates({
-            let receivedPresenceEvent = PresenceEvent(itemType: ConsoleItemType.presenceEvent, event: event)
+            let receivedPresenceEvent = PresenceEvent(itemType: ConsoleItemType.presenceEvent, presenceEvent: event)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }

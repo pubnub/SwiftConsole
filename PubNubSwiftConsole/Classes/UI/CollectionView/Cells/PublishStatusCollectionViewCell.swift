@@ -9,41 +9,28 @@
 import UIKit
 import PubNub
 
-protocol PublishStatusItem: Item {
+protocol PublishStatusItem: ErrorStatusItem {
     init(itemType: ItemType, publishStatus: PNPublishStatus)
-    var category: String {get}
-    var operation: String {get}
-    var creationDate: Date {get}
-    var statusCode: Int {get}
-    var information: String {get}
-    var timeToken: NSNumber? {get}
-    var error: Any? {get}
+    var timetoken: NSNumber {get}
 }
 
-extension PublishStatusItem {
-    var title: String {
-        return category
+class PublishStatus: ErrorStatus, PublishStatusItem {
+    let timetoken: NSNumber
+    required init(itemType: ItemType, publishStatus: PNPublishStatus) {
+        self.timetoken = publishStatus.data.timetoken
+        super.init(itemType: itemType, errorStatus: publishStatus)
     }
-}
-
-struct PublishStatus: PublishStatusItem {
-    let itemType: ItemType
-    let category: String
-    let operation: String
-    let creationDate: Date
-    let statusCode: Int
-    let information: String
-    let timeToken: NSNumber?
-    let error: Any?
-    init(itemType: ItemType, publishStatus: PNPublishStatus) {
-        self.itemType = itemType
-        self.category = publishStatus.stringifiedCategory()
-        self.operation = publishStatus.stringifiedOperation()
-        self.creationDate = Date()
-        self.statusCode = publishStatus.statusCode
-        self.information = publishStatus.data.information
-        self.timeToken = publishStatus.data.timetoken
-        self.error = publishStatus.errorData.data
+    
+    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
+        fatalError("init(itemType:errorStatus:) has not been implemented")
+    }
+    
+    required init(itemType: ItemType, status: PNStatus) {
+        fatalError("init(itemType:status:) has not been implemented")
+    }
+    
+    required init(itemType: ItemType, result: PNResult) {
+        fatalError("init(itemType:result:) has not been implemented")
     }
     var reuseIdentifier: String {
         return PublishStatusCollectionViewCell.reuseIdentifier
@@ -87,18 +74,19 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
         informationLabel.text = "Response message: \(item.information)"
-        if let publishTimeToken = item.timeToken {
-            timeTokenLabel.isHidden = false
-            timeTokenLabel.text = "Time token: \(publishTimeToken)"
-        } else {
-            timeTokenLabel.isHidden = true
-        }
-        if let publishError = item.error {
-            errorLabel.isHidden = false
-            errorLabel.text = "Error: \(publishError)"
-        } else {
-            errorLabel.isHidden = true
-        }
+        // FIXME: update UI for new object
+//        if let publishTimeToken = item.timeToken {
+//            timeTokenLabel.isHidden = false
+//            timeTokenLabel.text = "Time token: \(publishTimeToken)"
+//        } else {
+//            timeTokenLabel.isHidden = true
+//        }
+//        if let publishError = item.error {
+//            errorLabel.isHidden = false
+//            errorLabel.text = "Error: \(publishError)"
+//        } else {
+//            errorLabel.isHidden = true
+//        }
         setNeedsLayout()
     }
     

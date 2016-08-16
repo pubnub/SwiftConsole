@@ -181,7 +181,7 @@ enum PubNubPublishError: CustomNSError, LocalizedError {
 }
 
 extension PubNub {
-    func safePublish(message: Any?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
+    func safePublish(message: Any?, toChannel channel: String, mobilePushPayload push: [String : Any]?, withCompletion block: PNPublishCompletionBlock? = nil) throws {
         guard let actualMessage = message else {
             throw PubNubPublishError.nilMessage
         }
@@ -202,6 +202,14 @@ extension PubNub {
             throw publishError // probably a better way than catching and throwing the same error (maybe rethrow?)
         } catch {
             fatalError()
+        }
+    }
+    // should this be `rethrows`?
+    func safePublish(message: Any?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock? = nil) throws {
+        do {
+            try safePublish(message: message, toChannel: channel, mobilePushPayload: nil, withCompletion: block)
+        } catch {
+            throw error
         }
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework

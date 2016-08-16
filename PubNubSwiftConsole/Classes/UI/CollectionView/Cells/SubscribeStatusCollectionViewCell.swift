@@ -9,43 +9,148 @@
 import UIKit
 import PubNub
 
-protocol SubscribeStatusItem: Item {
-    var category: String {get}
+protocol ResultItem: Item {
+    init(itemType: ItemType, result: PNResult)
+    var statusCode: Int {get}
     var operation: String {get}
     var creationDate: Date {get}
-    var statusCode: Int {get}
-    var timeToken: NSNumber? {get}
-    var channels: [String] {get}
-    var channelGroups: [String] {get}
+    var uuid: String {get}
+    var clientRequest: String? {get}
 }
 
-extension SubscribeStatusItem {
+extension ResultItem {
     var title: String {
-        return category
+        return operation
     }
 }
 
-struct SubscribeStatus: SubscribeStatusItem {
+class Result: ResultItem {
     let itemType: ItemType
-    let category: String
+    let statusCode: Int
     let operation: String
     let creationDate: Date
-    let statusCode: Int
-    var timeToken: NSNumber?
-    var channels: [String] = []
-    var channelGroups: [String] = []
-    init(itemType: ItemType, status: PNStatus) {
+    let uuid: String
+    let clientRequest: String?
+    required init(itemType: ItemType, result: PNResult) {
         self.itemType = itemType
-        self.category = status.stringifiedCategory()
-        self.operation = status.stringifiedOperation()
+        self.operation = result.stringifiedOperation()
         self.creationDate = Date()
-        self.statusCode = status.statusCode
-        if let subscribeStatus = status as? PNSubscribeStatus {
-            self.timeToken = subscribeStatus.data.timetoken
-            self.channels = subscribeStatus.subscribedChannels
-            self.channelGroups = subscribeStatus.subscribedChannelGroups
-        }
+        self.uuid = result.uuid
+        self.statusCode = result.statusCode
+        self.clientRequest = result.clientRequest?.url?.absoluteString
     }
+}
+
+protocol StatusItem: ResultItem {
+    var category: String {get}
+    var error: Bool {get}
+    init(itemType: ItemType, status: PNStatus)
+//    var timeToken: NSNumber? {get}
+//    var channels: [String] {get}
+//    var channelGroups: [String] {get}
+}
+
+class Status: Result, StatusItem {
+    let category: String
+    let error: Bool
+    required init(itemType: ItemType, status: PNStatus) {
+        self.category = status.stringifiedCategory()
+        self.error = status.isError
+        super.init(itemType: itemType, result: status)
+    }
+    
+    required init(itemType: ItemType, result: PNResult) {
+        fatalError("init(itemType:result:) has not been implemented")
+    }
+    
+}
+
+protocol ErrorStatusItem: StatusItem {
+    var channels: [String] {get}
+    var channelGroups: [String] {get}
+    var information: String {get}
+    init(itemType: ItemType, errorStatus: PNErrorStatus)
+}
+
+class ErrorStatus: Status, ErrorStatusItem {
+    let channels: [String]
+    let channelGroups: [String]
+    let information: String
+    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
+        self.channels = errorStatus.errorData.channels
+        self.channelGroups = errorStatus.errorData.channelGroups
+        self.information = errorStatus.errorData.information
+        super.init(itemType: itemType, status: errorStatus)
+    }
+    
+    required init(itemType: ItemType, result: PNResult) {
+        fatalError("init(itemType:result:) has not been implemented")
+    }
+    
+    required init(itemType: ItemType, status: PNStatus) {
+        fatalError("init(itemType:status:) has not been implemented")
+    }
+}
+
+protocol SubscriberData {
+    var subscribedChannel: String? {get} // do we need these?
+    var actualChannel: String? {get} // do we need these?
+    var timetoken: NSNumber {get}
+}
+
+protocol SubscribeStatusItem: ErrorStatusItem, SubscriberData {
+//    var category: String {get}
+//    var operation: String {get}
+//    var creationDate: Date {get}
+//    var statusCode: Int {get}
+//    var timeToken: NSNumber? {get}
+//    var channels: [String] {get}
+//    var channelGroups: [String] {get}
+    var currentTimetoken: NSNumber {get}
+    var lastTimetoken: NSNumber {get}
+    var subscribedChannels: [String] {get}
+    var subscribedChannelGroups: [String] {get}
+    init(itemType: ItemType, subscribeStatus: PNSubscribeStatus)
+    
+}
+
+//extension SubscribeStatusItem {
+//    var title: String {
+//        return category
+//    }
+//}
+
+class SubscribeStatus: ErrorStatus, SubscribeStatusItem {
+    let subscribedChannel: String?
+    let actualChannel: String?
+    let timetoken: NSNumber
+    let currentTimetoken: NSNumber
+    let lastTimetoken: NSNumber
+    let subscribedChannels: [String]
+    let subscribedChannelGroups: [String]
+    required init(itemType: ItemType, subscribeStatus: PNSubscribeStatus) {
+        self.subscribedChannel = subscribeStatus.data.subscribedChannel
+        self.actualChannel = subscribeStatus.data.actualChannel
+        self.timetoken = subscribeStatus.data.timetoken
+        self.currentTimetoken = subscribeStatus.currentTimetoken
+        self.lastTimetoken = subscribeStatus.lastTimeToken
+        self.subscribedChannels = subscribeStatus.subscribedChannels
+        self.subscribedChannelGroups = subscribeStatus.subscribedChannelGroups
+        super.init(itemType: itemType, errorStatus: subscribeStatus)
+    }
+    
+    required init(itemType: ItemType, result: PNResult) {
+        fatalError("init(itemType:result:) has not been implemented")
+    }
+    
+    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
+        fatalError("init(itemType:errorStatus:) has not been implemented")
+    }
+    
+    required init(itemType: ItemType, status: PNStatus) {
+        fatalError("init(itemType:status:) has not been implemented")
+    }
+    
     var reuseIdentifier: String {
         return SubscribeStatusCollectionViewCell.reuseIdentifier
     }
@@ -84,28 +189,29 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     func updateStatus(item: SubscribeStatusItem) {
-        categoryLabel.text = "Category: \(item.title)"
+        categoryLabel.text = "Category: \(item.category)"
         operationLabel.text = "Operation: \(item.operation)"
         timeStampLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
         statusCodeLabel.text = "Status code: \(item.statusCode)"
-        if let timeToken = item.timeToken {
-            timeTokenLabel.isHidden = false
-            timeTokenLabel.text = "Time token: \(timeToken)"
-        } else {
-            timeTokenLabel.isHidden = true
-        }
-        if let channelText = PubNub.subscribablesToString(subscribables: item.channels), !item.channels.isEmpty {
-            channelLabel.isHidden = false
-            channelLabel.text = "Channel(s): \(channelText)"
-        } else {
-            channelLabel.isHidden = true
-        }
-        if let channelGroupText = PubNub.subscribablesToString(subscribables: item.channelGroups), !item.channelGroups.isEmpty {
-            channelGroupLabel.isHidden = false
-            channelGroupLabel.text = "Channel group(s): \(channelGroupText)"
-        } else {
-            channelGroupLabel.isHidden = true
-        }
+        // FIXME: update UI for new object
+//        if let timeToken = item.timeToken {
+//            timeTokenLabel.isHidden = false
+//            timeTokenLabel.text = "Time token: \(timeToken)"
+//        } else {
+//            timeTokenLabel.isHidden = true
+//        }
+//        if let channelText = PubNub.subscribablesToString(subscribables: item.channels), !item.channels.isEmpty {
+//            channelLabel.isHidden = false
+//            channelLabel.text = "Channel(s): \(channelText)"
+//        } else {
+//            channelLabel.isHidden = true
+//        }
+//        if let channelGroupText = PubNub.subscribablesToString(subscribables: item.channelGroups), !item.channelGroups.isEmpty {
+//            channelGroupLabel.isHidden = false
+//            channelGroupLabel.text = "Channel group(s): \(channelGroupText)"
+//        } else {
+//            channelGroupLabel.isHidden = true
+//        }
         setNeedsLayout()
     }
     
