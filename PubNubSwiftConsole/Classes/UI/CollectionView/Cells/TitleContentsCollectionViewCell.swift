@@ -120,7 +120,6 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         contentView.layer.borderWidth = 3
         
         let titleLabelXConstraint = NSLayoutConstraint(item: titleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
-        titleLabelXConstraint.constant += 50
         contentView.updateConstraintsIfNeeded()
         let contentsLabelXConstraint = NSLayoutConstraint(item: contentsLabel, attribute: .CenterX, relatedBy: .Equal, toItem: titleLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
         let views = [
