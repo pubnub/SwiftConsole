@@ -88,10 +88,10 @@ public protocol Item {
 }
 
 extension Item {
-    func size(collectionViewSize: CGSize) -> CGSize {
+    public func size(collectionViewSize: CGSize) -> CGSize {
         return itemType.size(collectionViewSize)
     }
-    var reuseIdentifier: String {
+    public var reuseIdentifier: String {
         return itemType.cellClass.reuseIdentifier
     }
 }

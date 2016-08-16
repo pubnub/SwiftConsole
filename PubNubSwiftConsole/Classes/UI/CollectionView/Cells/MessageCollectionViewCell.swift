@@ -8,32 +8,36 @@
 
 import UIKit
 import PubNub
+import PubNubPersistence
 
 protocol MessageItem: Item {
-    init(itemType: ItemType, message: PNMessageResult)
+//    init(itemType: ItemType, message: PNMessageResult)
     var payload: AnyObject? {get}
     var channelData: String? {get}
     var channel: String? {get}
-    var timetoken: NSNumber {get}
+    var timetoken: Int64 {get}
 }
 
-extension MessageItem {
-    var title: String {
-        guard let currentPayload = payload else {
-            return "Cannot display message"
-        }
-        return "\(currentPayload)"
-    }
-}
+//extension MessageItem {
+//    public var title: String {
+//        guard let currentPayload = payload else {
+//            return "Cannot display message"
+//        }
+//        return "\(currentPayload)"
+//    }
+//}
 
 struct Message: MessageItem {
+    var title: String {
+        return "whatever"
+    }
     let itemType: ItemType
-    let timetoken: NSNumber
+    let timetoken: Int64
     let payload: AnyObject?
     var channelData: String?
     var channel: String?
     init(itemType: ItemType, message: PNMessageResult) {
-        self.timetoken = message.data.timetoken
+        self.timetoken = message.data.timetoken.longLongValue
         self.itemType = itemType
         self.payload = message.data.message
         self.channelData = message.data.subscribedChannel
@@ -41,6 +45,24 @@ struct Message: MessageItem {
     }
     var reuseIdentifier: String {
         return MessageCollectionViewCell.reuseIdentifier
+    }
+}
+
+extension PNPMessage: MessageItem {
+    public var title: String {
+        return "whatever"
+    }
+    public var itemType: ItemType {
+        return ConsoleViewController.ConsoleItemType.Message
+    }
+    var payload: AnyObject? {
+        return message
+    }
+    var channelData: String? {
+        return self.actualChannel
+    }
+    var channel: String? {
+        return self.subscribedChannel
     }
 }
 
