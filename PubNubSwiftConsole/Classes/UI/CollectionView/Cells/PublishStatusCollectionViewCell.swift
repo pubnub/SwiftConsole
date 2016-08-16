@@ -63,14 +63,22 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         return String(self.dynamicType)
     }
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/5))
-        operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/5))
-        creationDateLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/5))
-        statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/5))
-        informationLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/5))
-        timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 150, width: frame.size.width, height: frame.size.height/5))
-        errorLabel = UILabel(frame: CGRect(x: 5, y: 180, width: frame.size.width, height: frame.size.height/5))
+        titleLabel = UILabel(frame: CGRectZero)
+        operationLabel = UILabel(frame: CGRectZero)
+        creationDateLabel = UILabel(frame: CGRectZero)
+        statusCodeLabel = UILabel(frame: CGRectZero)
+        informationLabel = UILabel(frame: CGRectZero)
+        timeTokenLabel = UILabel(frame: CGRectZero)
+        errorLabel = UILabel(frame: CGRectZero)
         super.init(frame: frame)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        operationLabel.translatesAutoresizingMaskIntoConstraints = false
+        creationDateLabel.translatesAutoresizingMaskIntoConstraints = false
+        creationDateLabel.numberOfLines = 2
+        statusCodeLabel.translatesAutoresizingMaskIntoConstraints = false
+        informationLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeTokenLabel.translatesAutoresizingMaskIntoConstraints = false
+        errorLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
         contentView.addSubview(operationLabel)
         contentView.addSubview(creationDateLabel)
@@ -79,6 +87,37 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         contentView.addSubview(timeTokenLabel)
         contentView.addSubview(errorLabel)
         contentView.layer.borderWidth = 1
+        
+        let views = [
+            "titleLabel": titleLabel,
+            "operationLabel": operationLabel,
+            "creationDateLabel": creationDateLabel,
+            "statusCodeLabel" : statusCodeLabel,
+            "informationLabel" : informationLabel,
+            "timeTokenLabel": timeTokenLabel,
+            "errorLabel" : errorLabel
+            ]
+        
+        let metrics = [
+            "spacer": NSNumber(integer: 10)
+            ]
+        
+        let titleLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[titleLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let operationLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[operationLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let creationDateXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[creationDateLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let statusCodeLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[statusCodeLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let informationLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[informationLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let timeTokenLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[timeTokenLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let errorLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[errorLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[titleLabel]-spacer-[operationLabel]-spacer-[creationDateLabel]-spacer-[statusCodeLabel]-spacer-[informationLabel]-spacer-[timeTokenLabel]-spacer-[errorLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        contentView.addConstraints(titleLabelXConstraints)
+        contentView.addConstraints(operationLabelXConstraints)
+        contentView.addConstraints(creationDateXConstraints)
+        contentView.addConstraints(statusCodeLabelXConstraints)
+        contentView.addConstraints(informationLabelXConstraints)
+        contentView.addConstraints(timeTokenLabelXConstraints)
+        contentView.addConstraints(errorLabelXConstraints)
+        contentView.addConstraints(verticalConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {

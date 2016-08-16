@@ -120,7 +120,6 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         contentView.layer.borderWidth = 3
         
         let titleLabelXConstraint = NSLayoutConstraint(item: titleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
-        contentView.updateConstraintsIfNeeded()
         let contentsLabelXConstraint = NSLayoutConstraint(item: contentsLabel, attribute: .CenterX, relatedBy: .Equal, toItem: titleLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
         let views = [
             "titleLabel" : titleLabel,
@@ -134,10 +133,11 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
         let titleLabelWidthContraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[titleLabel]-spacer-|", options: [], metrics: metrics, views: views)
         let contentsLabelWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[contentsLabel]-spacer-|", options: [], metrics: metrics, views: views)
         let labelsYConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[titleLabel(titleHeight)]-spacer-[contentsLabel(>=contentsHeight)]-spacer-|", options: [], metrics: metrics, views: views)
-        NSLayoutConstraint.activateConstraints([titleLabelXConstraint, contentsLabelXConstraint])
-        NSLayoutConstraint.activateConstraints(labelsYConstraints)
-        NSLayoutConstraint.activateConstraints(titleLabelWidthContraints)
-        NSLayoutConstraint.activateConstraints(contentsLabelWidthConstraints)
+        contentView.addConstraint(titleLabelXConstraint)
+        contentView.addConstraint(contentsLabelXConstraint)
+        contentView.addConstraints(labelsYConstraints)
+        contentView.addConstraints(titleLabelWidthContraints)
+        contentView.addConstraints(contentsLabelWidthConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {

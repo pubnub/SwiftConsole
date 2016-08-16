@@ -86,7 +86,6 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
         contentView.addConstraints(occupancyLabelWidthConstraints)
         contentView.addConstraints(timeTokenLabelWidthConstraints)
         contentView.addConstraints(verticalConstraints)
-        
     }
     
     required init?(coder aDecoder: NSCoder) {

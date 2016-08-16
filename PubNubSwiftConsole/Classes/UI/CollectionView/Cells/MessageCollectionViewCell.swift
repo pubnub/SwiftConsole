@@ -93,11 +93,11 @@ class MessageCollectionViewCell: CollectionViewCell {
         
         let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[messageLabel]-spacer-[timeTokenLabel]-spacer-[channelDataLabel]", options: [], metrics: metrics, views: views)
         
-        NSLayoutConstraint.activateConstraints([messageLabelXConstraint, timetokenXConstraint])
-        NSLayoutConstraint.activateConstraints(messageLabelXConstraints)
-        NSLayoutConstraint.activateConstraints(timeTokenWidthConstraints)
-        NSLayoutConstraint.activateConstraints(channelDataWidthConstraints)
-        NSLayoutConstraint.activateConstraints(verticalConstraints)
+        contentView.addConstraints([messageLabelXConstraint, timetokenXConstraint])
+        contentView.addConstraints(messageLabelXConstraints)
+        contentView.addConstraints(timeTokenWidthConstraints)
+        contentView.addConstraints(channelDataWidthConstraints)
+        contentView.addConstraints(verticalConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -122,11 +122,6 @@ class MessageCollectionViewCell: CollectionViewCell {
             fatalError()
         }
         contentView.setNeedsLayout()
-    }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        NSLayoutConstraint.deactivateConstraints(channelLabelConstraints!)
     }
     
     override func updateCell(item: Item) {
