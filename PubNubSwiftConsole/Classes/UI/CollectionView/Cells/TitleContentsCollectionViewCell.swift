@@ -102,18 +102,42 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
     }
     
     override init(frame: CGRect) {
-        titleLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/2))
-        contentsLabel = UILabel(frame: CGRect(x: 5, y: frame.size.height/2, width: frame.size.width, height: frame.size.height/2))
+        titleLabel = UILabel(frame: CGRectZero)
+        contentsLabel = UILabel(frame: CGRectZero)
         
         super.init(frame: frame)
         titleLabel.textAlignment = .Center
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
         contentView.addSubview(titleLabel)
         
         contentsLabel.textAlignment = .Center
+        contentsLabel.lineBreakMode = .ByCharWrapping
+        contentsLabel.numberOfLines = 2
+        contentsLabel.translatesAutoresizingMaskIntoConstraints = false
         contentsLabel.font = UIFont.systemFontOfSize(UIFont.smallSystemFontSize())
         contentView.addSubview(contentsLabel)
         contentView.layer.borderWidth = 3
+        
+        let titleLabelXConstraint = NSLayoutConstraint(item: titleLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let contentsLabelXConstraint = NSLayoutConstraint(item: contentsLabel, attribute: .CenterX, relatedBy: .Equal, toItem: titleLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let views = [
+            "titleLabel" : titleLabel,
+            "contentsLabel" : contentsLabel
+        ]
+        let metrics = [
+            "spacer" : NSNumber(integer: 5),
+            "titleHeight" : NSNumber(integer: 30),
+            "contentsHeight": NSNumber(integer: 40),
+        ]
+        let titleLabelWidthContraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[titleLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let contentsLabelWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[contentsLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let labelsYConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[titleLabel(titleHeight)]-spacer-[contentsLabel(>=contentsHeight)]-spacer-|", options: [], metrics: metrics, views: views)
+        contentView.addConstraint(titleLabelXConstraint)
+        contentView.addConstraint(contentsLabelXConstraint)
+        contentView.addConstraints(labelsYConstraints)
+        contentView.addConstraints(titleLabelWidthContraints)
+        contentView.addConstraints(contentsLabelWidthConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -123,7 +147,7 @@ final class TitleContentsCollectionViewCell: CollectionViewCell {
     func updateLabels(labelItem: TitleContentsItem) {
         self.titleLabel.text = labelItem.title
         self.contentsLabel.text = labelItem.contents
-        self.setNeedsLayout()
+        
     }
     
     override func updateCell(item: Item) {

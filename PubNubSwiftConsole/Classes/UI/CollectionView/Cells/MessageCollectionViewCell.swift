@@ -50,22 +50,54 @@ class MessageCollectionViewCell: CollectionViewCell {
     private let channelLabel: UILabel
     private let timeTokenLabel: UILabel
     
+    private var channelLabelConstraints: [NSLayoutConstraint]?
+    
     override class var reuseIdentifier: String {
         return String(self.dynamicType)
     }
     
     override init(frame: CGRect) {
-        messageLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        channelDataLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        channelLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
-        timeTokenLabel = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: 40.0))
+        messageLabel = UILabel(frame: CGRectZero)
+        channelDataLabel = UILabel(frame: CGRectZero)
+        channelLabel = UILabel(frame: CGRectZero)
+        timeTokenLabel = UILabel(frame: CGRectZero)
         super.init(frame: frame)
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+        channelDataLabel.translatesAutoresizingMaskIntoConstraints = false
+        channelLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeTokenLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(messageLabel)
         contentView.addSubview(channelDataLabel)
         contentView.addSubview(channelLabel)
-        timeTokenLabel.center = CGPoint(x: channelLabel.center.x, y: channelLabel.center.y + channelLabel.frame.size.height)
         contentView.addSubview(timeTokenLabel)
         contentView.layer.borderWidth = 1
+        
+        let messageLabelXConstraint = NSLayoutConstraint(item: messageLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let timetokenXConstraint = NSLayoutConstraint(item: timeTokenLabel, attribute: .CenterX, relatedBy: .Equal, toItem: messageLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let views = [
+            "messageLabel": messageLabel,
+            "channelDataLabel": channelDataLabel,
+            "channelLabel": channelLabel,
+            "timeTokenLabel": timeTokenLabel,
+        ]
+        
+        let metrics = [
+            "timeTokenWidth": NSNumber(integer: 100),
+            "spacer": NSNumber(integer: 5),
+        ]
+        
+        let messageLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[messageLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let timeTokenWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:[timeTokenLabel(timeTokenWidth)]", options: [], metrics: metrics, views: views)
+        let channelDataWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[channelDataLabel]", options: [], metrics: metrics, views: views)
+        channelLabelConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:[channelLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        
+        let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[messageLabel]-spacer-[timeTokenLabel]-spacer-[channelDataLabel]", options: [], metrics: metrics, views: views)
+        
+        contentView.addConstraints([messageLabelXConstraint, timetokenXConstraint])
+        contentView.addConstraints(messageLabelXConstraints)
+        contentView.addConstraints(timeTokenWidthConstraints)
+        contentView.addConstraints(channelDataWidthConstraints)
+        contentView.addConstraints(verticalConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -79,16 +111,17 @@ class MessageCollectionViewCell: CollectionViewCell {
             channelDataLabel.hidden = false
             channelDataLabel.text = "Channel group: \(channelGroupName)"
             channelLabel.hidden = false
+            NSLayoutConstraint.activateConstraints(channelLabelConstraints!)
             channelLabel.text = "Channel: \(channelName)"
         } else if let channelName = item.channelData {
             channelDataLabel.hidden = false
             channelDataLabel.text = "Channel: \(channelName)"
             channelLabel.hidden = true
+            NSLayoutConstraint.deactivateConstraints(channelLabelConstraints!)
         } else {
-            channelDataLabel.hidden = true
-            channelLabel.hidden = true
+            fatalError()
         }
-        setNeedsLayout()
+        contentView.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {

@@ -48,14 +48,44 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
         return String(self.dynamicType)
     }
     override init(frame: CGRect) {
-        eventTypeLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        occupancyLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
+        eventTypeLabel = UILabel(frame: CGRectZero)
+        occupancyLabel = UILabel(frame: CGRectZero)
+        timeTokenLabel = UILabel(frame: CGRectZero)
         super.init(frame: frame)
+        eventTypeLabel.translatesAutoresizingMaskIntoConstraints = false
+        occupancyLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeTokenLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(eventTypeLabel)
         contentView.addSubview(occupancyLabel)
         contentView.addSubview(timeTokenLabel)
         contentView.layer.borderWidth = 3
+        
+        let eventTypeLabelXConstraint = NSLayoutConstraint(item: eventTypeLabel, attribute: .CenterX, relatedBy: .Equal, toItem: contentView, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let occupancyLabelXConstraint = NSLayoutConstraint(item: occupancyLabel, attribute: .CenterX, relatedBy: .Equal, toItem: eventTypeLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let timeTokenLabelXConstraint = NSLayoutConstraint(item: timeTokenLabel, attribute: .CenterX, relatedBy: .Equal, toItem: occupancyLabel, attribute: .CenterX, multiplier: 1.0, constant: 0.0)
+        let views = [
+            "eventTypeLabel" : eventTypeLabel,
+            "occupancyLabel" : occupancyLabel,
+            "timeTokenLabel" : timeTokenLabel
+        ]
+        let metrics = [
+            "timeTokenWidth" : NSNumber(integer: 100),
+            "spacer" : NSNumber(integer: 5)
+        ]
+        
+        let eventTypeLabelWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[eventTypeLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let occupancyLabelWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[occupancyLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let timeTokenLabelWidthConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[timeTokenLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        
+        let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[eventTypeLabel]-spacer-[occupancyLabel]-spacer-[timeTokenLabel]", options: [], metrics: metrics, views: views)
+        
+        contentView.addConstraint(eventTypeLabelXConstraint)
+        contentView.addConstraint(occupancyLabelXConstraint)
+        contentView.addConstraint(timeTokenLabelXConstraint)
+        contentView.addConstraints(eventTypeLabelWidthConstraints)
+        contentView.addConstraints(occupancyLabelWidthConstraints)
+        contentView.addConstraints(timeTokenLabelWidthConstraints)
+        contentView.addConstraints(verticalConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -75,7 +105,7 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
         } else {
             timeTokenLabel.hidden = true
         }
-        setNeedsLayout()
+        contentView.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {

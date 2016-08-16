@@ -65,14 +65,21 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         return String(self.dynamicType)
     }
     override init(frame: CGRect) {
-        categoryLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        operationLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        timeStampLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
-        statusCodeLabel = UILabel(frame: CGRect(x: 5, y: 90, width: frame.size.width, height: frame.size.height/4))
-        timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 120, width: frame.size.width, height: frame.size.height/4))
-        channelLabel = UILabel(frame: CGRect(x: 5, y: 150, width: frame.size.width, height: frame.size.height/4))
-        channelGroupLabel = UILabel(frame: CGRect(x: 5, y: 180, width: frame.size.width, height: frame.size.height/4))
+        categoryLabel = UILabel(frame: CGRectZero)
+        operationLabel = UILabel(frame: CGRectZero)
+        timeStampLabel = UILabel(frame: CGRectZero)
+        statusCodeLabel = UILabel(frame: CGRectZero)
+        timeTokenLabel = UILabel(frame: CGRectZero)
+        channelLabel = UILabel(frame: CGRectZero)
+        channelGroupLabel = UILabel(frame: CGRectZero)
         super.init(frame: frame)
+        categoryLabel.translatesAutoresizingMaskIntoConstraints = false
+        operationLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeStampLabel.translatesAutoresizingMaskIntoConstraints = false
+        statusCodeLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeTokenLabel.translatesAutoresizingMaskIntoConstraints = false
+        channelLabel.translatesAutoresizingMaskIntoConstraints = false
+        channelGroupLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(categoryLabel)
         contentView.addSubview(operationLabel)
         contentView.addSubview(timeStampLabel)
@@ -81,6 +88,38 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         contentView.addSubview(channelLabel)
         contentView.addSubview(channelGroupLabel)
         contentView.layer.borderWidth = 3
+        
+        
+        let views = [
+            "categoryLabel": categoryLabel,
+            "operationLabel": operationLabel,
+            "timeStampLabel": timeStampLabel,
+            "statusCodeLabel" : statusCodeLabel,
+            "timeTokenLabel" : timeTokenLabel,
+            "channelLabel": channelLabel,
+            "channelGroupLabel" : channelGroupLabel
+        ]
+        
+        let metrics = [
+            "spacer": NSNumber(integer: 15)
+        ]
+        
+        let categoryLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[categoryLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let operationLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[operationLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let timeStampLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[timeStampLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let statusCodeLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[statusCodeLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let timeTokenLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[timeTokenLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let channelLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[channelLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let channelGroupLabelXConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-spacer-[channelGroupLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-spacer-[categoryLabel]-spacer-[operationLabel]-spacer-[timeStampLabel]-spacer-[statusCodeLabel]-spacer-[timeTokenLabel]-spacer-[channelLabel]-spacer-[channelGroupLabel]-spacer-|", options: [], metrics: metrics, views: views)
+        contentView.addConstraints(categoryLabelXConstraints)
+        contentView.addConstraints(operationLabelXConstraints)
+        contentView.addConstraints(timeStampLabelXConstraints)
+        contentView.addConstraints(statusCodeLabelXConstraints)
+        contentView.addConstraints(timeTokenLabelXConstraints)
+        contentView.addConstraints(channelLabelXConstraints)
+        contentView.addConstraints(channelGroupLabelXConstraints)
+        contentView.addConstraints(verticalConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
