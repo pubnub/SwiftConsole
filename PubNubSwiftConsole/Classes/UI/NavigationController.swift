@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PubNubPersistence
 import PubNub
 
 @objc(PNCNavigationController)
@@ -29,16 +30,16 @@ public class NavigationController: UINavigationController, UINavigationControlle
     
     public enum PubNubRootViewControllerType {
         case ClientCreation
-        case Console(client: PubNub)
-        case Publish(client: PubNub)
+        case Console(client: PubNub, persistence: PubNubPersistence)
+        case Publish(client: PubNub, persistence: PubNubPersistence)
         func create() -> ViewController {
             switch self {
             case .ClientCreation:
                 return ClientCreationViewController()
-            case .Console(let client):
-                return ConsoleViewController(client: client)
-            case .Publish(let client):
-                return PublishViewController(client: client)
+            case let .Console(client, persistence):
+                return ConsoleViewController(client: client, persistence: persistence)
+            case let .Publish(client, persistence):
+                return PublishViewController(client: client, persistence: persistence)
             }
         }
     }
@@ -51,12 +52,12 @@ public class NavigationController: UINavigationController, UINavigationControlle
         return NavigationController(rootViewControllerType: .ClientCreation)
     }
     
-    public static func consoleNavigationController(client: PubNub) -> NavigationController {
-        return NavigationController(rootViewControllerType: .Console(client: client))
+    public static func consoleNavigationController(client: PubNub, persistence: PubNubPersistence) -> NavigationController {
+        return NavigationController(rootViewControllerType: .Console(client: client, persistence: persistence))
     }
     
-    public static func publishNavigationController(client: PubNub) -> NavigationController {
-        return NavigationController(rootViewControllerType: .Publish(client: client))
+    public static func publishNavigationController(client: PubNub, persistence: PubNubPersistence) -> NavigationController {
+        return NavigationController(rootViewControllerType: .Publish(client: client, persistence: persistence))
     }
     
     // MARK: - Toolbar Items

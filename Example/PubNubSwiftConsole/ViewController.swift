@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PubNubPersistence
 import PubNub
 import PubNubSwiftConsole
 
@@ -15,6 +16,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var clientCreationButton: UIButton!
     @IBOutlet weak var consoleButton: UIButton!
     var client: PubNub?
+    var persistence: PubNubPersistence?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,10 +40,14 @@ class ViewController: UIViewController {
     func consoleButtonPressed(sender: UIButton!) {
         let config = PNConfiguration(publishKey: "demo-36", subscribeKey: "demo-36")
         client = PubNub.clientWithConfiguration(config)
+        
+        let persistenceConfig = PNPPersistenceConfiguration(client: client!)
+        persistence = PubNubPersistence(configuration: persistenceConfig)
+        
         guard let currentClient = client else {
             return
         }
-        let consoleViewController = PubNubSwiftConsole.modalConsoleViewController(currentClient)
+        let consoleViewController = PubNubSwiftConsole.modalConsoleViewController(currentClient, persistence: persistence)
         self.presentViewController(consoleViewController, animated: true, completion: nil)
     }
 

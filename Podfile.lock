@@ -23,6 +23,7 @@ PODS:
   - Realm/Headers (1.0.2)
 
 DEPENDENCIES:
+  - PubNubPersistence
   - PubNubSwiftConsole (from `.`)
 
 EXTERNAL SOURCES:
@@ -36,6 +37,6 @@ SPEC CHECKSUMS:
   PubNubSwiftConsole: 3e4c95d3e45eb3f286a68308529e92f4756b1d5d
   Realm: 9d5c46a4d7d27958530a8dfc58f63a99e5c2cba3
 
-PODFILE CHECKSUM: d142081451d29d12707fed80dc5e53bf5f1dab50
+PODFILE CHECKSUM: 5791693da51ec6479d53b1a29a01a2a02a822f82
 
 COCOAPODS: 1.0.1

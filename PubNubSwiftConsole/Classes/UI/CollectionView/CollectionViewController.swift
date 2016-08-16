@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import PubNub
+import PubNubPersistence
 
 public protocol ItemSectionType {
     var rawValue: Int {get}
@@ -393,8 +395,12 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
         fatalError("init(coder:) has not been implemented")
     }
     
-    public required init() {
-        super.init()
+    public convenience init() {
+        self.init(persistence: nil)
+    }
+    
+    public required init(persistence: PubNubPersistence?) {
+        super.init(persistence: persistence)
     }
     
     // MARK: - View Lifecycle

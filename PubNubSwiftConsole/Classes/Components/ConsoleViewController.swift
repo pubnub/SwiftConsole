@@ -8,6 +8,7 @@
 
 import UIKit
 import PubNub
+import PubNubPersistence
 
 // This needs the bottom toolbar to deal with publish and other actions
 @objc(PNCConsoleViewController)
@@ -135,7 +136,6 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             var consoleItemType: ConsoleItemType {
                 switch self {
                 case .All:
-                    // FIXME: come back to this, called by memory warning handler
                     return self.consoleItemType
                 case .Messages:
                     return ConsoleItemType.Message
@@ -363,22 +363,25 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     }
  
     // MARK: - Constructors
-    public required init(client: PubNub) {
-        super.init()
+    
+    public required init(client: PubNub, persistence: PubNubPersistence) {
+        super.init(persistence: persistence)
         self.client = client
+        self.client?.addListener(self) // didSet isn't triggered in initialization
     }
     
-    public required init() {
-        super.init()
-        self.client?.addListener(self)
+    public convenience init(client: PubNub) {
+        let persistenceConfig = PNPPersistenceConfiguration(client: client)
+        let persistence = PubNubPersistence(configuration: persistenceConfig)
+        self.init(client: client, persistence: persistence)
     }
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        self.client?.removeListener(self)
+    public required init(persistence: PubNubPersistence?) {
+        fatalError("init(persistence:) has not been implemented")
     }
 
     // MARK: - View Lifecycle
