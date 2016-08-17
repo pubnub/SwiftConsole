@@ -10,29 +10,30 @@ import UIKit
 import PubNub
 
 protocol PublishStatusItem: ErrorStatusItem {
-    init(itemType: ItemType, publishStatus: PNPublishStatus)
-    init(itemType: ItemType, result: PNPublishStatus)
+    init(itemType: ItemType, pubNubResult result: PNPublishStatus)
     var timetoken: NSNumber {get}
 }
 
 class PublishStatus: ErrorStatus, PublishStatusItem {
     let timetoken: NSNumber
-    required init(itemType: ItemType, publishStatus: PNPublishStatus) {
-        self.timetoken = publishStatus.data.timetoken
-        super.init(itemType: itemType, errorStatus: publishStatus)
+    
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNPublishStatus)
     }
     
-    required convenience init(itemType: ItemType, errorStatus: PNErrorStatus) {
-        self.init(itemType: itemType, publishStatus: errorStatus as! PNPublishStatus)
+    required init(itemType: ItemType, pubNubResult result: PNPublishStatus) {
+        self.timetoken = result.data.timetoken
+        super.init(itemType: itemType, pubNubResult: result as! PNErrorStatus)
     }
     
-    required convenience init(itemType: ItemType, status: PNStatus) {
-        self.init(itemType: itemType, publishStatus: status as! PNPublishStatus)
+    required convenience init(itemType: ItemType, pubNubResult result: PNErrorStatus) {
+        self.init(itemType: itemType, pubNubResult: result as! PNPublishStatus)
     }
     
-    required init(itemType: ItemType, result: PNResult) {
-        self.init(itemType: itemType, publishStatus: result as! PNPublishStatus)
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return PublishStatus(itemType: itemType, pubNubResult: result)
     }
+    
     override var reuseIdentifier: String {
         return PublishStatusCollectionViewCell.reuseIdentifier
     }

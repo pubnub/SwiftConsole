@@ -13,31 +13,31 @@ protocol ErrorStatusItem: StatusItem {
     var channels: [String] {get}
     var channelGroups: [String] {get}
     var information: String {get}
-    init(itemType: ItemType, errorStatus: PNErrorStatus)
-    init(itemType: ItemType, result: PNErrorStatus)
+    init(itemType: ItemType, pubNubResult result: PNErrorStatus)
 }
 
 class ErrorStatus: Status, ErrorStatusItem {
     let channels: [String]
     let channelGroups: [String]
     let information: String
-    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
-        self.channels = errorStatus.errorData.channels
-        self.channelGroups = errorStatus.errorData.channelGroups
-        self.information = errorStatus.errorData.information
-        super.init(itemType: itemType, status: errorStatus)
+
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNErrorStatus)
     }
     
-    required convenience init(itemType: ItemType, result: PNResult) {
-        self.init(itemType: itemType, errorStatus: result as! PNErrorStatus)
+    required init(itemType: ItemType, pubNubResult result: PNErrorStatus) {
+        self.channels = result.errorData.channels
+        self.channelGroups = result.errorData.channelGroups
+        self.information = result.errorData.information
+        super.init(itemType: itemType, pubNubResult: result as! PNStatus)
     }
     
-    required convenience init(itemType: ItemType, status: PNStatus) {
-        self.init(itemType: itemType, errorStatus: status as! PNErrorStatus)
+    required convenience init(itemType: ItemType, pubNubResult result: PNStatus) {
+        self.init(itemType: itemType, pubNubResult: result as! PNErrorStatus)
     }
     
-    required convenience init(itemType: ItemType, result: PNErrorStatus) {
-        self.init(itemType: itemType, errorStatus: result)
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return ErrorStatus(itemType: itemType, pubNubResult: result)
     }
     
     override var reuseIdentifier: String {

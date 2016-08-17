@@ -10,7 +10,8 @@ import UIKit
 import PubNub
 
 protocol ResultItem: Item {
-    init(itemType: ItemType, result: PNResult)
+    init(itemType: ItemType, pubNubResult result: PNResult)
+    static func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem
     var statusCode: Int {get}
     var operation: String {get}
     var creationDate: Date {get}
@@ -31,7 +32,10 @@ class Result: ResultItem {
     let creationDate: Date
     let uuid: String
     let clientRequest: String?
-    required init(itemType: ItemType, result: PNResult) {
+    class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return Result(itemType: itemType, pubNubResult: result)
+    }
+    required init(itemType: ItemType, pubNubResult result: PNResult) {
         self.itemType = itemType
         self.operation = result.stringifiedOperation()
         self.creationDate = Date()

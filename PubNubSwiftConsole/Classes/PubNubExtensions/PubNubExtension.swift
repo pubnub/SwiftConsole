@@ -272,3 +272,31 @@ extension PubNub {
     }
 }
 
+extension PNResult {
+    var itemClass: AnyClass {
+        switch self {
+        case let publishStatus as PNPublishStatus:
+            return PublishStatus.self
+        case let subscribeStatus as PNSubscribeStatus:
+            return SubscribeStatus.self
+        case let message as PNMessageResult:
+            return Message.self
+        case let presenceEvent as PNPresenceEventResult:
+            return PresenceEvent.self
+        case let errorStatus as PNErrorStatus:
+            return ErrorStatus.self
+        case let status as PNStatus:
+            return Status.self
+        default:
+            return Result.self
+        }
+    }
+    
+    func createItem(itemType: ItemType) -> ResultItem {
+        guard let creatingClass = type(of: self.itemClass) as? ResultItem.Type else {
+            fatalError()
+        }
+        return creatingClass.createResultItem(itemType: itemType, pubNubResult: self)
+    }
+}
+

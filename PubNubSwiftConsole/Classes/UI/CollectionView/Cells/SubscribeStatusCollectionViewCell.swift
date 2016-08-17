@@ -20,7 +20,7 @@ protocol SubscribeStatusItem: ErrorStatusItem, SubscriberData {
     var lastTimetoken: NSNumber {get}
     var subscribedChannels: [String] {get}
     var subscribedChannelGroups: [String] {get}
-    init(itemType: ItemType, subscribeStatus: PNSubscribeStatus)
+    init(itemType: ItemType, pubNubResult result: PNSubscribeStatus)
     
 }
 
@@ -32,27 +32,28 @@ class SubscribeStatus: ErrorStatus, SubscribeStatusItem {
     let lastTimetoken: NSNumber
     let subscribedChannels: [String]
     let subscribedChannelGroups: [String]
-    required init(itemType: ItemType, subscribeStatus: PNSubscribeStatus) {
-        self.subscribedChannel = subscribeStatus.data.subscribedChannel
-        self.actualChannel = subscribeStatus.data.actualChannel
-        self.timetoken = subscribeStatus.data.timetoken
-        self.currentTimetoken = subscribeStatus.currentTimetoken
-        self.lastTimetoken = subscribeStatus.lastTimeToken
-        self.subscribedChannels = subscribeStatus.subscribedChannels
-        self.subscribedChannelGroups = subscribeStatus.subscribedChannelGroups
-        super.init(itemType: itemType, errorStatus: subscribeStatus)
-    }
     
-    required init(itemType: ItemType, result: PNResult) {
+    required init(itemType: ItemType, pubNubResult result: PNResult) {
         fatalError("init(itemType:result:) has not been implemented")
     }
     
-    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
-        fatalError("init(itemType:errorStatus:) has not been implemented")
+    required init(itemType: ItemType, pubNubResult result: PNSubscribeStatus) {
+        self.subscribedChannel = result.data.subscribedChannel
+        self.actualChannel = result.data.actualChannel
+        self.timetoken = result.data.timetoken
+        self.currentTimetoken = result.currentTimetoken
+        self.lastTimetoken = result.lastTimeToken
+        self.subscribedChannels = result.subscribedChannels
+        self.subscribedChannelGroups = result.subscribedChannelGroups
+        super.init(itemType: itemType, pubNubResult: result as! PNErrorStatus)
     }
     
-    required init(itemType: ItemType, status: PNStatus) {
-        fatalError("init(itemType:status:) has not been implemented")
+    required convenience init(itemType: ItemType, pubNubResult result: PNErrorStatus) {
+        self.init(itemType: itemType, pubNubResult: result as! PNSubscribeStatus)
+    }
+    
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return SubscribeStatus(itemType: itemType, pubNubResult: result)
     }
     
     override var reuseIdentifier: String {

@@ -12,25 +12,25 @@ import PubNub
 protocol StatusItem: ResultItem {
     var category: String {get}
     var error: Bool {get}
-    init(itemType: ItemType, status: PNStatus)
-    init(itemType: ItemType, result: PNStatus)
+    init(itemType: ItemType, pubNubResult result: PNStatus)
 }
 
 class Status: Result, StatusItem {
     let category: String
     let error: Bool
-    required init(itemType: ItemType, status: PNStatus) {
-        self.category = status.stringifiedCategory()
-        self.error = status.isError
-        super.init(itemType: itemType, result: status)
+    
+    required init(itemType: ItemType, pubNubResult result: PNStatus) {
+        self.category = result.stringifiedCategory()
+        self.error = result.isError
+        super.init(itemType: itemType, pubNubResult: result as! PNResult)
     }
     
-    required convenience init(itemType: ItemType, result: PNResult) {
-        self.init(itemType: itemType, status: result as! PNStatus)
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNStatus)
     }
     
-    convenience required init(itemType: ItemType, result: PNStatus) {
-        self.init(itemType: itemType, status: result)
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return Status(itemType: itemType, pubNubResult: result)
     }
     
     override var reuseIdentifier: String {

@@ -14,8 +14,7 @@ protocol PresenceEventItem: ResultItem, SubscriberData {
     var presenceTimetoken: NSNumber {get}
     var presenceUUID: String? {get}
     var occupancy: NSNumber {get}
-    init(itemType: ItemType, presenceEvent: PNPresenceEventResult)
-    init(itemType: ItemType, result: PNPresenceEventResult)
+    init(itemType: ItemType, pubNubResult result: PNPresenceEventResult)
 }
 
 class PresenceEvent: Result, PresenceEventItem {
@@ -26,23 +25,24 @@ class PresenceEvent: Result, PresenceEventItem {
     let presenceTimetoken: NSNumber
     let presenceUUID: String?
     let occupancy: NSNumber
-    required init(itemType: ItemType, presenceEvent: PNPresenceEventResult) {
-        self.subscribedChannel = presenceEvent.data.subscribedChannel
-        self.actualChannel = presenceEvent.data.actualChannel
-        self.timetoken = presenceEvent.data.timetoken
-        self.presenceEvent = presenceEvent.data.presenceEvent
-        self.presenceTimetoken = presenceEvent.data.presence.timetoken
-        self.presenceUUID = presenceEvent.data.presence.uuid
-        self.occupancy = presenceEvent.data.presence.occupancy
-        super.init(itemType: itemType, result: presenceEvent)
+    
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNPresenceEventResult)
     }
     
-    required convenience init(itemType: ItemType, result: PNResult) {
-        self.init(itemType: itemType, presenceEvent: result as! PNPresenceEventResult)
+    required init(itemType: ItemType, pubNubResult result: PNPresenceEventResult) {
+        self.subscribedChannel = result.data.subscribedChannel
+        self.actualChannel = result.data.actualChannel
+        self.timetoken = result.data.timetoken
+        self.presenceEvent = result.data.presenceEvent
+        self.presenceTimetoken = result.data.presence.timetoken
+        self.presenceUUID = result.data.presence.uuid
+        self.occupancy = result.data.presence.occupancy
+        super.init(itemType: itemType, pubNubResult: result as! PNResult)
     }
     
-    required convenience init(itemType: ItemType, result: PNPresenceEventResult) {
-        self.init(itemType: itemType, presenceEvent: result)
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return PresenceEvent(itemType: itemType, pubNubResult: result)
     }
     
     override var reuseIdentifier: String {

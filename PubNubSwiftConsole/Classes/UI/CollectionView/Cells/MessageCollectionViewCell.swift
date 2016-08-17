@@ -10,8 +10,7 @@ import UIKit
 import PubNub
 
 protocol MessageItem: ResultItem, SubscriberData {
-    init(itemType: ItemType, message: PNMessageResult)
-    init(itemType: ItemType, result: PNMessageResult)
+    init(itemType: ItemType, pubNubResult result: PNMessageResult)
     var payload: Any? {get}
 }
 
@@ -20,20 +19,21 @@ class Message: Result, MessageItem {
     let actualChannel: String?
     let subscribedChannel: String?
     let timetoken: NSNumber
-    required init(itemType: ItemType, message: PNMessageResult) {
-        self.actualChannel = message.data.actualChannel
-        self.subscribedChannel = message.data.subscribedChannel
-        self.timetoken = message.data.timetoken
-        self.payload = message.data.message
-        super.init(itemType: itemType, result: message)
+    
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNMessageResult)
     }
     
-    required convenience init(itemType: ItemType, result: PNResult) {
-        self.init(itemType: itemType, message: result as! PNMessageResult)
+    required init(itemType: ItemType, pubNubResult result: PNMessageResult) {
+        self.actualChannel = result.data.actualChannel
+        self.subscribedChannel = result.data.subscribedChannel
+        self.timetoken = result.data.timetoken
+        self.payload = result.data.message
+        super.init(itemType: itemType, pubNubResult: result as! PNResult)
     }
     
-    required convenience init(itemType: ItemType, result: PNMessageResult) {
-        self.init(itemType: itemType, message: result)
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return Message(itemType: itemType, pubNubResult: result)
     }
     
     override var reuseIdentifier: String {

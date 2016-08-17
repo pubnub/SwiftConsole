@@ -25,4 +25,5 @@ class CollectionView: UICollectionView {
         endEditing(true) // this helps with text views
         super.touchesBegan(touches, with: event)
     }
+    
 }
