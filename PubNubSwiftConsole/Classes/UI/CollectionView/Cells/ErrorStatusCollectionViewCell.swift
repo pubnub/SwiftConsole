@@ -14,6 +14,7 @@ protocol ErrorStatusItem: StatusItem {
     var channelGroups: [String] {get}
     var information: String {get}
     init(itemType: ItemType, errorStatus: PNErrorStatus)
+    init(itemType: ItemType, result: PNErrorStatus)
 }
 
 class ErrorStatus: Status, ErrorStatusItem {
@@ -27,12 +28,16 @@ class ErrorStatus: Status, ErrorStatusItem {
         super.init(itemType: itemType, status: errorStatus)
     }
     
-    required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
+    required convenience init(itemType: ItemType, result: PNResult) {
+        self.init(itemType: itemType, errorStatus: result as! PNErrorStatus)
     }
     
-    required init(itemType: ItemType, status: PNStatus) {
-        fatalError("init(itemType:status:) has not been implemented")
+    required convenience init(itemType: ItemType, status: PNStatus) {
+        self.init(itemType: itemType, errorStatus: status as! PNErrorStatus)
+    }
+    
+    required convenience init(itemType: ItemType, result: PNErrorStatus) {
+        self.init(itemType: itemType, errorStatus: result)
     }
     
     override var reuseIdentifier: String {

@@ -11,6 +11,7 @@ import PubNub
 
 protocol PublishStatusItem: ErrorStatusItem {
     init(itemType: ItemType, publishStatus: PNPublishStatus)
+    init(itemType: ItemType, result: PNPublishStatus)
     var timetoken: NSNumber {get}
 }
 
@@ -21,16 +22,16 @@ class PublishStatus: ErrorStatus, PublishStatusItem {
         super.init(itemType: itemType, errorStatus: publishStatus)
     }
     
-    required init(itemType: ItemType, errorStatus: PNErrorStatus) {
-        fatalError("init(itemType:errorStatus:) has not been implemented")
+    required convenience init(itemType: ItemType, errorStatus: PNErrorStatus) {
+        self.init(itemType: itemType, publishStatus: errorStatus as! PNPublishStatus)
     }
     
-    required init(itemType: ItemType, status: PNStatus) {
-        fatalError("init(itemType:status:) has not been implemented")
+    required convenience init(itemType: ItemType, status: PNStatus) {
+        self.init(itemType: itemType, publishStatus: status as! PNPublishStatus)
     }
     
     required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
+        self.init(itemType: itemType, publishStatus: result as! PNPublishStatus)
     }
     override var reuseIdentifier: String {
         return PublishStatusCollectionViewCell.reuseIdentifier

@@ -13,6 +13,7 @@ protocol StatusItem: ResultItem {
     var category: String {get}
     var error: Bool {get}
     init(itemType: ItemType, status: PNStatus)
+    init(itemType: ItemType, result: PNStatus)
 }
 
 class Status: Result, StatusItem {
@@ -24,9 +25,14 @@ class Status: Result, StatusItem {
         super.init(itemType: itemType, result: status)
     }
     
-    required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
+    required convenience init(itemType: ItemType, result: PNResult) {
+        self.init(itemType: itemType, status: result as! PNStatus)
     }
+    
+    convenience required init(itemType: ItemType, result: PNStatus) {
+        self.init(itemType: itemType, status: result)
+    }
+    
     override var reuseIdentifier: String {
         return StatusCollectionViewCell.reuseIdentifier
     }

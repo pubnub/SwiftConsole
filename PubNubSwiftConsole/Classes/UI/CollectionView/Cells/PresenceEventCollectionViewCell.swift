@@ -15,6 +15,7 @@ protocol PresenceEventItem: ResultItem, SubscriberData {
     var presenceUUID: String? {get}
     var occupancy: NSNumber {get}
     init(itemType: ItemType, presenceEvent: PNPresenceEventResult)
+    init(itemType: ItemType, result: PNPresenceEventResult)
 }
 
 class PresenceEvent: Result, PresenceEventItem {
@@ -36,8 +37,12 @@ class PresenceEvent: Result, PresenceEventItem {
         super.init(itemType: itemType, result: presenceEvent)
     }
     
-    required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
+    required convenience init(itemType: ItemType, result: PNResult) {
+        self.init(itemType: itemType, presenceEvent: result as! PNPresenceEventResult)
+    }
+    
+    required convenience init(itemType: ItemType, result: PNPresenceEventResult) {
+        self.init(itemType: itemType, presenceEvent: result)
     }
     
     override var reuseIdentifier: String {

@@ -11,6 +11,7 @@ import PubNub
 
 protocol MessageItem: ResultItem, SubscriberData {
     init(itemType: ItemType, message: PNMessageResult)
+    init(itemType: ItemType, result: PNMessageResult)
     var payload: Any? {get}
 }
 
@@ -27,9 +28,14 @@ class Message: Result, MessageItem {
         super.init(itemType: itemType, result: message)
     }
     
-    required init(itemType: ItemType, result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
+    required convenience init(itemType: ItemType, result: PNResult) {
+        self.init(itemType: itemType, message: result as! PNMessageResult)
     }
+    
+    required convenience init(itemType: ItemType, result: PNMessageResult) {
+        self.init(itemType: itemType, message: result)
+    }
+    
     override var reuseIdentifier: String {
         return MessageCollectionViewCell.reuseIdentifier
     }
