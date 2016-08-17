@@ -73,10 +73,11 @@ class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         super.init(frame: frame)
         contentView.addSubview(timetokenLabel)
         timetokenLabel.forceAutoLayout()
-        contentView.addSubview(subscribedChannelsLabel)
-        subscribedChannelsLabel.forceAutoLayout()
-        contentView.addSubview(subscribedChannelGroupsLabel)
-        subscribedChannelGroupsLabel.forceAutoLayout()
+//        contentView.addSubview(subscribedChannelsLabel)
+//        subscribedChannelsLabel.forceAutoLayout()
+//        contentView.addSubview(subscribedChannelGroupsLabel)
+//        subscribedChannelGroupsLabel.forceAutoLayout()
+        setUpInitialConstraints()
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -85,24 +86,25 @@ class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-//    override func updateConstraints() {
-//        guard hasConstraints else {
-//            return
-//        }
-//        
-//    }
-    
-//    override func layoutSubviews() {
-//        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
-//        operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
-//        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-//        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-//        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-//        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-//        timetokenLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
-//        subscribedChannelsLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
-//        subscribedChannelGroupsLabel.frame = subscribedChannelsLabel.frame.offsetBy(dx: 0.0, dy: subscribedChannelsLabel.frame.size.height)
-//    }
+    override func setUpInitialConstraints() {
+        let views = [
+            "operation": operationLabel,
+            "creationDate": creationDateLabel,
+            "statusCode": statusCodeLabel,
+            "uuid": uuidLabel,
+            "clientRequest": clientRequestLabel,
+            "timetoken": timetokenLabel,
+            ]
+        
+        let metrics = [
+            "labelHeight": NSNumber(integerLiteral: 30),
+            "horizontalPadding": NSNumber(integerLiteral: 5),
+            "verticalPadding": NSNumber(integerLiteral: 5),
+            ]
+        
+        let cellConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-verticalPadding-[timetoken(labelHeight)]-[operation(==timetoken)]-verticalPadding-[creationDate(==operation)]-verticalPadding-[statusCode(==operation)]-verticalPadding-[uuid(==operation)]-verticalPadding-[clientRequest(==operation)]", options: .alignAllCenterX, metrics: metrics, views: views)
+        NSLayoutConstraint.activate(cellConstraints)
+    }
     
     override func updateCell(item: Item) {
         super.updateCell(item: item)
