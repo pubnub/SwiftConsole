@@ -45,38 +45,24 @@ class PresenceEvent: Result, PresenceEventItem {
     }
 }
 
-class PresenceEventCollectionViewCell: CollectionViewCell {
+class PresenceEventCollectionViewCell: ResultCollectionViewCell {
 
-    private let timetokenLabel: UILabel
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
-    private let presenceEventLabel: UILabel
-    private let presenceTimetokenLabel: UILabel
-    private let presenceUUIDLabel: UILabel
+    let timetokenLabel: UILabel
+    let presenceEventLabel: UILabel
+    let presenceTimetokenLabel: UILabel
+    let presenceUUIDLabel: UILabel
     
     override init(frame: CGRect) {
         self.timetokenLabel = UILabel(frame: .zero)
-        self.operationLabel = UILabel(frame: .zero)
-        self.creationDateLabel = UILabel(frame: .zero)
-        self.statusCodeLabel = UILabel(frame: .zero)
-        self.uuidLabel = UILabel(frame: .zero)
-        self.clientRequestLabel = UILabel(frame: .zero)
         self.presenceUUIDLabel = UILabel(frame: .zero)
         self.presenceEventLabel = UILabel(frame: .zero)
         self.presenceTimetokenLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        contentView.addSubview(creationDateLabel)
-        contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(uuidLabel)
-        contentView.addSubview(clientRequestLabel)
         contentView.addSubview(presenceTimetokenLabel)
         contentView.addSubview(timetokenLabel)
         contentView.addSubview(presenceEventLabel)
         contentView .addSubview(presenceUUIDLabel)
+        // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -97,29 +83,21 @@ class PresenceEventCollectionViewCell: CollectionViewCell {
         presenceUUIDLabel.frame = presenceTimetokenLabel.frame.offsetBy(dx: 0.0, dy: presenceTimetokenLabel.frame.size.height)
     }
     
-    func updatePresenceEvent(item: PresenceEventItem) {
-        presenceEventLabel.text = "Event: \(item.presenceEvent)"
-        timetokenLabel.text = "Timetoken: \(item.timetoken)"
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        presenceTimetokenLabel.text = "Presence timetoken: \(item.presenceTimetoken)"
-        if let presenceUUID = item.presenceUUID {
-            presenceUUIDLabel.text = "Presence uuid: \(item.presenceUUID)"
+    override func updateCell(item: Item) {
+        super.updateCell(item: item)
+        guard let presenceEventItem = item as? PresenceEventItem else {
+            fatalError("wrong class")
+        }
+        presenceEventLabel.text = "Event: \(presenceEventItem.presenceEvent)"
+        timetokenLabel.text = "Timetoken: \(presenceEventItem.timetoken)"
+        presenceTimetokenLabel.text = "Presence timetoken: \(presenceEventItem.presenceTimetoken)"
+        if let presenceUUID = presenceEventItem.presenceUUID {
+            presenceUUIDLabel.text = "Presence uuid: \(presenceEventItem.presenceUUID)"
             presenceUUIDLabel.isHidden = false
         } else {
             presenceUUIDLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    override func updateCell(item: Item) {
-        guard let presenceEventItem = item as? PresenceEventItem else {
-            fatalError("init(coder:) has not been implemented")
-        }
-        updatePresenceEvent(item: presenceEventItem)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

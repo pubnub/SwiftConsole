@@ -44,12 +44,20 @@ class Result: ResultItem {
     }
 }
 
+extension UIView {
+    var hasConstraints: Bool {
+        let hasHorizontalConstraints = !self.constraintsAffectingLayout(for: .horizontal).isEmpty
+        let hasVerticalConstraints = !self.constraintsAffectingLayout(for: .vertical).isEmpty
+        return hasHorizontalConstraints || hasVerticalConstraints
+    }
+}
+
 class ResultCollectionViewCell: CollectionViewCell {
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
+    let operationLabel: UILabel
+    let creationDateLabel: UILabel
+    let statusCodeLabel: UILabel
+    let uuidLabel: UILabel
+    let clientRequestLabel: UILabel
     
     override init(frame: CGRect) {
         self.operationLabel = UILabel(frame: .zero)
@@ -63,36 +71,45 @@ class ResultCollectionViewCell: CollectionViewCell {
         contentView.addSubview(statusCodeLabel)
         contentView.addSubview(uuidLabel)
         contentView.addSubview(clientRequestLabel)
+        // FIXME: let's stop using borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
+    }
+    
+    override func updateConstraints() {
+        guard hasConstraints else {
+            return
+        }
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        operationLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
-        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-    }
-    
-    func updateResult(item: ResultItem) {
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        contentView.setNeedsLayout()
-    }
+//    override func layoutSubviews() {
+//        operationLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
+//        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
+//        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
+//        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
+//        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
+//    }
     
     override func updateCell(item: Item) {
         guard let resultItem = item as? ResultItem else {
-            fatalError("init(coder:) has not been implemented")
+            fatalError("wrong item passed in")
         }
-        updateResult(item: resultItem)
+        operationLabel.text = "Operation: \(resultItem.operation)"
+        creationDateLabel.text = "Creation date: \(resultItem.creationDate.creationTimeStampString())"
+        statusCodeLabel.text = "Status code: \(resultItem.statusCode)"
+        uuidLabel.text = "UUID: \(resultItem.uuid)"
+        if let actualClientRequest = resultItem.clientRequest {
+            clientRequestLabel.text = "Client request: \(actualClientRequest)"
+            clientRequestLabel.isHidden = false
+        } else {
+            clientRequestLabel.isHidden = true
+        }
+        contentView.setNeedsLayout()
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

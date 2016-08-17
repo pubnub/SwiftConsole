@@ -40,37 +40,20 @@ class ErrorStatus: Status, ErrorStatusItem {
     }
 }
 
-class ErrorStatusCollectionViewCell: CollectionViewCell {
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
-    private let categoryLabel: UILabel
-    private let channelsLabel: UILabel
-    private let channelGroupsLabel: UILabel
-    private let informationLabel: UILabel
+class ErrorStatusCollectionViewCell: StatusCollectionViewCell {
+    let channelsLabel: UILabel
+    let channelGroupsLabel: UILabel
+    let informationLabel: UILabel
     
     override init(frame: CGRect) {
-        self.operationLabel = UILabel(frame: .zero)
-        self.creationDateLabel = UILabel(frame: .zero)
-        self.statusCodeLabel = UILabel(frame: .zero)
-        self.uuidLabel = UILabel(frame: .zero)
-        self.clientRequestLabel = UILabel(frame: .zero)
-        self.categoryLabel = UILabel(frame: .zero)
         self.channelsLabel = UILabel(frame: .zero)
         self.channelGroupsLabel = UILabel(frame: .zero)
         self.informationLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        contentView.addSubview(creationDateLabel)
-        contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(uuidLabel)
-        contentView.addSubview(clientRequestLabel)
-        contentView.addSubview(categoryLabel)
         contentView.addSubview(channelsLabel)
         contentView.addSubview(channelGroupsLabel)
         contentView.addSubview(informationLabel)
+        // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -80,6 +63,7 @@ class ErrorStatusCollectionViewCell: CollectionViewCell {
     }
     
     override func layoutSubviews() {
+        // don't call super let's control layout ourselves
         categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
         operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
         creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
@@ -91,34 +75,25 @@ class ErrorStatusCollectionViewCell: CollectionViewCell {
         channelGroupsLabel.frame = channelsLabel.frame.offsetBy(dx: 0.0, dy: channelsLabel.frame.size.height)
     }
     
-    func updateStatus(item: ErrorStatusItem) {
-        categoryLabel.text = "Category: \(item.category)"
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        informationLabel.text = "Information: \(item.information)"
-        if !item.channels.isEmpty {
+    override func updateCell(item: Item) {
+        super.updateCell(item: item)
+        guard let errorStatusItem = item as? ErrorStatusItem else {
+            fatalError("wrong item")
+        }
+        informationLabel.text = "Information: \(errorStatusItem.information)"
+        if !errorStatusItem.channels.isEmpty {
             channelsLabel.isHidden = false
-            channelsLabel.text = "Channels: \(PubNub.subscribablesToString(subscribables: item.channels))"
+            channelsLabel.text = "Channels: \(PubNub.subscribablesToString(subscribables: errorStatusItem.channels))"
         } else {
             channelsLabel.isHidden = true
         }
-        if !item.channelGroups.isEmpty {
+        if !errorStatusItem.channelGroups.isEmpty {
             channelGroupsLabel.isHidden = false
-            channelGroupsLabel.text = "Channel groups: \(PubNub.subscribablesToString(subscribables: item.channelGroups))"
+            channelGroupsLabel.text = "Channel groups: \(PubNub.subscribablesToString(subscribables: errorStatusItem.channelGroups))"
         } else {
             channelGroupsLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    override func updateCell(item: Item) {
-        guard let errorStatusItem = item as? ErrorStatusItem else {
-            fatalError("init(coder:) has not been implemented")
-        }
-        updateStatus(item: errorStatusItem)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

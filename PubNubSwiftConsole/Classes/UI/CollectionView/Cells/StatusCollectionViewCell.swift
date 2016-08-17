@@ -33,28 +33,14 @@ class Status: Result, StatusItem {
     
 }
 
-class StatusCollectionViewCell: CollectionViewCell {
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
-    private let categoryLabel: UILabel
+class StatusCollectionViewCell: ResultCollectionViewCell {
+    let categoryLabel: UILabel
     
     override init(frame: CGRect) {
-        self.operationLabel = UILabel(frame: .zero)
-        self.creationDateLabel = UILabel(frame: .zero)
-        self.statusCodeLabel = UILabel(frame: .zero)
-        self.uuidLabel = UILabel(frame: .zero)
-        self.clientRequestLabel = UILabel(frame: .zero)
         self.categoryLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        contentView.addSubview(creationDateLabel)
-        contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(uuidLabel)
-        contentView.addSubview(clientRequestLabel)
         contentView.addSubview(categoryLabel)
+        // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -72,21 +58,13 @@ class StatusCollectionViewCell: CollectionViewCell {
         clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
     }
     
-    func updateStatus(item: StatusItem) {
-        categoryLabel.text = "Category: \(item.category)"
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        contentView.setNeedsLayout()
-    }
-    
     override func updateCell(item: Item) {
+        super.updateCell(item: item)
         guard let statusItem = item as? StatusItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateStatus(item: statusItem)
+        categoryLabel.text = "Category: \(statusItem.category)"
+        contentView.setNeedsLayout() // just a flag, can call this with every subclass implementation
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

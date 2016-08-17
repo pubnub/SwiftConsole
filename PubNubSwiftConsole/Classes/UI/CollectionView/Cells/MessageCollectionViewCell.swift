@@ -35,38 +35,24 @@ class Message: Result, MessageItem {
     }
 }
 
-class MessageCollectionViewCell: CollectionViewCell {
+class MessageCollectionViewCell: ResultCollectionViewCell {
 
-    private let payloadLabel: UILabel
-    private let timetokenLabel: UILabel
-    private let actualChannelLabel: UILabel
-    private let subscribedChannelLabel: UILabel
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
-    
+    let payloadLabel: UILabel
+    let timetokenLabel: UILabel
+    let actualChannelLabel: UILabel
+    let subscribedChannelLabel: UILabel
+
     override init(frame: CGRect) {
         self.payloadLabel = UILabel(frame: .zero)
         self.timetokenLabel = UILabel(frame: .zero)
         self.actualChannelLabel = UILabel(frame: .zero)
         self.subscribedChannelLabel = UILabel(frame: .zero)
-        self.operationLabel = UILabel(frame: .zero)
-        self.creationDateLabel = UILabel(frame: .zero)
-        self.statusCodeLabel = UILabel(frame: .zero)
-        self.uuidLabel = UILabel(frame: .zero)
-        self.clientRequestLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        contentView.addSubview(creationDateLabel)
-        contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(uuidLabel)
-        contentView.addSubview(clientRequestLabel)
         contentView.addSubview(payloadLabel)
         contentView.addSubview(timetokenLabel)
         contentView.addSubview(actualChannelLabel)
         contentView .addSubview(subscribedChannelLabel)
+        // FIXME: // let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -87,34 +73,26 @@ class MessageCollectionViewCell: CollectionViewCell {
         subscribedChannelLabel.frame = actualChannelLabel.frame.offsetBy(dx: 0.0, dy: actualChannelLabel.frame.size.height)
     }
     
-    func updateMessage(item: MessageItem) {
-        payloadLabel.text = "Message: \(item.payload ?? "Cannot display message")"
-        timetokenLabel.text = "Timetoken: \(item.timetoken)"
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        if let actualChannel = item.actualChannel {
+    override func updateCell(item: Item) {
+        super.updateCell(item: item)
+        guard let messageItem = item as? MessageItem else {
+            fatalError("wrong class")
+        }
+        payloadLabel.text = "Message: \(messageItem.payload ?? "Cannot display message")"
+        timetokenLabel.text = "Timetoken: \(messageItem.timetoken)"
+        if let actualChannel = messageItem.actualChannel {
             actualChannelLabel.text = "Actual channel: \(actualChannel)"
             actualChannelLabel.isHidden = false
         } else {
             actualChannelLabel.isHidden = true
         }
-        if let subscribedChannel = item.subscribedChannel {
+        if let subscribedChannel = messageItem.subscribedChannel {
             subscribedChannelLabel.text = "Subscribed channel: \(subscribedChannel)"
             subscribedChannelLabel.isHidden = false
         } else {
             subscribedChannelLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    override func updateCell(item: Item) {
-        guard let messageItem = item as? MessageItem else {
-            fatalError("init(coder:) has not been implemented")
-        }
-        updateMessage(item: messageItem)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

@@ -60,34 +60,16 @@ class SubscribeStatus: ErrorStatus, SubscribeStatusItem {
     }
 }
 
-class SubscribeStatusCollectionViewCell: CollectionViewCell {
-    private let timetokenLabel: UILabel
-    private let subscribedChannelsLabel: UILabel
-    private let subscribedChannelGroupsLabel: UILabel
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
-    private let categoryLabel: UILabel
+class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
+    let timetokenLabel: UILabel
+    let subscribedChannelsLabel: UILabel
+    let subscribedChannelGroupsLabel: UILabel
     
     override init(frame: CGRect) {
-        self.operationLabel = UILabel(frame: .zero)
-        self.creationDateLabel = UILabel(frame: .zero)
-        self.statusCodeLabel = UILabel(frame: .zero)
-        self.uuidLabel = UILabel(frame: .zero)
-        self.clientRequestLabel = UILabel(frame: .zero)
-        self.categoryLabel = UILabel(frame: .zero)
         self.timetokenLabel = UILabel(frame: .zero)
         self.subscribedChannelsLabel = UILabel(frame: .zero)
         self.subscribedChannelGroupsLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        contentView.addSubview(creationDateLabel)
-        contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(uuidLabel)
-        contentView.addSubview(clientRequestLabel)
-        contentView.addSubview(categoryLabel)
         contentView.addSubview(timetokenLabel)
         contentView.addSubview(subscribedChannelsLabel)
         contentView.addSubview(subscribedChannelGroupsLabel)
@@ -99,46 +81,44 @@ class SubscribeStatusCollectionViewCell: CollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
-        operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
-        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-        timetokenLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
-        subscribedChannelsLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
-        subscribedChannelGroupsLabel.frame = subscribedChannelsLabel.frame.offsetBy(dx: 0.0, dy: subscribedChannelsLabel.frame.size.height)
+    override func updateConstraints() {
+        guard hasConstraints else {
+            return
+        }
+        
     }
     
-    func updateStatus(item: SubscribeStatusItem) {
-        categoryLabel.text = "Category: \(item.category)"
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        timetokenLabel.text = "Timetoken: \(item.timetoken)"
-        if !item.subscribedChannels.isEmpty {
-            subscribedChannelsLabel.text = "Subscribed channels: \(PubNub.subscribablesToString(subscribables: item.subscribedChannels))"
+//    override func layoutSubviews() {
+//        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
+//        operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
+//        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
+//        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
+//        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
+//        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
+//        timetokenLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
+//        subscribedChannelsLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
+//        subscribedChannelGroupsLabel.frame = subscribedChannelsLabel.frame.offsetBy(dx: 0.0, dy: subscribedChannelsLabel.frame.size.height)
+//    }
+    
+    override func updateCell(item: Item) {
+        super.updateCell(item: item)
+        guard let subscribeStatusItem = item as? SubscribeStatusItem else {
+            fatalError("init(coder:) has not been implemented")
+        }
+        timetokenLabel.text = "Timetoken: \(subscribeStatusItem.timetoken)"
+        if !subscribeStatusItem.subscribedChannels.isEmpty {
+            subscribedChannelsLabel.text = "Subscribed channels: \(PubNub.subscribablesToString(subscribables: subscribeStatusItem.subscribedChannels))"
             subscribedChannelsLabel.isHidden = false
         } else {
             subscribedChannelsLabel.isHidden = true
         }
-        if !item.subscribedChannelGroups.isEmpty {
-            subscribedChannelGroupsLabel.text = "Subscribed channel groups: \(PubNub.subscribablesToString(subscribables: item.subscribedChannelGroups))"
+        if !subscribeStatusItem.subscribedChannelGroups.isEmpty {
+            subscribedChannelGroupsLabel.text = "Subscribed channel groups: \(PubNub.subscribablesToString(subscribables: subscribeStatusItem.subscribedChannelGroups))"
             subscribedChannelGroupsLabel.isHidden = false
         } else {
             subscribedChannelGroupsLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    override func updateCell(item: Item) {
-        guard let subscribeStatusItem = item as? SubscribeStatusItem else {
-            fatalError("init(coder:) has not been implemented")
-        }
-        updateStatus(item: subscribeStatusItem)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

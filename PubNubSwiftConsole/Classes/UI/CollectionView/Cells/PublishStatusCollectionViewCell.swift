@@ -37,40 +37,14 @@ class PublishStatus: ErrorStatus, PublishStatusItem {
     }
 }
 
-class PublishStatusCollectionViewCell: CollectionViewCell {
-    private let timetokenLabel: UILabel
-    private let operationLabel: UILabel
-    private let creationDateLabel: UILabel
-    private let statusCodeLabel: UILabel
-    private let uuidLabel: UILabel
-    private let clientRequestLabel: UILabel
-    private let categoryLabel: UILabel
-    private let channelsLabel: UILabel
-    private let channelGroupsLabel: UILabel
-    private let informationLabel: UILabel
+class PublishStatusCollectionViewCell: ErrorStatusCollectionViewCell {
+    let timetokenLabel: UILabel
     
     override init(frame: CGRect) {
         self.timetokenLabel = UILabel(frame: .zero)
-        self.operationLabel = UILabel(frame: .zero)
-        self.creationDateLabel = UILabel(frame: .zero)
-        self.statusCodeLabel = UILabel(frame: .zero)
-        self.uuidLabel = UILabel(frame: .zero)
-        self.clientRequestLabel = UILabel(frame: .zero)
-        self.categoryLabel = UILabel(frame: .zero)
-        self.channelsLabel = UILabel(frame: .zero)
-        self.channelGroupsLabel = UILabel(frame: .zero)
-        self.informationLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        contentView.addSubview(creationDateLabel)
-        contentView.addSubview(statusCodeLabel)
-        contentView.addSubview(uuidLabel)
-        contentView.addSubview(clientRequestLabel)
-        contentView.addSubview(categoryLabel)
-        contentView.addSubview(channelsLabel)
-        contentView.addSubview(channelGroupsLabel)
-        contentView.addSubview(informationLabel)
         contentView.addSubview(timetokenLabel)
+        // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -92,35 +66,13 @@ class PublishStatusCollectionViewCell: CollectionViewCell {
         channelGroupsLabel.frame = channelsLabel.frame.offsetBy(dx: 0.0, dy: channelsLabel.frame.size.height)
     }
     
-    func updateStatus(item: PublishStatusItem) {
-        timetokenLabel.text = "Timetoken: \(item.timetoken)"
-        categoryLabel.text = "Category: \(item.category)"
-        operationLabel.text = "Operation: \(item.operation)"
-        creationDateLabel.text = "Creation date: \(item.creationDate.creationTimeStampString())"
-        statusCodeLabel.text = "Status code: \(item.statusCode)"
-        uuidLabel.text = "UUID: \(item.uuid)"
-        clientRequestLabel.text = "Client request: \(item.clientRequest)"
-        informationLabel.text = "Information: \(item.information)"
-        if !item.channels.isEmpty {
-            channelsLabel.isHidden = false
-            channelsLabel.text = "Channels: \(PubNub.subscribablesToString(subscribables: item.channels))"
-        } else {
-            channelsLabel.isHidden = true
-        }
-        if !item.channelGroups.isEmpty {
-            channelGroupsLabel.isHidden = false
-            channelGroupsLabel.text = "Channel groups: \(PubNub.subscribablesToString(subscribables: item.channelGroups))"
-        } else {
-            channelGroupsLabel.isHidden = true
-        }
-        contentView.setNeedsLayout()
-    }
-    
     override func updateCell(item: Item) {
+        super.updateCell(item: item)
         guard let publishStatusItem = item as? PublishStatusItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateStatus(item: publishStatusItem)
+        timetokenLabel.text = "Timetoken: \(publishStatusItem.timetoken)"
+        contentView.setNeedsLayout()
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {
