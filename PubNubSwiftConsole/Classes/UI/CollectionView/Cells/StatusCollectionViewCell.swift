@@ -40,6 +40,7 @@ class StatusCollectionViewCell: ResultCollectionViewCell {
         self.categoryLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(categoryLabel)
+        categoryLabel.forceAutoLayout()
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()

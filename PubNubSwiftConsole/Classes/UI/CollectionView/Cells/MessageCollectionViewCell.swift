@@ -49,9 +49,13 @@ class MessageCollectionViewCell: ResultCollectionViewCell {
         self.subscribedChannelLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(payloadLabel)
+        payloadLabel.forceAutoLayout()
         contentView.addSubview(timetokenLabel)
+        timetokenLabel.forceAutoLayout()
         contentView.addSubview(actualChannelLabel)
+        actualChannelLabel.forceAutoLayout()
         contentView .addSubview(subscribedChannelLabel)
+        subscribedChannelLabel.forceAutoLayout()
         // FIXME: // let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()

@@ -51,8 +51,11 @@ class ErrorStatusCollectionViewCell: StatusCollectionViewCell {
         self.informationLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(channelsLabel)
+        channelsLabel.forceAutoLayout()
         contentView.addSubview(channelGroupsLabel)
+        channelGroupsLabel.forceAutoLayout()
         contentView.addSubview(informationLabel)
+        informationLabel.forceAutoLayout()
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()

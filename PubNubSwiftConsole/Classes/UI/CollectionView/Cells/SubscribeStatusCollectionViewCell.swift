@@ -71,8 +71,11 @@ class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         self.subscribedChannelGroupsLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(timetokenLabel)
+        timetokenLabel.forceAutoLayout()
         contentView.addSubview(subscribedChannelsLabel)
+        subscribedChannelsLabel.forceAutoLayout()
         contentView.addSubview(subscribedChannelGroupsLabel)
+        subscribedChannelGroupsLabel.forceAutoLayout()
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }

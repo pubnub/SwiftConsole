@@ -59,9 +59,13 @@ class PresenceEventCollectionViewCell: ResultCollectionViewCell {
         self.presenceTimetokenLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(presenceTimetokenLabel)
+        presenceTimetokenLabel.forceAutoLayout()
         contentView.addSubview(timetokenLabel)
+        timetokenLabel.forceAutoLayout()
         contentView.addSubview(presenceEventLabel)
+        presenceEventLabel.forceAutoLayout()
         contentView .addSubview(presenceUUIDLabel)
+        presenceUUIDLabel.forceAutoLayout()
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()

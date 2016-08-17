@@ -44,6 +44,7 @@ class PublishStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         self.timetokenLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(timetokenLabel)
+        timetokenLabel.forceAutoLayout()
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()

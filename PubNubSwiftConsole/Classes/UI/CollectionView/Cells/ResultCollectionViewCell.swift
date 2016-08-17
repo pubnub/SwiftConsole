@@ -50,6 +50,9 @@ extension UIView {
         let hasVerticalConstraints = !self.constraintsAffectingLayout(for: .vertical).isEmpty
         return hasHorizontalConstraints || hasVerticalConstraints
     }
+    func forceAutoLayout() {
+        self.translatesAutoresizingMaskIntoConstraints = false
+    }
 }
 
 class ResultCollectionViewCell: CollectionViewCell {
@@ -67,10 +70,15 @@ class ResultCollectionViewCell: CollectionViewCell {
         self.clientRequestLabel = UILabel(frame: .zero)
         super.init(frame: frame)
         contentView.addSubview(operationLabel)
+        operationLabel.forceAutoLayout()
         contentView.addSubview(creationDateLabel)
+        creationDateLabel.forceAutoLayout()
         contentView.addSubview(statusCodeLabel)
+        statusCodeLabel.forceAutoLayout()
         contentView.addSubview(uuidLabel)
+        uuidLabel.forceAutoLayout()
         contentView.addSubview(clientRequestLabel)
+        clientRequestLabel.forceAutoLayout()
         // FIXME: let's stop using borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
