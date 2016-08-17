@@ -10,6 +10,7 @@ import UIKit
 
 @objc(PNCCollectionViewCell)
 public class CollectionViewCell: UICollectionViewCell {
+    
     static var reuseIdentifier: String {
 //        return String(describing: type(of: self))
         return NSStringFromClass(self)
@@ -17,6 +18,10 @@ public class CollectionViewCell: UICollectionViewCell {
     
     func updateCell(item: Item) {
         // override in subclass, this used by the generic collection view subclass
+    }
+    
+    func setUpInitialConstraints() {
+        // override in subclass
     }
     
     class func size(collectionViewSize: CGSize) -> CGSize {

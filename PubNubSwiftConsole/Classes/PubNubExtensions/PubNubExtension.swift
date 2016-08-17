@@ -293,10 +293,17 @@ extension PNResult {
     }
     
     func createItem(itemType: ItemType) -> ResultItem {
-        guard let creatingClass = type(of: self.itemClass) as? ResultItem.Type else {
+//        guard type(of: self.itemClass) is Result.Self else {
+//            fatalError()
+//        }
+        guard let creatingType = self.itemClass as? Result.Type else {
             fatalError()
         }
-        return creatingClass.createResultItem(itemType: itemType, pubNubResult: self)
+        return creatingType.createResultItem(itemType: itemType, pubNubResult: self)
+//        guard let creatingClass = type(of: self.itemClass) as? Result.Type else {
+//            fatalError()
+//        }
+//        return creatingClass.createResultItem(itemType: itemType, pubNubResult: self)
     }
 }
 

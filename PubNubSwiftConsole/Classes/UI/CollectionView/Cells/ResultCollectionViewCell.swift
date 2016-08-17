@@ -54,6 +54,7 @@ class ResultCollectionViewCell: CollectionViewCell {
     let statusCodeLabel: UILabel
     let uuidLabel: UILabel
     let clientRequestLabel: UILabel
+    var clientRequestLabelConstraints: [NSLayoutConstraint]?
     
     override init(frame: CGRect) {
         self.operationLabel = UILabel(frame: .zero)
@@ -74,15 +75,37 @@ class ResultCollectionViewCell: CollectionViewCell {
         clientRequestLabel.forceAutoLayout()
         // FIXME: let's stop using borderWidth
         contentView.layer.borderWidth = 3
+        setUpInitialConstraints()
         contentView.setNeedsLayout()
     }
     
-    override func updateConstraints() {
-        guard hasConstraints else {
-            return
-        }
+    override func setUpInitialConstraints() {
+//        let operationLabelCenterXConstraint = NSLayoutConstraint(item: operationLabel, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+//        let creationDateLabelCenterXConstraint = NSLayoutConstraint(item: creationDateLabel, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+//        let statusCodeLabelCenterXConstraint = NSLayoutConstraint(item: statusCodeLabel, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+//        let uuidLabelCenterXConstraint = NSLayoutConstraint(item: uuidLabel, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+//        let clientRequestLabelCenterXConstraint = NSLayoutConstraint(item: clientRequestLabel, attribute: .centerX, relatedBy: .equal, toItem: contentView, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+        let views = [
+            "operation": operationLabel,
+            "creationDate": creationDateLabel,
+            "statusCode": statusCodeLabel,
+            "uuid": uuidLabel,
+            "clientRequest": clientRequestLabel,
+        ]
         
+        let metrics = [
+            "labelHeight": NSNumber(integerLiteral: 30),
+            "horizontalPadding": NSNumber(integerLiteral: 5),
+            "verticalPadding": NSNumber(integerLiteral: 5),
+        ]
+        
+        let resultConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-verticalPadding-[operation(labelHeight)]-verticalPadding-[creationDate(==operation)]-verticalPadding-[statusCode(==operation)]-verticalPadding-[uuid(==operation)]-verticalPadding-[clientRequest(==operation)]", options: .alignAllCenterX, metrics: metrics, views: views)
+        NSLayoutConstraint.activate(resultConstraints)
     }
+    
+//    override func updateConstraints() {
+//        
+//    }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

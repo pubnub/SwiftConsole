@@ -33,8 +33,8 @@ class SubscribeStatus: ErrorStatus, SubscribeStatusItem {
     let subscribedChannels: [String]
     let subscribedChannelGroups: [String]
     
-    required init(itemType: ItemType, pubNubResult result: PNResult) {
-        fatalError("init(itemType:result:) has not been implemented")
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNSubscribeStatus)
     }
     
     required init(itemType: ItemType, pubNubResult result: PNSubscribeStatus) {
@@ -85,12 +85,12 @@ class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func updateConstraints() {
-        guard hasConstraints else {
-            return
-        }
-        
-    }
+//    override func updateConstraints() {
+//        guard hasConstraints else {
+//            return
+//        }
+//        
+//    }
     
 //    override func layoutSubviews() {
 //        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)

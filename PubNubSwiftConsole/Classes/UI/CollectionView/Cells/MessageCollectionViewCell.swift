@@ -62,6 +62,7 @@ class MessageCollectionViewCell: ResultCollectionViewCell {
         actualChannelLabel.forceAutoLayout()
         contentView .addSubview(subscribedChannelLabel)
         subscribedChannelLabel.forceAutoLayout()
+        setUpInitialConstraints()
         // FIXME: // let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
@@ -71,17 +72,33 @@ class MessageCollectionViewCell: ResultCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        payloadLabel.frame = CGRect(x: 5.0, y: 10.0, width: contentView.frame.width, height: 100.0)
-        timetokenLabel.frame = payloadLabel.frame.offsetBy(dx: 0.0, dy: 50.0)
-        operationLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
-        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-        actualChannelLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
-        subscribedChannelLabel.frame = actualChannelLabel.frame.offsetBy(dx: 0.0, dy: actualChannelLabel.frame.size.height)
+    override func setUpInitialConstraints() {
+        super.setUpInitialConstraints()
+        let views = [
+            "clientRequest": clientRequestLabel,
+            "payload": payloadLabel,
+            "timetoken": timetokenLabel,
+        ]
+        let metrics = [
+            "labelHeight": NSNumber(integerLiteral: 30),
+            "horizontalPadding": NSNumber(integerLiteral: 5),
+            "verticalPadding": NSNumber(integerLiteral: 5),
+        ]
+        let messageConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:[clientRequest]-verticalPadding-[payload(100)]-verticalPadding-[timetoken(==clientRequest)]", options: .alignAllCenterX, metrics: metrics, views: views)
+        NSLayoutConstraint.activate(messageConstraints)
     }
+    
+//    override func layoutSubviews() {
+//        payloadLabel.frame = CGRect(x: 5.0, y: 10.0, width: contentView.frame.width, height: 100.0)
+//        timetokenLabel.frame = payloadLabel.frame.offsetBy(dx: 0.0, dy: 50.0)
+//        operationLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
+//        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
+//        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
+//        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
+//        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
+//        actualChannelLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
+//        subscribedChannelLabel.frame = actualChannelLabel.frame.offsetBy(dx: 0.0, dy: actualChannelLabel.frame.size.height)
+//    }
     
     override func updateCell(item: Item) {
         super.updateCell(item: item)
