@@ -49,6 +49,7 @@ class Result: ResultItem {
 }
 
 class ResultCollectionViewCell: CollectionViewCell {
+    private let stackView: UIStackView
     let operationLabel: UILabel
     let creationDateLabel: UILabel
     let statusCodeLabel: UILabel
