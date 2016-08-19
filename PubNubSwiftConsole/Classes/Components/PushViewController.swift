@@ -6,24 +6,25 @@
 //
 //
 
-import UIKit
+import Foundation
 import PubNub
 
 @objc(PNCPushViewControllerDelegate)
 public protocol PushViewControllerDelegate {
-//    @objc optional func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus)
+    @objc optional func pushView(pushView: PushViewController, receivedResult: PNResult)
 }
 
-// Intended to launch from the toolbar
+//// Intended to launch from the toolbar
 @objc(PNCPushViewController)
-class PushViewController: CollectionViewController, CollectionViewControllerDelegate {
+public class PushViewController: CollectionViewController, CollectionViewControllerDelegate {
+    
     // MARK: - Properties
     var pushDelegate: PushViewControllerDelegate?
-    
+
     // MARK: - DataSource
-    
+
     enum PushSectionType: Int, ItemSectionType {
-        case clientConfiguration = 0, publishConfiguration, payloadInput, publishStatusConsole
+        case clientConfiguration = 0, pushConfiguration, pushActions
     }
     
     enum PushItemType: ItemType {
@@ -35,18 +36,17 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
         case addPushNotificationsButton
         case removePushNotificationsButton
         case removeAllPushNotificationsButton
-        case pushNotificationsForChannelsButton
-        
-        case publishStatus
-        
+        case pushNotificationChannelsForDeviceTokenButton
+
         var cellClass: CollectionViewCell.Type {
             switch self {
             case .publishKey, .subscribeKey, .uuid:
                 return TitleContentsCollectionViewCell.self
-            case .channelsLabel:
+            case .channelsLabel, .devicePushTokenLabel:
                 return TitleContentsCollectionViewCell.self
-            case .devicePushTokenLabel:
-                return TitleContentsCollectionViewCell.self
+            case .addPushNotificationsButton, .removeAllPushNotificationsButton, .removePushNotificationsButton, .pushNotificationChannelsForDeviceTokenButton:
+                return ButtonCollectionViewCell.self
+            }
         }
         
         var selectedTitle: String? {
@@ -61,14 +61,18 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
                 return "Subscribe Key"
             case .uuid:
                 return "UUID"
-            case .channelLabel:
-                return "Channel"
-            case .publishButton:
-                return "Publish"
-            case .payloadInput:
-                return "Payload"
-            case .publishStatus:
-                return "Publish Statuses"
+            case .channelsLabel:
+                return "Channels"
+            case .devicePushTokenLabel:
+                return "Device Push Token"
+            case .addPushNotificationsButton:
+                return "Add Push Notifications"
+            case .removePushNotificationsButton:
+                return "Remove Push Notifications"
+            case .removeAllPushNotificationsButton:
+                return "Remove All Push Notifications"
+            case .pushNotificationChannelsForDeviceTokenButton:
+                return "Push Notification Channels for Device Token"
             }
         }
         
@@ -89,23 +93,21 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
             switch self {
             case .publishKey, .subscribeKey, .uuid:
                 return PushSectionType.clientConfiguration
-            case .channelLabel:
-                return PushSectionType.publishConfiguration
-            case .payloadInput:
-                return PushSectionType.payloadInput
-            case .publishButton:
-                return PushSectionType.publishConfiguration
-            case .publishStatus:
-                return PushSectionType.publishStatusConsole
+            case .channelsLabel:
+                return PushSectionType.pushConfiguration
+            case .channelsLabel, .devicePushTokenLabel:
+                return PushSectionType.pushConfiguration
+            case .addPushNotificationsButton, .removePushNotificationsButton, .removeAllPushNotificationsButton, .pushNotificationChannelsForDeviceTokenButton:
+                return PushSectionType.pushActions
             }
         }
         
         var defaultValue: String {
             switch self {
-            case .channelLabel:
+            case .channelsLabel:
                 return ""
-            case .payloadInput:
-                return "Hello, world!"
+            case .devicePushTokenLabel:
+                return ""
             default:
                 return ""
             }
@@ -119,19 +121,23 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
                 return 1
             case .uuid:
                 return 2
-            case .channelLabel:
+            case .channelsLabel:
                 return 0
-            case .payloadInput:
-                return 0
-            case .publishButton:
+            case .devicePushTokenLabel:
                 return 1
-            case .publishStatus:
+            case .addPushNotificationsButton:
                 return 0
+            case .pushNotificationChannelsForDeviceTokenButton:
+                return 1
+            case .removePushNotificationsButton:
+                return 2
+            case .removeAllPushNotificationsButton:
+                return 3
             }
         }
     }
     
-    struct PublishButtonItem: ButtonItem {
+    struct PushButtonItem: ButtonItem {
         let itemType: ItemType
         init(itemType: PushItemType, selected: Bool, targetSelector: TargetSelector) {
             self.itemType = itemType
@@ -145,7 +151,7 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
         var targetSelector: TargetSelector
     }
     
-    struct PublishUpdatableLabelItem: UpdatableTitleContentsItem {
+    struct PushUpdatableLabelItem: UpdatableTitleContentsItem {
         init(itemType: PushItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -159,7 +165,7 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
         var contents: String
     }
     
-    struct PublishLabelItem: TitleContentsItem {
+    struct PushLabelItem: TitleContentsItem {
         let itemType: ItemType
         var contents: String
         init(itemType: PushItemType, contents: String) {
@@ -171,7 +177,7 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
         }
     }
     
-    struct PublishTextViewItem: TextViewItem {
+    struct PushTextViewItem: TextViewItem {
         init(itemType: PushItemType) {
             self.init(itemType: itemType, contentsString: itemType.defaultValue)
         }
@@ -185,39 +191,35 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
         var contents: String
     }
     
-    final class PublishDataSource: BasicDataSource {
+    final class PushDataSource: BasicDataSource {
         required init(sections: [ItemSection]) {
             super.init(sections: sections)
         }
-        convenience init(client: PubNub, publishButton: TargetSelector) {
-            let subscribeLabelItem = PublishLabelItem(itemType: .subscribeKey, client: client)
-            let publishLabelItem = PublishLabelItem(itemType: .publishKey, client: client)
-            let uuidLabelItem = PublishLabelItem(itemType: .uuid, client: client)
-            let publishButtonItem = PublishButtonItem(itemType: .publishButton, targetSelector: publishButton)
-            let channelLabelItem = PublishUpdatableLabelItem(itemType: .channelLabel)
-            let textViewItem = PublishTextViewItem(itemType: .payloadInput)
-            let publishConfigSection = BasicSection(items: [channelLabelItem, publishButtonItem])
-            let payloadSection = BasicSection(items: [textViewItem])
-            let publishStatusSection = ScrollingSection()
+        convenience init(client: PubNub, addChannelsButton: TargetSelector, channelsForDeviceTokenButton: TargetSelector, removeChannelsButton: TargetSelector, removeAllButton: TargetSelector) {
+            let subscribeLabelItem = PushLabelItem(itemType: .subscribeKey, client: client)
+            let publishLabelItem = PushLabelItem(itemType: .publishKey, client: client)
+            let uuidLabelItem = PushLabelItem(itemType: .uuid, client: client)
+            let channelsLabelItem = PushUpdatableLabelItem(itemType: .channelsLabel)
+            let pushTokenLabelItem = PushUpdatableLabelItem(itemType: .devicePushTokenLabel)
+            let addPushChannelsButtonItem = PushButtonItem(itemType: .addPushNotificationsButton, targetSelector: addChannelsButton)
+            let channelsForDeviceTokenButtonItem = PushButtonItem(itemType: .pushNotificationChannelsForDeviceTokenButton, targetSelector: channelsForDeviceTokenButton)
+            let removeChannelsButtonItem = PushButtonItem(itemType: .removePushNotificationsButton, targetSelector: removeChannelsButton)
+            let removeAllButtonItem = PushButtonItem(itemType: .removeAllPushNotificationsButton, targetSelector: removeAllButton)
             let clientConfigSection = BasicSection(items: [publishLabelItem, subscribeLabelItem, uuidLabelItem])
-            self.init(sections: [clientConfigSection, publishConfigSection, payloadSection, publishStatusSection])
+            let pushConfigurationSection = BasicSection(items: [channelsLabelItem, pushTokenLabelItem])
+            let pushActionsSection = BasicSection(items: [addPushChannelsButtonItem, channelsForDeviceTokenButtonItem, removeChannelsButtonItem, removeAllButtonItem])
+//            let pushConsoleSection = ScrollingSection()
+//            self.init(sections: [clientConfigSection, pushConfigurationSection, pushActionsSection, pushConsoleSection])
+            self.init(sections: [clientConfigSection, pushConfigurationSection, pushActionsSection])
+            
         }
-        var message: String {
-            guard let payloadItem = self[PublishItemType.payloadInput.indexPath] as? PublishTextViewItem else {
-                fatalError()
-            }
-            return payloadItem.contents
-        }
-        var channel: String {
-            guard let channelItem = self[PublishItemType.channelLabel.indexPath] as? PublishUpdatableLabelItem else {
-                fatalError()
-            }
-            return channelItem.contents
-        }
-        func push(publishStatus: PNPublishStatus) -> IndexPath {
-            let publishStatusItem = publishStatus.createItem(itemType: PublishItemType.publishStatus)
-            return push(section: PublishItemType.publishStatus.section, item: publishStatusItem)
-        }
+        
+        // add helper method for extracting channels and device token from fields
+        
+//        func push(result: PNResult) -> IndexPath {
+//            let publishStatusItem = publishStatus.createItem(itemType: result.publishStatus)
+//            return push(section: PublishItemType.publishStatus.section, item: publishStatusItem)
+//        }
     }
     
     // MARK: - Constructors
@@ -246,55 +248,49 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
             fatalError()
         }
         self.delegate = self
-        let publishButton: TargetSelector = (self, #selector(self.publishButtonTapped(sender:)))
-        dataSource = PublishDataSource(client: currentClient, publishButton: publishButton)
+        let addChannelsButton: TargetSelector = (self, #selector(self.addChannelsButtonPressed(sender:)))
+        let removeChannelsButton: TargetSelector = (self, #selector(self.removeChannelsButtonPressed(sender:)))
+        let channelsForDeviceTokenButton: TargetSelector = (self, #selector(self.channelsForDeviceTokenPressed(sender:)))
+        let removeAllButton: TargetSelector = (self, #selector(self.removeAllButtonPressed(sender:)))
+        dataSource = PushDataSource(client: currentClient, addChannelsButton: addChannelsButton, channelsForDeviceTokenButton: channelsForDeviceTokenButton, removeChannelsButton: removeChannelsButton, removeAllButton: removeAllButton)
         guard let collectionView = self.collectionView else { fatalError("We expected to have a collection view by now. Please contact support@pubnub.com") }
         collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier)
-        collectionView.register(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier)
         collectionView.register(ButtonCollectionViewCell.self, forCellWithReuseIdentifier: ButtonCollectionViewCell.reuseIdentifier)
-        collectionView.register(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
     // MARK: - Actions
-    public func publishButtonTapped(sender: UIButton!) {
-        publish()
+    
+    public func addChannelsButtonPressed(sender: UIButton) {
+        let channels = ["a"]
+        let deviceToken = Data(capacity: 64)
+        self.client?.addPushNotifications(onChannels: channels, withDevicePushToken: deviceToken, andCompletion: { (status) in
+            
+        })
     }
     
-    func publish() {
-        guard let currentDataSource = dataSource as? PublishDataSource else {
-            return
-        }
-        view.endEditing(true) // make sure the message value is updated before sending the publish (this may be a race?)
-        let message = currentDataSource.message // eventually throw errors for feedback
-        let channel = currentDataSource.channel
-        // we may exit the view controller before the completion handler occurs, so let's keep that in mind
-        // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
-        // do i really need unowned here? re-examine with swift 3 rules
-        do {
-            try self.client?.safePublish(message: message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
-                guard let completionDataSource = self.dataSource as? PublishDataSource else {
-                    return
-                }
-                self.collectionView?.performBatchUpdates({
-                    let insertedPublishCell = completionDataSource.push(publishStatus: publishStatus)
-                    self.collectionView?.insertItems(at: [insertedPublishCell])
-                    }, completion: nil)
-                // now try to send this publish status to the console view controller
-                self.publishDelegate?.publishView?(publishView: self, receivedPublishStatus: publishStatus)
-                //if let publishDelegate = self.delegate as? PublishViewControllerDelegate {
-                //    publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
-                //}
-                })
-        } catch let channelParsingError as PubNubSubscribableStringParsingError {
-            let alertController = UIAlertController.alertController(error: channelParsingError)
-            present(alertController, animated: true)
-        } catch let publishError as PubNubPublishError {
-            let alertController = UIAlertController.alertController(error: publishError)
-            present(alertController, animated: true)
-        } catch {
-            fatalError()
-        }
+    public func removeChannelsButtonPressed(sender: UIButton) {
+        let channels = ["a"]
+        let deviceToken = Data(capacity: 64)
+        self.client?.removePushNotifications(fromChannels: channels, withDevicePushToken: deviceToken, andCompletion: { (status) in
+            
+        })
+    }
+    
+    public func removeAllButtonPressed(sender: UIButton) {
+        let channels = ["a"]
+        let deviceToken = Data(capacity: 64)
+        self.client?.removeAllPushNotificationsFromDevice(withPushToken: deviceToken, andCompletion: { (status) in
+            
+        })
+    }
+    
+    public func channelsForDeviceTokenPressed(sender: UIButton) {
+        let channels = ["a"]
+        let deviceToken = Data(capacity: 64)
+        self.client?.pushNotificationEnabledChannelsForDevice(withPushToken: deviceToken, andCompletion: { (result, errorStatus) in
+            
+        })
     }
     
     // MARK: - CollectionViewControllerDelegate
@@ -305,6 +301,6 @@ class PushViewController: CollectionViewController, CollectionViewControllerDele
     // MARK: - UINavigationItem
     
     public override var navBarTitle: String {
-        return "PubNub Publish"
+        return "PubNub Push"
     }
 }
