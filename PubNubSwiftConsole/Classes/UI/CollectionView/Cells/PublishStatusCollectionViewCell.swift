@@ -45,8 +45,7 @@ class PublishStatusCollectionViewCell: ErrorStatusCollectionViewCell {
     override init(frame: CGRect) {
         self.timetokenLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(timetokenLabel)
-        timetokenLabel.forceAutoLayout()
+        stackView.insertArrangedSubview(timetokenLabel, at: 0)
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
@@ -56,19 +55,6 @@ class PublishStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
-        operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
-        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-        informationLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
-        timetokenLabel.frame = informationLabel.frame.offsetBy(dx: 0.0, dy: informationLabel.frame.size.height)
-        channelsLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
-        channelGroupsLabel.frame = channelsLabel.frame.offsetBy(dx: 0.0, dy: channelsLabel.frame.size.height)
-    }
-    
     override func updateCell(item: Item) {
         super.updateCell(item: item)
         guard let publishStatusItem = item as? PublishStatusItem else {
@@ -76,9 +62,5 @@ class PublishStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         }
         timetokenLabel.text = "Timetoken: \(publishStatusItem.timetoken)"
         contentView.setNeedsLayout()
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 250.0)
     }
 }

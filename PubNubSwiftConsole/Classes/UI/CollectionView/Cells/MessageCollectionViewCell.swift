@@ -54,15 +54,10 @@ class MessageCollectionViewCell: ResultCollectionViewCell {
         self.actualChannelLabel = UILabel(frame: .zero)
         self.subscribedChannelLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(payloadLabel)
-        payloadLabel.forceAutoLayout()
-        contentView.addSubview(timetokenLabel)
-        timetokenLabel.forceAutoLayout()
-//        contentView.addSubview(actualChannelLabel)
-//        actualChannelLabel.forceAutoLayout()
-//        contentView .addSubview(subscribedChannelLabel)
-//        subscribedChannelLabel.forceAutoLayout()
-        setUpInitialConstraints()
+        stackView.insertArrangedSubview(payloadLabel, at: 0)
+        stackView.insertArrangedSubview(timetokenLabel, at: 1)
+        stackView.insertArrangedSubview(actualChannelLabel, at: 2)
+        stackView.insertArrangedSubview(subscribedChannelLabel, at: 3)
         // FIXME: // let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
@@ -70,28 +65,6 @@ class MessageCollectionViewCell: ResultCollectionViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func setUpInitialConstraints() {
-        let views = [
-            "operation": operationLabel,
-            "creationDate": creationDateLabel,
-            "statusCode": statusCodeLabel,
-            "uuid": uuidLabel,
-            "clientRequest": clientRequestLabel,
-            "payload": payloadLabel,
-            "timetoken": timetokenLabel,
-            ]
-        
-        let metrics = [
-            "payloadHeight": NSNumber(integerLiteral: 100),
-            "labelHeight": NSNumber(integerLiteral: 30),
-            "horizontalPadding": NSNumber(integerLiteral: 5),
-            "verticalPadding": NSNumber(integerLiteral: 5),
-            ]
-        
-        let messageConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-verticalPadding-[payload(100)]-verticalPadding-[timetoken(labelHeight)]-[operation(==timetoken)]-verticalPadding-[creationDate(==operation)]-verticalPadding-[statusCode(==operation)]-verticalPadding-[uuid(==operation)]-verticalPadding-[clientRequest(==operation)]", options: .alignAllCenterX, metrics: metrics, views: views)
-        NSLayoutConstraint.activate(messageConstraints)
     }
     
     override func updateCell(item: Item) {
@@ -114,9 +87,5 @@ class MessageCollectionViewCell: ResultCollectionViewCell {
             subscribedChannelLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 300.0)
     }
 }

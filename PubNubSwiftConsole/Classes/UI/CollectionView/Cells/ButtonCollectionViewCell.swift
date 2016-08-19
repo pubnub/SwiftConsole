@@ -122,7 +122,7 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         }
         button.isSelected = item.selected
         button.sizeToFit()
-        setNeedsLayout()
+        contentView.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {

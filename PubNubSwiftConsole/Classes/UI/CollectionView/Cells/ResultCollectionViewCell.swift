@@ -49,7 +49,7 @@ class Result: ResultItem {
 }
 
 class ResultCollectionViewCell: CollectionViewCell {
-    private let stackView: UIStackView
+    let stackView: UIStackView
     let operationLabel: UILabel
     let creationDateLabel: UILabel
     let statusCodeLabel: UILabel
@@ -63,53 +63,40 @@ class ResultCollectionViewCell: CollectionViewCell {
         self.statusCodeLabel = UILabel(frame: .zero)
         self.uuidLabel = UILabel(frame: .zero)
         self.clientRequestLabel = UILabel(frame: .zero)
+        self.stackView = UIStackView(frame: frame)
         super.init(frame: frame)
-        contentView.addSubview(operationLabel)
-        operationLabel.forceAutoLayout()
-        contentView.addSubview(creationDateLabel)
-        creationDateLabel.forceAutoLayout()
-        contentView.addSubview(statusCodeLabel)
-        statusCodeLabel.forceAutoLayout()
-        contentView.addSubview(uuidLabel)
-        uuidLabel.forceAutoLayout()
-        contentView.addSubview(clientRequestLabel)
-        clientRequestLabel.forceAutoLayout()
+        stackView.axis = .vertical
+        stackView.alignment = .fill
+//        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+//        stackView.distribution = .fill
+        stackView.spacing = 5.0
+        contentView.addSubview(stackView)
+        stackView.forceAutoLayout()
+        func setStackViewConstraints(withVisualFormat: String) {
+            let views = [
+                "stackView": stackView,
+                ]
+            let stackViewConstraints = NSLayoutConstraint.constraints(withVisualFormat: withVisualFormat, options: [], metrics: nil, views: views)
+            NSLayoutConstraint.activate(stackViewConstraints)
+        }
+        // finish setting up stack
+        setStackViewConstraints(withVisualFormat: "H:|[stackView]|")
+        setStackViewConstraints(withVisualFormat: "V:|[stackView]|")
+        // now add arranged subviews
+        stackView.addArrangedSubview(operationLabel)
+        stackView.addArrangedSubview(creationDateLabel)
+        stackView.addArrangedSubview(statusCodeLabel)
+        stackView.addArrangedSubview(uuidLabel)
+        stackView.addArrangedSubview(clientRequestLabel)
         // FIXME: let's stop using borderWidth
         contentView.layer.borderWidth = 3
-        setUpInitialConstraints()
         contentView.setNeedsLayout()
-    }
-    
-    override func setUpInitialConstraints() {
-        let views = [
-            "operation": operationLabel,
-            "creationDate": creationDateLabel,
-            "statusCode": statusCodeLabel,
-            "uuid": uuidLabel,
-            "clientRequest": clientRequestLabel,
-        ]
-        
-        let metrics = [
-            "labelHeight": NSNumber(integerLiteral: 30),
-            "horizontalPadding": NSNumber(integerLiteral: 5),
-            "verticalPadding": NSNumber(integerLiteral: 5),
-        ]
-        
-        let resultConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-verticalPadding-[operation(labelHeight)]-verticalPadding-[creationDate(==operation)]-verticalPadding-[statusCode(==operation)]-verticalPadding-[uuid(==operation)]-verticalPadding-[clientRequest(==operation)]", options: .alignAllCenterX, metrics: metrics, views: views)
-        NSLayoutConstraint.activate(resultConstraints)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-//    override func layoutSubviews() {
-//        operationLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
-//        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-//        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-//        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-//        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-//    }
     
     override func updateCell(item: Item) {
         guard let resultItem = item as? ResultItem else {
@@ -129,6 +116,6 @@ class ResultCollectionViewCell: CollectionViewCell {
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 250.0)
+        return CGSize(width: collectionViewSize.width, height: 300.0)
     }
 }

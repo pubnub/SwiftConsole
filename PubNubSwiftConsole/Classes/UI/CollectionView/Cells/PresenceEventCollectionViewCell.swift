@@ -56,21 +56,20 @@ class PresenceEventCollectionViewCell: ResultCollectionViewCell {
     let presenceEventLabel: UILabel
     let presenceTimetokenLabel: UILabel
     let presenceUUIDLabel: UILabel
+    let occupancyLabel: UILabel
     
     override init(frame: CGRect) {
         self.timetokenLabel = UILabel(frame: .zero)
         self.presenceUUIDLabel = UILabel(frame: .zero)
         self.presenceEventLabel = UILabel(frame: .zero)
         self.presenceTimetokenLabel = UILabel(frame: .zero)
+        self.occupancyLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(presenceTimetokenLabel)
-        presenceTimetokenLabel.forceAutoLayout()
-        contentView.addSubview(timetokenLabel)
-        timetokenLabel.forceAutoLayout()
-        contentView.addSubview(presenceEventLabel)
-        presenceEventLabel.forceAutoLayout()
-        contentView .addSubview(presenceUUIDLabel)
-        presenceUUIDLabel.forceAutoLayout()
+        stackView.insertArrangedSubview(presenceEventLabel, at: 0)
+        stackView.insertArrangedSubview(presenceTimetokenLabel, at: 1)
+        stackView.insertArrangedSubview(presenceUUIDLabel, at: 2)
+        stackView.insertArrangedSubview(occupancyLabel, at: 3)
+        stackView.insertArrangedSubview(timetokenLabel, at: 4)
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
@@ -78,18 +77,6 @@ class PresenceEventCollectionViewCell: ResultCollectionViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func layoutSubviews() {
-        presenceEventLabel.frame = CGRect(x: 5.0, y: 10.0, width: contentView.frame.width, height: 50.0)
-        timetokenLabel.frame = presenceEventLabel.frame.offsetBy(dx: 0.0, dy: presenceEventLabel.frame.size.height)
-        operationLabel.frame = timetokenLabel.frame.offsetBy(dx: 0.0, dy: timetokenLabel.frame.size.height)
-        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-        presenceTimetokenLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
-        presenceUUIDLabel.frame = presenceTimetokenLabel.frame.offsetBy(dx: 0.0, dy: presenceTimetokenLabel.frame.size.height)
     }
     
     override func updateCell(item: Item) {
@@ -100,17 +87,14 @@ class PresenceEventCollectionViewCell: ResultCollectionViewCell {
         presenceEventLabel.text = "Event: \(presenceEventItem.presenceEvent)"
         timetokenLabel.text = "Timetoken: \(presenceEventItem.timetoken)"
         presenceTimetokenLabel.text = "Presence timetoken: \(presenceEventItem.presenceTimetoken)"
+        occupancyLabel.text = "Occupancy: \(presenceEventItem.occupancy)"
         if let presenceUUID = presenceEventItem.presenceUUID {
-            presenceUUIDLabel.text = "Presence uuid: \(presenceEventItem.presenceUUID)"
+            presenceUUIDLabel.text = "Presence uuid: \(presenceUUID)"
             presenceUUIDLabel.isHidden = false
         } else {
             presenceUUIDLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 300.0)
     }
     
 }

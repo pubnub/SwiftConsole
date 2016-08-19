@@ -55,12 +55,10 @@ class ErrorStatusCollectionViewCell: StatusCollectionViewCell {
         self.channelGroupsLabel = UILabel(frame: .zero)
         self.informationLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(channelsLabel)
-        channelsLabel.forceAutoLayout()
-        contentView.addSubview(channelGroupsLabel)
-        channelGroupsLabel.forceAutoLayout()
-        contentView.addSubview(informationLabel)
-        informationLabel.forceAutoLayout()
+        // let's put it after the category (index 1) and after the operation (index 0)
+        stackView.insertArrangedSubview(channelsLabel, at: 2)
+        stackView.insertArrangedSubview(channelGroupsLabel, at: 3)
+        stackView.addArrangedSubview(informationLabel) // this can just go at the end
         // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
@@ -68,19 +66,6 @@ class ErrorStatusCollectionViewCell: StatusCollectionViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func layoutSubviews() {
-        // don't call super let's control layout ourselves
-        categoryLabel.frame = CGRect(x: 5.0, y: 10.0, width: 100.0, height: 30.0)
-        operationLabel.frame = categoryLabel.frame.offsetBy(dx: 0.0, dy: categoryLabel.frame.size.height)
-        creationDateLabel.frame = operationLabel.frame.offsetBy(dx: 0.0, dy: operationLabel.frame.size.height)
-        statusCodeLabel.frame = creationDateLabel.frame.offsetBy(dx: 0.0, dy: creationDateLabel.frame.size.height)
-        uuidLabel.frame = statusCodeLabel.frame.offsetBy(dx: 0.0, dy: statusCodeLabel.frame.size.height)
-        clientRequestLabel.frame = uuidLabel.frame.offsetBy(dx: 0.0, dy: uuidLabel.frame.size.height)
-        informationLabel.frame = clientRequestLabel.frame.offsetBy(dx: 0.0, dy: clientRequestLabel.frame.size.height)
-        channelsLabel.frame = informationLabel.frame.offsetBy(dx: 0.0, dy: informationLabel.frame.size.height)
-        channelGroupsLabel.frame = channelsLabel.frame.offsetBy(dx: 0.0, dy: channelsLabel.frame.size.height)
     }
     
     override func updateCell(item: Item) {
@@ -102,9 +87,5 @@ class ErrorStatusCollectionViewCell: StatusCollectionViewCell {
             channelGroupsLabel.isHidden = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 250.0)
     }
 }

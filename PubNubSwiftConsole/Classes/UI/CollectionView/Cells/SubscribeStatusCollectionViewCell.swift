@@ -71,13 +71,10 @@ class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         self.subscribedChannelsLabel = UILabel(frame: .zero)
         self.subscribedChannelGroupsLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(timetokenLabel)
-        timetokenLabel.forceAutoLayout()
-//        contentView.addSubview(subscribedChannelsLabel)
-//        subscribedChannelsLabel.forceAutoLayout()
-//        contentView.addSubview(subscribedChannelGroupsLabel)
-//        subscribedChannelGroupsLabel.forceAutoLayout()
-        setUpInitialConstraints()
+        // the first 4 items are important, let's put it after those
+        stackView.insertArrangedSubview(subscribedChannelsLabel, at: 4)
+        stackView.insertArrangedSubview(subscribedChannelGroupsLabel, at: 5)
+        stackView.insertArrangedSubview(timetokenLabel, at: 6)
         contentView.layer.borderWidth = 3
         contentView.setNeedsLayout()
     }
@@ -86,48 +83,22 @@ class SubscribeStatusCollectionViewCell: ErrorStatusCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func setUpInitialConstraints() {
-        let views = [
-            "operation": operationLabel,
-            "creationDate": creationDateLabel,
-            "statusCode": statusCodeLabel,
-            "uuid": uuidLabel,
-            "clientRequest": clientRequestLabel,
-            "timetoken": timetokenLabel,
-            ]
-        
-        let metrics = [
-            "labelHeight": NSNumber(integerLiteral: 30),
-            "horizontalPadding": NSNumber(integerLiteral: 5),
-            "verticalPadding": NSNumber(integerLiteral: 5),
-            ]
-        
-        let cellConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-verticalPadding-[timetoken(labelHeight)]-[operation(==timetoken)]-verticalPadding-[creationDate(==operation)]-verticalPadding-[statusCode(==operation)]-verticalPadding-[uuid(==operation)]-verticalPadding-[clientRequest(==operation)]", options: .alignAllCenterX, metrics: metrics, views: views)
-        NSLayoutConstraint.activate(cellConstraints)
-    }
-    
     override func updateCell(item: Item) {
         super.updateCell(item: item)
         guard let subscribeStatusItem = item as? SubscribeStatusItem else {
             fatalError("init(coder:) has not been implemented")
         }
         timetokenLabel.text = "Timetoken: \(subscribeStatusItem.timetoken)"
-        if !subscribeStatusItem.subscribedChannels.isEmpty {
-            subscribedChannelsLabel.text = "Subscribed channels: \(PubNub.subscribablesToString(subscribables: subscribeStatusItem.subscribedChannels))"
-            subscribedChannelsLabel.isHidden = false
+        if !subscribeStatusItem.subscribedChannels.isEmpty, let subscribedChannelsString = PubNub.subscribablesToString(subscribables: subscribeStatusItem.subscribedChannels) {
+            subscribedChannelsLabel.text = "Subscribed channels: \(subscribedChannelsString)"
         } else {
-            subscribedChannelsLabel.isHidden = true
+            subscribedChannelsLabel.isHidden  = true
         }
-        if !subscribeStatusItem.subscribedChannelGroups.isEmpty {
-            subscribedChannelGroupsLabel.text = "Subscribed channel groups: \(PubNub.subscribablesToString(subscribables: subscribeStatusItem.subscribedChannelGroups))"
-            subscribedChannelGroupsLabel.isHidden = false
+        if !subscribeStatusItem.subscribedChannelGroups.isEmpty, let subscribedChannelGroupsString = PubNub.subscribablesToString(subscribables: subscribeStatusItem.subscribedChannelGroups) {
+            subscribedChannelGroupsLabel.text = "Subscribed channel groups: \(subscribedChannelGroupsString)"
         } else {
-            subscribedChannelGroupsLabel.isHidden = true
+            subscribedChannelGroupsLabel.isHidden  = true
         }
         contentView.setNeedsLayout()
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 250.0)
     }
 }
