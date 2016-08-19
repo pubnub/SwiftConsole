@@ -216,8 +216,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
             return channelItem.contents
         }
         func push(publishStatus: PNPublishStatus) -> IndexPath {
-            let publishItem = PublishStatus(itemType: PublishItemType.publishStatus, publishStatus: publishStatus)
-            return push(section: PublishItemType.publishStatus.section, item: publishItem)
+            let publishStatusItem = publishStatus.createItem(itemType: PublishItemType.publishStatus)
+            return push(section: PublishItemType.publishStatus.section, item: publishStatusItem)
         }
     }
     

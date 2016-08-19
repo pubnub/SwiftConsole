@@ -9,81 +9,92 @@
 import UIKit
 import PubNub
 
-protocol PresenceEventItem: Item {
-    init(itemType: ItemType, event: PNPresenceEventResult)
-    var eventType: String {get}
-    var occupancy: NSNumber? {get}
-    var timeToken: NSNumber? {get}
+protocol PresenceEventItem: ResultItem, SubscriberData {
+    var presenceEvent: String {get}
+    var presenceTimetoken: NSNumber {get}
+    var presenceUUID: String? {get}
+    var occupancy: NSNumber {get}
+    init(itemType: ItemType, pubNubResult result: PNPresenceEventResult)
 }
 
-extension PresenceEventItem {
-    var title: String {
-        return eventType
+class PresenceEvent: Result, PresenceEventItem {
+    let actualChannel: String?
+    let subscribedChannel: String?
+    let timetoken: NSNumber
+    let presenceEvent: String
+    let presenceTimetoken: NSNumber
+    let presenceUUID: String?
+    let occupancy: NSNumber
+    
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNPresenceEventResult)
     }
-}
-
-struct PresenceEvent: PresenceEventItem {
-    let itemType: ItemType
-    let eventType: String
-    let occupancy: NSNumber?
-    let timeToken: NSNumber?
-    init(itemType: ItemType, event: PNPresenceEventResult) {
-        self.itemType = itemType
-        self.eventType = event.data.presenceEvent
-        self.occupancy = event.data.presence.occupancy
-        self.timeToken = event.data.presence.timetoken
+    
+    required init(itemType: ItemType, pubNubResult result: PNPresenceEventResult) {
+        self.subscribedChannel = result.data.subscribedChannel
+        self.actualChannel = result.data.actualChannel
+        self.timetoken = result.data.timetoken
+        self.presenceEvent = result.data.presenceEvent
+        self.presenceTimetoken = result.data.presence.timetoken
+        self.presenceUUID = result.data.presence.uuid
+        self.occupancy = result.data.presence.occupancy
+        super.init(itemType: itemType, pubNubResult: result as! PNResult)
     }
-    var reuseIdentifier: String {
+    
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return PresenceEvent(itemType: itemType, pubNubResult: result)
+    }
+    
+    override var reuseIdentifier: String {
         return PresenceEventCollectionViewCell.reuseIdentifier
     }
 }
 
-class PresenceEventCollectionViewCell: CollectionViewCell {
+class PresenceEventCollectionViewCell: ResultCollectionViewCell {
 
-    private let eventTypeLabel: UILabel
-    private let occupancyLabel: UILabel
-    private let timeTokenLabel: UILabel
-
+    let timetokenLabel: UILabel
+    let presenceEventLabel: UILabel
+    let presenceTimetokenLabel: UILabel
+    let presenceUUIDLabel: UILabel
+    let occupancyLabel: UILabel
+    
     override init(frame: CGRect) {
-        self.eventTypeLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        self.occupancyLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        self.timeTokenLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
+        self.timetokenLabel = UILabel(frame: .zero)
+        self.presenceUUIDLabel = UILabel(frame: .zero)
+        self.presenceEventLabel = UILabel(frame: .zero)
+        self.presenceTimetokenLabel = UILabel(frame: .zero)
+        self.occupancyLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(eventTypeLabel)
-        contentView.addSubview(occupancyLabel)
-        contentView.addSubview(timeTokenLabel)
+        stackView.insertArrangedSubview(presenceEventLabel, at: 0)
+        stackView.insertArrangedSubview(presenceTimetokenLabel, at: 1)
+        stackView.insertArrangedSubview(presenceUUIDLabel, at: 2)
+        stackView.insertArrangedSubview(occupancyLabel, at: 3)
+        stackView.insertArrangedSubview(timetokenLabel, at: 4)
+        // FIXME: let's get rid of borderWidth
         contentView.layer.borderWidth = 3
+        contentView.setNeedsLayout()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updatePresence(item: PresenceEventItem) {
-        eventTypeLabel.text = "Type: \(item.title)"
-        if let channelOccupancy = item.occupancy {
-            occupancyLabel.isHidden = false
-            occupancyLabel.text = "Occupancy: \(channelOccupancy)"
-        } else {
-            occupancyLabel.isHidden = true
-        }
-        if let eventTimeToken = item.timeToken {
-            timeTokenLabel.isHidden = false
-            timeTokenLabel.text = "Time token: \(eventTimeToken)"
-        } else {
-            timeTokenLabel.isHidden = true
-        }
-        setNeedsLayout()
-    }
     
     override func updateCell(item: Item) {
+        super.updateCell(item: item)
         guard let presenceEventItem = item as? PresenceEventItem else {
-            fatalError("init(coder:) has not been implemented")
+            fatalError("wrong class")
         }
-        updatePresence(item: presenceEventItem)
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 150.0)
+        presenceEventLabel.text = "Event: \(presenceEventItem.presenceEvent)"
+        timetokenLabel.text = "Timetoken: \(presenceEventItem.timetoken)"
+        presenceTimetokenLabel.text = "Presence timetoken: \(presenceEventItem.presenceTimetoken)"
+        occupancyLabel.text = "Occupancy: \(presenceEventItem.occupancy)"
+        if let presenceUUID = presenceEventItem.presenceUUID {
+            presenceUUIDLabel.text = "Presence uuid: \(presenceUUID)"
+            presenceUUIDLabel.isHidden = false
+        } else {
+            presenceUUIDLabel.isHidden = true
+        }
+        contentView.setNeedsLayout()
     }
     
 }

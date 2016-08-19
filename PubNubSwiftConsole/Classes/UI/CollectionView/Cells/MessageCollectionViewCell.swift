@@ -9,92 +9,83 @@
 import UIKit
 import PubNub
 
-protocol MessageItem: Item {
-    init(itemType: ItemType, message: PNMessageResult)
+protocol MessageItem: ResultItem, SubscriberData {
+    init(itemType: ItemType, pubNubResult result: PNMessageResult)
     var payload: Any? {get}
-    var channelData: String? {get}
-    var channel: String? {get}
-    var timetoken: NSNumber {get}
 }
 
-extension MessageItem {
-    var title: String {
-        guard let currentPayload = payload else {
-            return "Cannot display message"
-        }
-        return "\(currentPayload)"
-    }
-}
-
-struct Message: MessageItem {
-    let itemType: ItemType
-    let timetoken: NSNumber
+class Message: Result, MessageItem {
     let payload: Any?
-    var channelData: String?
-    var channel: String?
-    init(itemType: ItemType, message: PNMessageResult) {
-        self.timetoken = message.data.timetoken
-        self.itemType = itemType
-        self.payload = message.data.message
-        self.channelData = message.data.subscribedChannel
-        self.channel = message.data.actualChannel
+    let actualChannel: String?
+    let subscribedChannel: String?
+    let timetoken: NSNumber
+    
+    required convenience init(itemType: ItemType, pubNubResult result: PNResult) {
+        self.init(itemType: itemType, pubNubResult: result as! PNMessageResult)
     }
-    var reuseIdentifier: String {
+    
+    required init(itemType: ItemType, pubNubResult result: PNMessageResult) {
+        self.actualChannel = result.data.actualChannel
+        self.subscribedChannel = result.data.subscribedChannel
+        self.timetoken = result.data.timetoken
+        self.payload = result.data.message
+        super.init(itemType: itemType, pubNubResult: result as! PNResult)
+    }
+    
+    override class func createResultItem(itemType: ItemType, pubNubResult result: PNResult) -> ResultItem {
+        return Message(itemType: itemType, pubNubResult: result)
+    }
+    
+    override var reuseIdentifier: String {
         return MessageCollectionViewCell.reuseIdentifier
     }
 }
 
-class MessageCollectionViewCell: CollectionViewCell {
-    private let messageLabel: UILabel
-    private let channelDataLabel: UILabel
-    private let channelLabel: UILabel
-    private let timeTokenLabel: UILabel
-    
+class MessageCollectionViewCell: ResultCollectionViewCell {
+
+    let payloadLabel: UILabel
+    let timetokenLabel: UILabel
+    let actualChannelLabel: UILabel
+    let subscribedChannelLabel: UILabel
+
     override init(frame: CGRect) {
-        self.messageLabel = UILabel(frame: CGRect(x: 5, y: 0, width: frame.size.width, height: frame.size.height/4))
-        self.channelDataLabel = UILabel(frame: CGRect(x: 5, y: 30, width: frame.size.width, height: frame.size.height/4))
-        self.channelLabel = UILabel(frame: CGRect(x: 5, y: 60, width: frame.size.width, height: frame.size.height/4))
-        self.timeTokenLabel = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: 40.0))
+        self.payloadLabel = UILabel(frame: .zero)
+        self.timetokenLabel = UILabel(frame: .zero)
+        self.actualChannelLabel = UILabel(frame: .zero)
+        self.subscribedChannelLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(messageLabel)
-        contentView.addSubview(channelDataLabel)
-        contentView.addSubview(channelLabel)
-        timeTokenLabel.center = CGPoint(x: channelLabel.center.x, y: channelLabel.center.y + channelLabel.frame.size.height)
-        contentView.addSubview(timeTokenLabel)
-        contentView.layer.borderWidth = 1
+        stackView.insertArrangedSubview(payloadLabel, at: 0)
+        stackView.insertArrangedSubview(timetokenLabel, at: 1)
+        stackView.insertArrangedSubview(actualChannelLabel, at: 2)
+        stackView.insertArrangedSubview(subscribedChannelLabel, at: 3)
+        // FIXME: // let's get rid of borderWidth
+        contentView.layer.borderWidth = 3
+        contentView.setNeedsLayout()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateMessage(item: MessageItem) {
-        messageLabel.text = "Message: \(item.title)"
-        timeTokenLabel.text = "Timetoken: \(item.timetoken)"
-        if let channelName = item.channel, let channelGroupName = item.channelData  {
-            channelDataLabel.isHidden = false
-            channelDataLabel.text = "Channel group: \(channelGroupName)"
-            channelLabel.isHidden = false
-            channelLabel.text = "Channel: \(channelName)"
-        } else if let channelName = item.channelData {
-            channelDataLabel.isHidden = false
-            channelDataLabel.text = "Channel: \(channelName)"
-            channelLabel.isHidden = true
-        } else {
-            channelDataLabel.isHidden = true
-            channelLabel.isHidden = true
-        }
-        setNeedsLayout()
-    }
-    
     override func updateCell(item: Item) {
+        super.updateCell(item: item)
         guard let messageItem = item as? MessageItem else {
-            fatalError("init(coder:) has not been implemented")
+            fatalError("wrong class")
         }
-        updateMessage(item: messageItem)
-    }
-    
-    class override func size(collectionViewSize: CGSize) -> CGSize {
-        return CGSize(width: collectionViewSize.width, height: 150.0)
+        payloadLabel.text = "Message: \(messageItem.payload ?? "Cannot display message")"
+        timetokenLabel.text = "Timetoken: \(messageItem.timetoken)"
+        if let actualChannel = messageItem.actualChannel {
+            actualChannelLabel.text = "Actual channel: \(actualChannel)"
+            actualChannelLabel.isHidden = false
+        } else {
+            actualChannelLabel.isHidden = true
+        }
+        if let subscribedChannel = messageItem.subscribedChannel {
+            subscribedChannelLabel.text = "Subscribed channel: \(subscribedChannel)"
+            subscribedChannelLabel.isHidden = false
+        } else {
+            subscribedChannelLabel.isHidden = true
+        }
+        contentView.setNeedsLayout()
     }
 }

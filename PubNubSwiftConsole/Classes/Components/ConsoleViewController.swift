@@ -401,6 +401,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         collectionView.register(MessageCollectionViewCell.self, forCellWithReuseIdentifier: MessageCollectionViewCell.reuseIdentifier)
         collectionView.register(SegmentedControlCollectionViewCell.self, forCellWithReuseIdentifier: SegmentedControlCollectionViewCell.reuseIdentifier)
         collectionView.register(PublishStatusCollectionViewCell.self, forCellWithReuseIdentifier: PublishStatusCollectionViewCell.reuseIdentifier)
+        collectionView.register(StatusCollectionViewCell.self, forCellWithReuseIdentifier: StatusCollectionViewCell.reuseIdentifier)
+        collectionView.register(ErrorStatusCollectionViewCell.self, forCellWithReuseIdentifier: ErrorStatusCollectionViewCell.reuseIdentifier)
+        collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: ResultCollectionViewCell.reuseIdentifier)
         collectionView.register(PresenceEventCollectionViewCell.self, forCellWithReuseIdentifier: PresenceEventCollectionViewCell.reuseIdentifier)
         collectionView.reloadData() // probably a good idea to reload data after all we just did
         guard let navController = self.navigationController as? NavigationController else {
@@ -548,7 +551,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func publishView(publishView: PublishViewController, receivedPublishStatus status: PNPublishStatus) {
         self.collectionView?.performBatchUpdates({
-            let publishStatus = PublishStatus(itemType: ConsoleItemType.publishStatus, publishStatus: status)
+            let publishStatus = PublishStatus(itemType: ConsoleItemType.publishStatus, pubNubResult: status)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
@@ -594,13 +597,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 // performBatchUpdates is nestable, so let's update other sections first
                 self.updateSubscribableLabelCells() // this ensures we receive updates to available channels and channel groups even if the changes happen outside the scope of this view controller
                 self.updateSubscribeButtonState()
-                let subscribeStatus = SubscribeStatus(itemType: ConsoleItemType.subscribeStatus, status: status)
+                let receivedStatusItem = status.createItem(itemType: ConsoleItemType.subscribeStatus)
+                
                 guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
-                    return
+                    fatalError()
                 }
                 // the index path is the same for both calls
-                let subscribeStatusIndexPath = currentDataSource.push(item: subscribeStatus, consoleSection: .subscribeStatuses)
-                currentDataSource.push(item: subscribeStatus, consoleSection: .all)
+                let subscribeStatusIndexPath = currentDataSource.push(item: receivedStatusItem, consoleSection: .subscribeStatuses)
+                currentDataSource.push(item: receivedStatusItem, consoleSection: .all)
                 let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
                 if currentSegmentedControlValue == .all || currentSegmentedControlValue == .subscribeStatuses {
                     self.collectionView?.insertItems(at: [subscribeStatusIndexPath])
@@ -611,13 +615,13 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func client(_ client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
         collectionView?.performBatchUpdates({
-            let receivedPresenceEvent = PresenceEvent(itemType: ConsoleItemType.presenceEvent, event: event)
+            let receivedPresenceEventItem = event.createItem(itemType: ConsoleItemType.presenceEvent)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
             // the indexPath is the same for both calls
-            let presenceEventIndexPath = currentDataSource.push(item: receivedPresenceEvent, consoleSection: .presenceEvents)
-            currentDataSource.push(item: receivedPresenceEvent, consoleSection: .all)
+            let presenceEventIndexPath = currentDataSource.push(item: receivedPresenceEventItem, consoleSection: .presenceEvents)
+            currentDataSource.push(item: receivedPresenceEventItem, consoleSection: .all)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .all || currentSegmentedControlValue == .presenceEvents {
                 self.collectionView?.insertItems(at: [presenceEventIndexPath])
@@ -627,13 +631,14 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     
     public func client(_ client: PubNub, didReceiveMessage message: PNMessageResult) {
         collectionView?.performBatchUpdates({
-            let receivedMessage = Message(itemType: ConsoleItemType.message, message: message)
+//            let receivedMessage = Message(itemType: ConsoleItemType.message, pubNubResult: message)
+            let receivedMessageItem = message.createItem(itemType: ConsoleItemType.message)
             guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
                 return
             }
             // the indexPath is the same for both calls
-            let messageIndexPath = currentDataSource.push(item: receivedMessage, consoleSection: .messages)
-            currentDataSource.push(item: receivedMessage, consoleSection: .all)
+            let messageIndexPath = currentDataSource.push(item: receivedMessageItem, consoleSection: .messages)
+            currentDataSource.push(item: receivedMessageItem, consoleSection: .all)
             let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
             if currentSegmentedControlValue == .all || currentSegmentedControlValue == .messages {
                 self.collectionView?.insertItems(at: [messageIndexPath])
