@@ -279,6 +279,8 @@ extension PNResult {
             return PublishStatus.self
         case let subscribeStatus as PNSubscribeStatus:
             return SubscribeStatus.self
+        case let apnsEnabledChannelsResult as PNAPNSEnabledChannelsResult:
+            return APNSEnabledChannelsResult.self
         case let message as PNMessageResult:
             return Message.self
         case let presenceEvent as PNPresenceEventResult:
@@ -287,6 +289,9 @@ extension PNResult {
             return ErrorStatus.self
         case let status as PNStatus:
             return Status.self
+        case let result as PNResult:
+            // if we get result, fallthrough to default (treat as result)
+            fallthrough
         default:
             return Result.self
         }
