@@ -14,15 +14,16 @@ class CollectionView: UICollectionView {
     required override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
         assert((layout is CollectionViewFlowLayout), "How dare you use anything but CollectionViewFlowLayout: \(layout)")
         super.init(frame: frame, collectionViewLayout: layout)
-        self.backgroundColor = UIColor.redColor()
+        self.backgroundColor = UIColor.red
     }
         
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        endEditing(true)
-        super.touchesBegan(touches, withEvent: event)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        endEditing(true) // this helps with text views
+        super.touchesBegan(touches, with: event)
     }
+    
 }

@@ -9,28 +9,50 @@
 import Foundation
 import PubNub
 
-enum PubNubConfigurationCreationError: ErrorType, CustomStringConvertible {
-    case NilValue(propertyName: String)
-    case EmptyStringValue(propertyName: String)
-    case OriginInvalid
-    var description: String {
+enum PubNubConfigurationCreationError: CustomNSError, LocalizedError {
+    case nilValue(propertyName: String)
+    case emptyStringValue(propertyName: String)
+    case originInvalid
+    public static var errorDomain: String {
+        return "PubNub"
+    }
+    public var errorCode: Int {
+        return 100
+    }
+    public var errorUserInfo: [String : Any] {
+        return ["description": errorDescription!]
+    }
+    var errorDescription: String? {
         switch self {
-        case let .NilValue(name):
+        case let .nilValue(name):
             return "Value for " + name + " property is nil"
-        case let .EmptyStringValue(name):
+        case let .emptyStringValue(name):
             return "Value for " + name + " property is empty"
-        case .OriginInvalid:
+        case .originInvalid:
             return "Origin is invalid, it should be pubsub.pubnub.com or something specially provided"
         }
     }
 }
 
 extension UIAlertController {
-    static func alertControllerForPubNubConfigurationCreationError(error: PubNubConfigurationCreationError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
-        let title = "Cannot create client with configuration"
-        let message = error.description
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
+    static func alertController(error: Error, handler: ((UIAlertAction) -> Void)? = nil) -> UIAlertController {
+        var title = "Unknown"
+        var message = "unknown"
+        switch error {
+        case let creation as PubNubConfigurationCreationError:
+            title = "Cannot create client with configuration"
+            message = creation.localizedDescription
+        case let publish as PubNubPublishError:
+            title = "Publish error"
+            message = "Cannot publish because \(publish.localizedDescription)"
+        case let stringParsing as PubNubSubscribableStringParsingError:
+            title = "what"
+            message = "Channel "
+        default:
+            fatalError()
+        }
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: handler))
         return alertController
     }
 }
@@ -50,10 +72,10 @@ extension PNConfiguration {
         var otherProperties = [KeyValue]()
         for var pair in properties {
             guard let value = pair.value else {
-                throw PubNubConfigurationCreationError.NilValue(propertyName: pair.name.rawValue)
+                throw PubNubConfigurationCreationError.nilValue(propertyName: pair.name.rawValue)
             }
             guard value.characters.count > 0 else {
-                throw PubNubConfigurationCreationError.EmptyStringValue(propertyName: pair.name.rawValue)
+                throw PubNubConfigurationCreationError.emptyStringValue(propertyName: pair.name.rawValue)
             }
             switch pair.name {
             case .SubscribeKey:
@@ -62,17 +84,17 @@ extension PNConfiguration {
                 pubKey.value = value
             case .Origin:
                 guard value.hasSuffix(".com") else {
-                    throw PubNubConfigurationCreationError.OriginInvalid
+                    throw PubNubConfigurationCreationError.originInvalid
                 }
                 pair.value = value
                 otherProperties.append(pair)
             }
         }
         guard let finalPubKey = pubKey.value else {
-            throw PubNubConfigurationCreationError.NilValue(propertyName: PubNubConfigurationProperty.PublishKey.rawValue)
+            throw PubNubConfigurationCreationError.nilValue(propertyName: PubNubConfigurationProperty.PublishKey.rawValue)
         }
         guard let finalSubKey = subKey.value else {
-            throw PubNubConfigurationCreationError.NilValue(propertyName: PubNubConfigurationProperty.SubscribeKey.rawValue)
+            throw PubNubConfigurationCreationError.nilValue(propertyName: PubNubConfigurationProperty.SubscribeKey.rawValue)
         }
         self.init(publishKey: finalPubKey, subscribeKey: finalSubKey)
         for otherPropertyPair in otherProperties {
@@ -88,12 +110,12 @@ extension PNConfiguration {
 
 extension String {
     var isOnlyWhiteSpace: Bool {
-        let whitespaceSet = NSCharacterSet.whitespaceCharacterSet()
-        return self.stringByTrimmingCharactersInSet(whitespaceSet).isEmpty
+        let whitespaceSet = CharacterSet.whitespaces
+        return self.trimmingCharacters(in: whitespaceSet).isEmpty
     }
     var containsPubNubKeyWords: Bool {
-        let keywordCharacterSet = NSCharacterSet(charactersInString: ",:.*/\\")
-        if let _ = self.rangeOfCharacterFromSet(keywordCharacterSet, options: .CaseInsensitiveSearch) {
+        let keywordCharacterSet = CharacterSet(charactersIn: ",:.*/\\")
+        if let _ = self.rangeOfCharacter(from: keywordCharacterSet, options: .caseInsensitive) {
             return true
         }
         else {
@@ -102,76 +124,76 @@ extension String {
     }
 }
 
-enum PubNubSubscribableStringParsingError: ErrorType, CustomStringConvertible {
-    case Empty
-    case ChannelNameContainsInvalidCharacters(channel: String)
-    case ChannelNameTooLong(channel: String)
-    case OnlyWhitespace(channel: String)
-    case Unknown(channel: String)
-    var description: String {
+enum PubNubSubscribableStringParsingError: CustomNSError, LocalizedError {
+    case empty
+    case channelNameContainsInvalidCharacters(channel: String)
+    case channelNameTooLong(channel: String)
+    case onlyWhitespace(channel: String)
+    case unknown(channel: String)
+    public static var errorDomain: String {
+        return "PubNub"
+    }
+    public var errorCode: Int {
+        return 300
+    }
+    public var errorUserInfo: [String : Any] {
+        return ["description": errorDescription!]
+    }
+    var errorDescription: String? {
         switch self {
-        case .Empty:
+        case .empty:
             return "string has no length"
-        case let .OnlyWhitespace(channel):
+        case let .onlyWhitespace(channel):
             return channel + " is only whitespace"
-        case let .ChannelNameContainsInvalidCharacters(channel):
+        case let .channelNameContainsInvalidCharacters(channel):
             return channel + " contains keywords that cannot be used with PubNub"
-        case let .ChannelNameTooLong(channel):
+        case let .channelNameTooLong(channel):
             return channel + " is too long (over 92 characters)"
-        case let .Unknown(channel):
+        case let .unknown(channel):
             return channel + " is incorrect with unknown error"
         }
     }
 }
 
-enum PubNubPublishError: ErrorType, CustomStringConvertible {
-    case NilMessage
-    case NilChannel
-    case MultipleChannels
-    var description: String {
+enum PubNubPublishError: CustomNSError, LocalizedError {
+    case nilMessage
+    case nilChannel
+    case multipleChannels
+    public static var errorDomain: String {
+        return "PubNub"
+    }
+    public var errorCode: Int {
+        return 200
+    }
+    public var errorUserInfo: [String : Any] {
+        return ["description": errorDescription!]
+    }
+    var errorDescription: String? {
         switch self {
-        case .NilMessage:
+        case .nilMessage:
             return "Cannot publish without a message"
-        case .NilChannel:
+        case .nilChannel:
             return "Cannot publish without a channel"
-        case .MultipleChannels:
+        case .multipleChannels:
             return "Cannot publish on multiple channels"
         }
     }
 }
 
-extension UIAlertController {
-    static func alertControllerForPubNubPublishingError(error: PubNubPublishError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
-        let title = "Publish error"
-        let message = "Cannot publish because \(error)"
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
-        return alertController
-    }
-    static func alertControllerForPubNubStringParsingIntoSubscribablesArrayError(source: String?, error: PubNubSubscribableStringParsingError, handler: ((UIAlertAction) -> Void)?) -> UIAlertController {
-        let blame = source ?? "string Parsing"
-        let title = "Issue with " + blame
-        let message = "Could not parse " + blame + " into array because \(error)"
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: handler))
-        return alertController
-    }
-}
-
 extension PubNub {
-    func safePublish(message: AnyObject?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock?) throws {
+    func safePublish(message: Any?, toChannel channel: String, mobilePushPayload push: [String : Any]?, withCompletion block: PNPublishCompletionBlock? = nil) throws {
         guard let actualMessage = message else {
-            throw PubNubPublishError.NilMessage
+            throw PubNubPublishError.nilMessage
         }
         do {
-            guard let channels = try PubNub.stringToSubscribablesArray(channel, commaDelimited: false) else {
-                throw PubNubPublishError.NilChannel
+            guard let channels = try PubNub.stringToSubscribablesArray(channels: channel, commaDelimited: false) else {
+                throw PubNubPublishError.nilChannel
             }
             guard channels.count < 2 else {
-                throw PubNubPublishError.MultipleChannels
+                throw PubNubPublishError.multipleChannels
             }
             guard let publishChannel = channels.first else {
-                throw PubNubSubscribableStringParsingError.Unknown(channel: channel)
+                throw PubNubSubscribableStringParsingError.unknown(channel: channel)
             }
             self.publish(actualMessage, toChannel: publishChannel, withCompletion: block)
         } catch let channelStringError as PubNubSubscribableStringParsingError {
@@ -180,6 +202,14 @@ extension PubNub {
             throw publishError // probably a better way than catching and throwing the same error (maybe rethrow?)
         } catch {
             fatalError()
+        }
+    }
+    // should this be `rethrows`?
+    func safePublish(message: Any?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock? = nil) throws {
+        do {
+            try safePublish(message: message, toChannel: channel, mobilePushPayload: nil, withCompletion: block)
+        } catch {
+            throw error
         }
     }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
@@ -193,38 +223,38 @@ extension PubNub {
         }
         var channelsArray: [String]
         if commaDelimited {
-            channelsArray = actualChannelsString.componentsSeparatedByString(",")
+            channelsArray = actualChannelsString.components(separatedBy: ",")
         } else {
             channelsArray = [actualChannelsString]
         }
         for channel in channelsArray {
             guard !channel.isOnlyWhiteSpace else {
-                throw PubNubSubscribableStringParsingError.OnlyWhitespace(channel: channel)
+                throw PubNubSubscribableStringParsingError.onlyWhitespace(channel: channel)
             }
             guard channel.characters.count > 0 else {
-                throw PubNubSubscribableStringParsingError.Empty
+                throw PubNubSubscribableStringParsingError.empty
             }
             guard channel.characters.count <= 92 else {
-                throw PubNubSubscribableStringParsingError.ChannelNameTooLong(channel: channel)
+                throw PubNubSubscribableStringParsingError.channelNameTooLong(channel: channel)
             }
             guard !channel.containsPubNubKeyWords else {
-                throw PubNubSubscribableStringParsingError.ChannelNameContainsInvalidCharacters(channel: channel)
+                throw PubNubSubscribableStringParsingError.channelNameContainsInvalidCharacters(channel: channel)
             }
         }
         return channelsArray
     }
     
     func channelsString() -> String? {
-        return PubNub.subscribablesToString(self.channels())
+        return PubNub.subscribablesToString(subscribables: self.channels())
     }
     func channelGroupsString() -> String? {
-        return PubNub.subscribablesToString(self.channelGroups())
+        return PubNub.subscribablesToString(subscribables: self.channelGroups())
     }
     internal static func subscribablesToString(subscribables: [String]) -> String? {
         if subscribables.isEmpty {
             return nil
         }
-        return subscribables.reduce("", combine: { (accumulator: String, component) in
+        return subscribables.reduce("", { (accumulator: String, component) in
             if accumulator.isEmpty {
                 return component
             }
@@ -239,6 +269,46 @@ extension PubNub {
     }
     var isSubscribing: Bool {
         return isSubscribingToChannels || isSubscribingToChannelGroups
+    }
+}
+
+extension PNResult {
+    var itemClass: AnyClass {
+        switch self {
+        case let publishStatus as PNPublishStatus:
+            return PublishStatus.self
+        case let subscribeStatus as PNSubscribeStatus:
+            return SubscribeStatus.self
+        case let apnsEnabledChannelsResult as PNAPNSEnabledChannelsResult:
+            return APNSEnabledChannelsResult.self
+        case let message as PNMessageResult:
+            return Message.self
+        case let presenceEvent as PNPresenceEventResult:
+            return PresenceEvent.self
+        case let errorStatus as PNErrorStatus:
+            return ErrorStatus.self
+        case let status as PNStatus:
+            return Status.self
+        case let result as PNResult:
+            // if we get result, fallthrough to default (treat as result)
+            fallthrough
+        default:
+            return Result.self
+        }
+    }
+    
+    func createItem(itemType: ItemType) -> ResultItem {
+//        guard type(of: self.itemClass) is Result.Self else {
+//            fatalError()
+//        }
+        guard let creatingType = self.itemClass as? Result.Type else {
+            fatalError()
+        }
+        return creatingType.createResultItem(itemType: itemType, pubNubResult: self)
+//        guard let creatingClass = type(of: self.itemClass) as? Result.Type else {
+//            fatalError()
+//        }
+//        return creatingClass.createResultItem(itemType: itemType, pubNubResult: self)
     }
 }
 

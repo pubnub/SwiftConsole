@@ -47,7 +47,7 @@ extension ItemSection {
         return result
     }
     mutating func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(itemType.item, updatedSelectedSegmentIndex: index)
+        return updateSelectedSegmentIndex(item: itemType.item, updatedSelectedSegmentIndex: index)
     }
 }
 
@@ -73,12 +73,12 @@ extension SingleSegementedControlItemSection {
         return segmentedControl.selectedSegmentIndex
     }
     mutating func updateSelectedSegmentIndex(updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(segmentIndex, updatedSelectedSegmentIndex: index)
+        return updateSelectedSegmentIndex(item: segmentIndex, updatedSelectedSegmentIndex: index)
     }
 }
 
 extension DataSource {
-    func updateSelectedSegmentIndex(indexPath: NSIndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
+    func updateSelectedSegmentIndex(indexPath: IndexPath, updatedSelectedSegmentIndex index: Int) -> Bool {
         guard var segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError("Please contact support@pubnub.com")
         }
@@ -86,17 +86,17 @@ extension DataSource {
         self[indexPath] = segmentedControlItem
         return result
     }
-    func selectedSegmentIndex(indexPath: NSIndexPath) -> Int {
+    func selectedSegmentIndex(indexPath: IndexPath) -> Int {
         guard let segmentedControlItem = self[indexPath] as? SegmentedControlItem else {
             fatalError()
         }
         return segmentedControlItem.selectedSegmentIndex
     }
     func updateSelectedSegmentIndex(itemType: ItemType, updatedSelectedSegmentIndex index: Int) -> Bool {
-        return updateSelectedSegmentIndex(itemType.indexPath, updatedSelectedSegmentIndex: index)
+        return updateSelectedSegmentIndex(indexPath: itemType.indexPath as IndexPath, updatedSelectedSegmentIndex: index)
     }
     func selectedSegmentIndex(itemType: ItemType) -> Int {
-        return selectedSegmentIndex(itemType.indexPath)
+        return selectedSegmentIndex(indexPath: itemType.indexPath as IndexPath)
     }
 }
 
@@ -108,13 +108,9 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         }
         didSet {
             if let updatedTargetSelector = targetSelector {
-                segmentedControl?.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, forControlEvents: .ValueChanged)
+                segmentedControl?.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, for: .valueChanged)
             }
         }
-    }
-    
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
     }
     
     override init(frame: CGRect) {
@@ -140,10 +136,10 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         }
         segmentedControl = nil
         segmentedControl = UISegmentedControl(items: item.items)
-        segmentedControl?.tintColor = UIColor.purpleColor()
+        segmentedControl?.tintColor = UIColor.purple
         segmentedControl?.selectedSegmentIndex = item.selectedSegmentIndex
         // only update the target selector if it's new
-        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
+        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target, !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
             targetSelector = item.targetSelector
         } else {
             // if there is no current target selector, then update our internal one (which sets it as well)
@@ -158,7 +154,7 @@ public class SegmentedControlCollectionViewCell: CollectionViewCell {
         guard let segmentedControlItem = item as? SegmentedControlItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateSegmentedControl(segmentedControlItem)
+        updateSegmentedControl(item: segmentedControlItem)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {

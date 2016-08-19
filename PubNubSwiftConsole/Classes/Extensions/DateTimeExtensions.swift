@@ -8,13 +8,12 @@
 
 import Foundation
 
-class CreationDateFormatter: NSDateFormatter {
+class CreationDateFormatter: DateFormatter {
     
     override init() {
         super.init()
-        self.dateStyle = .LongStyle
-        self.timeStyle = .LongStyle
-        self.timeZone = NSTimeZone.localTimeZone()
+        self.dateStyle = .long
+        self.timeStyle = .long
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -24,9 +23,9 @@ class CreationDateFormatter: NSDateFormatter {
     static let sharedInstance =  CreationDateFormatter()
 }
 
-extension NSDate {
+extension Date {
     func creationTimeStampString() -> String {
         let formatter = CreationDateFormatter.sharedInstance
-        return formatter.stringFromDate(self)
+        return formatter.string(from: self)
     }
 }

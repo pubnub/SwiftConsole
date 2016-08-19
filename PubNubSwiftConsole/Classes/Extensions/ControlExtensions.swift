@@ -12,8 +12,8 @@ typealias TargetSelector = (target: AnyObject?, selector: Selector)
 
 extension UIControl {
     func removeAllTargets() {
-        self.allTargets().forEach { (target) in
-            self.removeTarget(target, action: nil, forControlEvents: .AllEvents)
+        self.allTargets.forEach { (target) in
+            self.removeTarget(target, action: nil, for: .allEvents)
         }
     }
 }

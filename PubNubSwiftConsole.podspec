@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'PubNubSwiftConsole'
-  s.version          = '0.6.0'
+  s.version          = '0.7.0'
   s.summary          = 'A debug console for PubNub built entirely in Swift.'
 
 # This description is used to generate tags and improve search results.
@@ -28,7 +28,7 @@ This is a debug console for PubNub that can be easily dropped into any app. It i
   s.source           = { :git => 'https://github.com/pubnub/SwiftConsole.git', :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/PubNub'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '9.0'
 
   s.source_files = 'PubNubSwiftConsole/Classes/**/*'
   

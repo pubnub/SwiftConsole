@@ -18,7 +18,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
     
     public override func loadView() {
         // don't call super for UIViewController direct subclass
-        let frame = UIScreen.mainScreen().bounds
+        let frame = UIScreen.main.bounds
         self.view = UIView(frame: frame)
     }
     
@@ -28,20 +28,20 @@ public class ViewController: UIViewController, PNObjectEventListener {
     
     public var client: PubNub? {
         didSet {
-            oldValue?.removeListener(self)
-            client?.addListener(self)
+            oldValue?.remove(self)
+            client?.add(self)
         }
     }
     
     deinit {
-        client?.removeListener(self) // not really necessary, just to be safe
+        client?.remove(self) // not really necessary, just to be safe
     }
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor.redColor()
+        self.view.backgroundColor = UIColor.red
         self.navigationItem.title = navBarTitle
-        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(self.closeButtonPressed(sender:)))
         navigationItem.rightBarButtonItem = closeButton
     }
     
@@ -51,7 +51,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
-        navController.close(sender)
+        navController.close(sender: sender)
     }
     
     public var navBarTitle: String {

@@ -43,34 +43,34 @@ extension ItemSection {
         guard var buttonItem = self[item] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        buttonItem.updateSelected(selected)
+        buttonItem.updateSelected(selected: selected)
         self[item] = buttonItem
     }
     mutating func updateSelected(itemType: ItemType, selected: Bool) {
-        updateSelected(itemType.item, selected: selected)
+        updateSelected(item: itemType.item, selected: selected)
     }
 }
 
 extension DataSource {
-    func toggleSelected(indexPath: NSIndexPath) {
+    func toggleSelected(indexPath: IndexPath) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
         buttonItem.toggleSelected()
         self[indexPath] = buttonItem
     }
-    func updateSelected(indexPath: NSIndexPath, selected: Bool) {
+    func updateSelected(indexPath: IndexPath, selected: Bool) {
         guard var buttonItem = self[indexPath] as? ButtonItem else {
             fatalError("Please contact support@pubnub.com")
         }
-        buttonItem.updateSelected(selected)
+        buttonItem.updateSelected(selected: selected)
         self[indexPath] = buttonItem
     }
     func updateSelected(itemType: ItemType, selected: Bool) {
-        updateSelected(itemType.indexPath, selected: selected)
+        updateSelected(indexPath: itemType.indexPath as IndexPath, selected: selected)
     }
     func toggleSelected(itemType: ItemType) {
-        toggleSelected(itemType.indexPath)
+        toggleSelected(indexPath: itemType.indexPath as IndexPath)
     }
 }
 
@@ -82,22 +82,18 @@ public class ButtonCollectionViewCell: CollectionViewCell {
         }
         didSet {
             if let updatedTargetSelector = targetSelector {
-                button.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, forControlEvents: .TouchUpInside)
+                button.addTarget(updatedTargetSelector.target, action: updatedTargetSelector.selector, for: .touchUpInside)
             }
         }
     }
     
-    override class var reuseIdentifier: String {
-        return String(self.dynamicType)
-    }
-    
     override init(frame: CGRect) {
-        self.button = UIButton(type: .System)
+        self.button = UIButton(type: .system)
         super.init(frame: frame)
-        self.button.setTitle("Create Client", forState: .Normal)
-        self.button.sizeToFit()
-        self.button.center = self.contentView.center
-        self.contentView.addSubview(self.button)
+        button.setTitle("Create Client", for: .normal)
+        button.sizeToFit()
+        button.center = self.contentView.center
+        contentView.addSubview(self.button)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -106,34 +102,34 @@ public class ButtonCollectionViewCell: CollectionViewCell {
     
     override public func prepareForReuse() {
         super.prepareForReuse()
-        self.button.center = self.contentView.center
+        button.center = self.contentView.center
         // this is called for reload, which probably means the caching is pointless
         // TODO: clean this up
         targetSelector = nil
     }
     
     func updateButton(item: ButtonItem) {
-        button.setTitle(item.title, forState: .Normal)
+        button.setTitle(item.title, for: .normal)
         if let selectedTitle = item.selectedTitle {
-            button.setTitle(selectedTitle, forState: .Selected)
+            button.setTitle(selectedTitle, for: .selected)
         }
         // only update the target selector if it's new
-        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target where !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
+        if let currentTargetSelector = targetSelector, let currentTarget = currentTargetSelector.target, let itemTarget = item.targetSelector.target, !((currentTargetSelector.selector == item.targetSelector.selector) && (currentTarget === itemTarget)) {
             targetSelector = item.targetSelector
         } else {
             // if there is no current target selector, then update our internal one (which sets it as well)
             targetSelector = item.targetSelector
         }
-        button.selected = item.selected
+        button.isSelected = item.selected
         button.sizeToFit()
-        setNeedsLayout()
+        contentView.setNeedsLayout()
     }
     
     override func updateCell(item: Item) {
         guard let buttonItem = item as? ButtonItem else {
             fatalError("init(coder:) has not been implemented")
         }
-        updateButton(buttonItem)
+        updateButton(item: buttonItem)
     }
     
     class override func size(collectionViewSize: CGSize) -> CGSize {
