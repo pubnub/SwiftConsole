@@ -31,6 +31,7 @@ public class NavigationController: UINavigationController, UINavigationControlle
         case clientCreation
         case console(client: PubNub)
         case publish(client: PubNub)
+        case push(client: PubNub)
         func create() -> ViewController {
             switch self {
             case .clientCreation:
@@ -39,6 +40,8 @@ public class NavigationController: UINavigationController, UINavigationControlle
                 return ConsoleViewController(client: client)
             case .publish(let client):
                 return PublishViewController(client: client)
+            case .push(let client):
+                return PushViewController(client: client)
             }
         }
     }
@@ -59,10 +62,18 @@ public class NavigationController: UINavigationController, UINavigationControlle
         return NavigationController(rootViewControllerType: .publish(client: client))
     }
     
+    public static func pushNavigationController(client: PubNub) -> NavigationController {
+        return NavigationController(rootViewControllerType: .push(client: client))
+    }
+    
     // MARK: - Toolbar Items
     
     public func publishBarButtonItem() -> UIBarButtonItem {
         return UIBarButtonItem(title: "Publish", style: .plain, target: self, action: #selector(self.publishBarButtonItemTapped(sender:)))
+    }
+    
+    public func pushBarButtonItem() -> UIBarButtonItem {
+        return UIBarButtonItem(title: "Push", style: .plain, target: self, action: #selector(self.pushBarButtonItemTapped(sender:)))
     }
     
     // MARK: - Actions
@@ -84,6 +95,21 @@ public class NavigationController: UINavigationController, UINavigationControlle
             publishViewController.publishDelegate = viewController
         }
         self.pushViewController(publishViewController, animated: true)
+    }
+    
+    public func pushBarButtonItemTapped(sender: UIBarButtonItem!) {
+        guard let currentClient = self.client else {
+            return
+        }
+        pushPushViewController(client: currentClient)
+    }
+    
+    public func pushPushViewController(client: PubNub) {
+        let pushViewController = PushViewController(client: client)
+        if let viewController = topViewController as? PushViewControllerDelegate {
+            pushViewController.pushDelegate = viewController
+        }
+        self.pushViewController(pushViewController, animated: true)
     }
     
     // MARK: - Properties

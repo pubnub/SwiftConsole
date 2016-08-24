@@ -9,9 +9,17 @@
 import Foundation
 import PubNub
 
+@objc(PNCPushOperation)
+public enum PushOperation: Int {
+    case addPushNotificationsForChannels
+    case removePushNotifitcationsFromChannels
+    case removeAllPushNotifications
+    case pushChannelsForDeviceToken
+}
+
 @objc(PNCPushViewControllerDelegate)
 public protocol PushViewControllerDelegate {
-    @objc optional func pushView(pushView: PushViewController, receivedResult: PNResult)
+    @objc optional func pushView(pushView: PushViewController, action: PushOperation, receivedResult: PNResult)
 }
 
 //// Intended to launch from the toolbar
@@ -24,7 +32,7 @@ public class PushViewController: CollectionViewController, CollectionViewControl
     // MARK: - DataSource
 
     enum PushSectionType: Int, ItemSectionType {
-        case clientConfiguration = 0, pushConfiguration, pushActions
+        case clientConfiguration = 0, pushConfiguration, pushActions, pushConsole
     }
     
     enum PushItemType: ItemType {
@@ -36,7 +44,8 @@ public class PushViewController: CollectionViewController, CollectionViewControl
         case addPushNotificationsButton
         case removePushNotificationsButton
         case removeAllPushNotificationsButton
-        case pushNotificationChannelsForDeviceTokenButton
+        case pushChannelsForDeviceToken
+        case pushResult
 
         var cellClass: CollectionViewCell.Type {
             switch self {
@@ -44,8 +53,10 @@ public class PushViewController: CollectionViewController, CollectionViewControl
                 return TitleContentsCollectionViewCell.self
             case .channelsLabel, .devicePushTokenLabel:
                 return TitleContentsCollectionViewCell.self
-            case .addPushNotificationsButton, .removeAllPushNotificationsButton, .removePushNotificationsButton, .pushNotificationChannelsForDeviceTokenButton:
+            case .addPushNotificationsButton, .removeAllPushNotificationsButton, .removePushNotificationsButton, .pushChannelsForDeviceToken:
                 return ButtonCollectionViewCell.self
+            case .pushResult:
+                return ResultCollectionViewCell.self
             }
         }
         
@@ -71,8 +82,10 @@ public class PushViewController: CollectionViewController, CollectionViewControl
                 return "Remove Push Notifications"
             case .removeAllPushNotificationsButton:
                 return "Remove All Push Notifications"
-            case .pushNotificationChannelsForDeviceTokenButton:
+            case .pushChannelsForDeviceToken:
                 return "Push Notification Channels for Device Token"
+            case .pushResult:
+                return "Push Result"
             }
         }
         
@@ -97,8 +110,10 @@ public class PushViewController: CollectionViewController, CollectionViewControl
                 return PushSectionType.pushConfiguration
             case .channelsLabel, .devicePushTokenLabel:
                 return PushSectionType.pushConfiguration
-            case .addPushNotificationsButton, .removePushNotificationsButton, .removeAllPushNotificationsButton, .pushNotificationChannelsForDeviceTokenButton:
+            case .addPushNotificationsButton, .removePushNotificationsButton, .removeAllPushNotificationsButton, .pushChannelsForDeviceToken:
                 return PushSectionType.pushActions
+            case .pushResult:
+                return PushSectionType.pushConsole
             }
         }
         
@@ -127,12 +142,14 @@ public class PushViewController: CollectionViewController, CollectionViewControl
                 return 1
             case .addPushNotificationsButton:
                 return 0
-            case .pushNotificationChannelsForDeviceTokenButton:
+            case .pushChannelsForDeviceToken:
                 return 1
             case .removePushNotificationsButton:
                 return 2
             case .removeAllPushNotificationsButton:
                 return 3
+            case .pushResult:
+                return 0
             }
         }
     }
@@ -202,24 +219,23 @@ public class PushViewController: CollectionViewController, CollectionViewControl
             let channelsLabelItem = PushUpdatableLabelItem(itemType: .channelsLabel)
             let pushTokenLabelItem = PushUpdatableLabelItem(itemType: .devicePushTokenLabel)
             let addPushChannelsButtonItem = PushButtonItem(itemType: .addPushNotificationsButton, targetSelector: addChannelsButton)
-            let channelsForDeviceTokenButtonItem = PushButtonItem(itemType: .pushNotificationChannelsForDeviceTokenButton, targetSelector: channelsForDeviceTokenButton)
+            let channelsForDeviceTokenButtonItem = PushButtonItem(itemType: .pushChannelsForDeviceToken, targetSelector: channelsForDeviceTokenButton)
             let removeChannelsButtonItem = PushButtonItem(itemType: .removePushNotificationsButton, targetSelector: removeChannelsButton)
             let removeAllButtonItem = PushButtonItem(itemType: .removeAllPushNotificationsButton, targetSelector: removeAllButton)
             let clientConfigSection = BasicSection(items: [publishLabelItem, subscribeLabelItem, uuidLabelItem])
             let pushConfigurationSection = BasicSection(items: [channelsLabelItem, pushTokenLabelItem])
             let pushActionsSection = BasicSection(items: [addPushChannelsButtonItem, channelsForDeviceTokenButtonItem, removeChannelsButtonItem, removeAllButtonItem])
-//            let pushConsoleSection = ScrollingSection()
-//            self.init(sections: [clientConfigSection, pushConfigurationSection, pushActionsSection, pushConsoleSection])
-            self.init(sections: [clientConfigSection, pushConfigurationSection, pushActionsSection])
+            let pushConsoleSection = ScrollingSection()
+            self.init(sections: [clientConfigSection, pushConfigurationSection, pushActionsSection, pushConsoleSection])
             
         }
         
         // add helper method for extracting channels and device token from fields
         
-//        func push(result: PNResult) -> IndexPath {
-//            let publishStatusItem = publishStatus.createItem(itemType: result.publishStatus)
-//            return push(section: PublishItemType.publishStatus.section, item: publishStatusItem)
-//        }
+        func push(result: PNResult) -> IndexPath {
+            let pushResultItem = result.createItem(itemType: PushItemType.pushResult)
+            return push(section: PushItemType.pushResult.section, item: pushResultItem)
+        }
     }
     
     // MARK: - Constructors

@@ -410,8 +410,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return
         }
         let publishBarButtonItemItem = navController.publishBarButtonItem()
+        let pushBarButtonItemItem = navController.pushBarButtonItem()
         // FIXME: this probably needs attention
-        self.toolbarItems = [publishBarButtonItemItem]
+        self.toolbarItems = [publishBarButtonItemItem, pushBarButtonItemItem]
     }
     
     // MARK: - Memory Warning
@@ -537,7 +538,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - CollectionViewControllerDelegate
     
     public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?) {
-        if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
+        if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.UpdateableItemActions(rawValue: actionTitle) {
             switch (alertDecision) {
             case .OK:
                 client?.unsubscribeFromAll() // unsubscribe whenever a subscribable is changed
