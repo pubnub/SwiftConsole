@@ -204,7 +204,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case channelPresenceButton
         case channelGroupPresenceButton
         case subscribeStatus
-        case publishStatus
+        case publishStatus // TODO: this should probably be "all"
         case message
         case presenceEvent
         case consoleSegmentedControl
