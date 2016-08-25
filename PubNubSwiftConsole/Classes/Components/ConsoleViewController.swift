@@ -11,7 +11,7 @@ import PubNub
 
 // This needs the bottom toolbar to deal with publish and other actions
 @objc(PNCConsoleViewController)
-public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate {
+public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate, PushViewControllerDelegate {
     
     // MARK: - DataSource
     
@@ -511,10 +511,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 client?.subscribe(toChannels: currentSubscribables.Channels!, withPresence: channelPresence)
                 client?.subscribe(toChannelGroups: currentSubscribables.ChannelGroups!, withPresence: channelGroupPresence)
             }
-        } catch let pubNubError as PubNubSubscribableStringParsingError {
+        } catch let userFacingError as UserFacingError {
             // TODO: add channel or channel group into error type here? or earlier?
             // this will enable us to build a better localizedDescription
-            let alertController = UIAlertController.alertController(error: pubNubError)
+            let alertController = UIAlertController.alertController(error: userFacingError)
             present(alertController, animated: true)
             return
         } catch {
@@ -563,6 +563,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 self.collectionView?.insertItems(at: [publishStatusIndexPath])
             }
             })
+    }
+    
+    // MARK: - PushViewControllerDelegate
+    
+    public func pushView(pushView: PushViewController, action: PushOperation, receivedResult: PNResult) {
+        self.collectionView?.performBatchUpdates({
+//            let pushResult = receivedResult.createItem(itemType: ConsoleItemType)
+//            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+//                return
+//            }
+//            // the index path is the same for both calls
+//            let publishStatusIndexPath = currentDataSource.push(item: pushResult, consoleSection: .all)
+//            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+//            if currentSegmentedControlValue == .all {
+//                self.collectionView?.insertItems(at: [publishStatusIndexPath])
+//            }
+        })
     }
     
     // MARK: - Update from Client

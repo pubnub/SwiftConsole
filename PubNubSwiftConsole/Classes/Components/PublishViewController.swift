@@ -268,12 +268,15 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
         }
         view.endEditing(true) // make sure the message value is updated before sending the publish (this may be a race?)
         let message = currentDataSource.message // eventually throw errors for feedback
-        let channel = currentDataSource.channel
+        let channelString = currentDataSource.channel
         // we may exit the view controller before the completion handler occurs, so let's keep that in mind
         // in this case, we need it to stick around, so that we can log the response (if we were using Realm we could let the underlying view controller handle the completion and then this view controller could be weak instead of unowned)
         // do i really need unowned here? re-examine with swift 3 rules
         do {
-            try self.client?.safePublish(message: message, toChannel: channel, withCompletion: { [unowned self] (publishStatus) in
+            let publishingChannelArray = try PubNub.stringToSubscribablesArray(channels: channelString, commaDelimited: false)
+            // TODO: maybe put a guard to guarantee only one channel, or add an error case
+            let channel = publishingChannelArray[0]
+            client?.publish(message, toChannel: channel, withCompletion: { (publishStatus) in
                 guard let completionDataSource = self.dataSource as? PublishDataSource else {
                     return
                 }
@@ -287,12 +290,10 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
                 //    publishDelegate.publishView?(self, receivedPublishStatus: publishStatus)
                 //}
             })
-        } catch let channelParsingError as PubNubSubscribableStringParsingError {
-            let alertController = UIAlertController.alertController(error: channelParsingError)
+        } catch let userFacingError as UserFacingError {
+            let alertController = UIAlertController.alertController(error: userFacingError)
             present(alertController, animated: true)
-        } catch let publishError as PubNubPublishError {
-            let alertController = UIAlertController.alertController(error: publishError)
-            present(alertController, animated: true)
+            return
         } catch {
             fatalError()
         }
@@ -300,8 +301,8 @@ public class PublishViewController: CollectionViewController, CollectionViewCont
     
     // MARK: - CollectionViewControllerDelegate
     
-    public func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
-    }
+//    public func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
+//    }
     
     // MARK: - UINavigationItem
     

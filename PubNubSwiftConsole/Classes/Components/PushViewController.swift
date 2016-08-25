@@ -304,17 +304,19 @@ public class PushViewController: CollectionViewController, CollectionViewControl
         collectionView.reloadData() // probably a good idea to reload data after all we just did
     }
     
+    // MARK: - Helpers
+    
     // MARK: - Actions
     
     public func addChannelsButtonPressed(sender: UIButton) {
         guard let currentDataSource = dataSource as? PushDataSource else {
             fatalError()
         }
-        var channelsString: [String]?
+        var channelsString: [String]
         do {
             channelsString = try PubNub.stringToSubscribablesArray(channels: currentDataSource.channels)
-        } catch let pubNubError as PubNubSubscribableStringParsingError {
-            let alertController = UIAlertController.alertController(error: pubNubError)
+        } catch let userFacingError as UserFacingError {
+            let alertController = UIAlertController.alertController(error: userFacingError)
             present(alertController, animated: true)
             // TODO: investigate the scope of this return (will it prevent the code after the error block from running)
             return
@@ -323,36 +325,78 @@ public class PushViewController: CollectionViewController, CollectionViewControl
         }
         
         let deviceToken = currentDataSource.deviceToken
-        guard let finalChannels = channelsString else {
-            return
-        }
         
-        self.client?.addPushNotifications(onChannels: finalChannels, withDevicePushToken: deviceToken, andCompletion: { (status) in
-            
+        self.client?.addPushNotifications(onChannels: channelsString, withDevicePushToken: deviceToken, andCompletion: { (status) in
+            self.collectionView?.performBatchUpdates({
+                let indexPath = currentDataSource.push(result: status)
+                self.collectionView?.insertItems(at: [indexPath])
+                })
+            self.pushDelegate?.pushView?(pushView: self, action: .addPushNotificationsForChannels, receivedResult: status)
         })
     }
     
     public func removeChannelsButtonPressed(sender: UIButton) {
-        let channels = ["a"]
-        let deviceToken = Data(capacity: 64)
-        self.client?.removePushNotifications(fromChannels: channels, withDevicePushToken: deviceToken, andCompletion: { (status) in
-            
+        guard let currentDataSource = dataSource as? PushDataSource else {
+            fatalError()
+        }
+        var channelsString: [String]
+        do {
+            channelsString = try PubNub.stringToSubscribablesArray(channels: currentDataSource.channels)
+        } catch let userFacingError as UserFacingError {
+            let alertController = UIAlertController.alertController(error: userFacingError)
+            present(alertController, animated: true)
+            // TODO: investigate the scope of this return (will it prevent the code after the error block from running)
+            return
+        } catch {
+            fatalError()
+        }
+        
+        let deviceToken = currentDataSource.deviceToken
+        
+        self.client?.removePushNotifications(fromChannels: channelsString, withDevicePushToken: deviceToken, andCompletion: { (status) in
+            self.collectionView?.performBatchUpdates({
+                let indexPath = currentDataSource.push(result: status)
+                self.collectionView?.insertItems(at: [indexPath])
+            })
+            self.pushDelegate?.pushView?(pushView: self, action: .removePushNotifitcationsFromChannels, receivedResult: status)
         })
     }
     
     public func removeAllButtonPressed(sender: UIButton) {
-        let channels = ["a"]
-        let deviceToken = Data(capacity: 64)
+        guard let currentDataSource = dataSource as? PushDataSource else {
+            fatalError()
+        }
+        let deviceToken = currentDataSource.deviceToken
         self.client?.removeAllPushNotificationsFromDevice(withPushToken: deviceToken, andCompletion: { (status) in
-            
+            self.collectionView?.performBatchUpdates({
+                let indexPath = currentDataSource.push(result: status)
+                self.collectionView?.insertItems(at: [indexPath])
+            })
+            self.pushDelegate?.pushView?(pushView: self, action: .removeAllPushNotifications, receivedResult: status)
         })
     }
     
     public func channelsForDeviceTokenPressed(sender: UIButton) {
-        let channels = ["a"]
-        let deviceToken = Data(capacity: 64)
+        guard let currentDataSource = dataSource as? PushDataSource else {
+            fatalError()
+        }
+        let deviceToken = currentDataSource.deviceToken
         self.client?.pushNotificationEnabledChannelsForDevice(withPushToken: deviceToken, andCompletion: { (result, errorStatus) in
+            var finalResult: PNResult
+            switch (result, errorStatus) {
+            case let (validResult, nil) where validResult != nil:
+                finalResult = validResult!
+            case let (nil, validErrorStatus) where validErrorStatus != nil:
+                finalResult = validErrorStatus!
+            default:
+                fatalError()
+            }
             
+            self.collectionView?.performBatchUpdates({
+                let indexPath = currentDataSource.push(result: finalResult)
+                self.collectionView?.insertItems(at: [indexPath])
+            })
+            self.pushDelegate?.pushView?(pushView: self, action: .pushChannelsForDeviceToken, receivedResult: finalResult)
         })
     }
     

@@ -9,7 +9,13 @@
 import Foundation
 import PubNub
 
-enum PubNubConfigurationCreationError: CustomNSError, LocalizedError {
+protocol UserFacingError: LocalizedError, CustomNSError {
+    /// Title for the UIAlertController
+    var alertTitle: String { get }
+    var alertMessage: String { get }
+}
+
+enum PubNubConfigurationCreationError: UserFacingError {
     case nilValue(propertyName: String)
     case emptyStringValue(propertyName: String)
     case originInvalid
@@ -21,6 +27,13 @@ enum PubNubConfigurationCreationError: CustomNSError, LocalizedError {
     }
     public var errorUserInfo: [String : Any] {
         return ["description": errorDescription!]
+    }
+    public var alertTitle: String {
+        return "Cannot create client with configuration"
+    }
+    public var alertMessage: String {
+        // FIXME: let's get rid of this forced unwrap
+        return errorDescription!
     }
     var errorDescription: String? {
         switch self {
@@ -35,22 +48,9 @@ enum PubNubConfigurationCreationError: CustomNSError, LocalizedError {
 }
 
 extension UIAlertController {
-    static func alertController(error: Error, handler: ((UIAlertAction) -> Void)? = nil) -> UIAlertController {
-        var title = "Unknown"
-        var message = "unknown"
-        switch error {
-        case let creation as PubNubConfigurationCreationError:
-            title = "Cannot create client with configuration"
-            message = creation.localizedDescription
-        case let publish as PubNubPublishError:
-            title = "Publish error"
-            message = "Cannot publish because \(publish.localizedDescription)"
-        case let stringParsing as PubNubSubscribableStringParsingError:
-            title = "what"
-            message = "Channel "
-        default:
-            fatalError()
-        }
+    static func alertController(error: UserFacingError, handler: ((UIAlertAction) -> Void)? = nil) -> UIAlertController {
+        let title = error.alertTitle
+        let message = error.alertMessage
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: handler))
         return alertController
@@ -124,8 +124,9 @@ extension String {
     }
 }
 
-enum PubNubSubscribableStringParsingError: CustomNSError, LocalizedError {
-    case empty
+enum PubNubSubscribableStringParsingError: UserFacingError {
+    case nilChannelString
+    case emptyChannelString
     case channelNameContainsInvalidCharacters(channel: String)
     case channelNameTooLong(channel: String)
     case onlyWhitespace(channel: String)
@@ -134,14 +135,24 @@ enum PubNubSubscribableStringParsingError: CustomNSError, LocalizedError {
         return "PubNub"
     }
     public var errorCode: Int {
+        // TODO: set a real error code
         return 300
+    }
+    public var alertTitle: String {
+        return "Channel or channel group parsing error"
+    }
+    public var alertMessage: String {
+        // FIXME: let's get rid of this forced unwrap
+        return errorDescription!
     }
     public var errorUserInfo: [String : Any] {
         return ["description": errorDescription!]
     }
     var errorDescription: String? {
         switch self {
-        case .empty:
+        case .nilChannelString:
+            return "channel name cannot be nil"
+        case .emptyChannelString:
             return "string has no length"
         case let .onlyWhitespace(channel):
             return channel + " is only whitespace"
@@ -155,12 +166,17 @@ enum PubNubSubscribableStringParsingError: CustomNSError, LocalizedError {
     }
 }
 
-enum PubNubPublishError: CustomNSError, LocalizedError {
-    case nilMessage
-    case nilChannel
-    case multipleChannels
+enum PubNubMessageError: UserFacingError {
+    case tooLongMessage
     public static var errorDomain: String {
         return "PubNub"
+    }
+    public var alertTitle: String {
+        return "Message error"
+    }
+    public var alertMessage: String {
+        // FIXME: let's get rid of this forced unwrap
+        return "Invalid message for publishing because \(errorDescription!)"
     }
     public var errorCode: Int {
         return 200
@@ -170,56 +186,77 @@ enum PubNubPublishError: CustomNSError, LocalizedError {
     }
     var errorDescription: String? {
         switch self {
-        case .nilMessage:
+        case .tooLongMessage:
             return "Cannot publish without a message"
-        case .nilChannel:
-            return "Cannot publish without a channel"
-        case .multipleChannels:
-            return "Cannot publish on multiple channels"
         }
     }
 }
 
+//enum PubNubPublishError: CustomNSError, LocalizedError {
+//    case nilMessage
+//    case nilChannel
+//    case multipleChannels
+//    public static var errorDomain: String {
+//        return "PubNub"
+//    }
+//    public var errorCode: Int {
+//        return 200
+//    }
+//    public var errorUserInfo: [String : Any] {
+//        return ["description": errorDescription!]
+//    }
+//    var errorDescription: String? {
+//        switch self {
+//        case .nilMessage:
+//            return "Cannot publish without a message"
+//        case .nilChannel:
+//            return "Cannot publish without a channel"
+//        case .multipleChannels:
+//            return "Cannot publish on multiple channels"
+//        }
+//    }
+//}
+
 extension PubNub {
-    func safePublish(message: Any?, toChannel channel: String, mobilePushPayload push: [String : Any]?, withCompletion block: PNPublishCompletionBlock? = nil) throws {
-        guard let actualMessage = message else {
-            throw PubNubPublishError.nilMessage
-        }
-        do {
-            guard let channels = try PubNub.stringToSubscribablesArray(channels: channel, commaDelimited: false) else {
-                throw PubNubPublishError.nilChannel
-            }
-            guard channels.count < 2 else {
-                throw PubNubPublishError.multipleChannels
-            }
-            guard let publishChannel = channels.first else {
-                throw PubNubSubscribableStringParsingError.unknown(channel: channel)
-            }
-            self.publish(actualMessage, toChannel: publishChannel, withCompletion: block)
-        } catch let channelStringError as PubNubSubscribableStringParsingError {
-            throw channelStringError
-        } catch let publishError as PubNubPublishError {
-            throw publishError // probably a better way than catching and throwing the same error (maybe rethrow?)
-        } catch {
-            fatalError()
-        }
-    }
-    // should this be `rethrows`?
-    func safePublish(message: Any?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock? = nil) throws {
-        do {
-            try safePublish(message: message, toChannel: channel, mobilePushPayload: nil, withCompletion: block)
-        } catch {
-            throw error
-        }
-    }
+//    func safePublish(message: Any?, toChannel channel: String, mobilePushPayload push: [String : Any]?, withCompletion block: PNPublishCompletionBlock? = nil) throws {
+//        guard let actualMessage = message else {
+//            throw PubNubPublishError.nilMessage
+//        }
+//        do {
+//            guard let channels = try PubNub.stringToSubscribablesArray(channels: channel, commaDelimited: false) else {
+//                throw PubNubPublishError.nilChannel
+//            }
+//            guard channels.count < 2 else {
+//                throw PubNubPublishError.multipleChannels
+//            }
+//            guard let publishChannel = channels.first else {
+//                throw PubNubSubscribableStringParsingError.unknown(channel: channel)
+//            }
+//            self.publish(actualMessage, toChannel: publishChannel, withCompletion: block)
+//        } catch let channelStringError as PubNubSubscribableStringParsingError {
+//            throw channelStringError
+//        } catch let publishError as PubNubPublishError {
+//            throw publishError // probably a better way than catching and throwing the same error (maybe rethrow?)
+//        } catch {
+//            fatalError()
+//        }
+//    }
+//    // should this be `rethrows`?
+//    func safePublish(message: Any?, toChannel channel: String, withCompletion block: PNPublishCompletionBlock? = nil) throws {
+//        do {
+//            try safePublish(message: message, toChannel: channel, mobilePushPayload: nil, withCompletion: block)
+//        } catch {
+//            throw error
+//        }
+//    }
     // TODO: Implement this, should eventually be a universal function in the PubNub framework
-    static func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String]? {
+    static func stringToSubscribablesArray(channels: String?, commaDelimited: Bool = true) throws -> [String] {
         guard let actualChannelsString = channels else {
-            return nil
+            throw PubNubSubscribableStringParsingError.nilChannelString
         }
         // if the whole string is empty, then return nil
         guard !actualChannelsString.characters.isEmpty else {
-            return nil
+            throw PubNubSubscribableStringParsingError.emptyChannelString
         }
         var channelsArray: [String]
         if commaDelimited {
@@ -232,7 +269,7 @@ extension PubNub {
                 throw PubNubSubscribableStringParsingError.onlyWhitespace(channel: channel)
             }
             guard channel.characters.count > 0 else {
-                throw PubNubSubscribableStringParsingError.empty
+                throw PubNubSubscribableStringParsingError.emptyChannelString
             }
             guard channel.characters.count <= 92 else {
                 throw PubNubSubscribableStringParsingError.channelNameTooLong(channel: channel)
