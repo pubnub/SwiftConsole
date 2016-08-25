@@ -231,6 +231,35 @@ public class PushViewController: CollectionViewController, CollectionViewControl
         }
         
         // add helper method for extracting channels and device token from fields
+        var deviceToken: Data {
+            guard let deviceTokenItem = self[PushItemType.devicePushTokenLabel.indexPath] as? PushUpdatableLabelItem else {
+                fatalError()
+            }
+            // fixme: better to use internal pubnub logic?
+            return Data(base64Encoded: deviceTokenItem.contents)!
+        }
+        
+        // TODO: maybe make this `private`
+        var channels: String {
+            guard let channelsItem = self[PushItemType.channelsLabel.indexPath] as? PushUpdatableLabelItem else {
+                fatalError()
+            }
+            return channelsItem.contents
+        }
+        
+//        func pushChannels() throws -> [String] {
+//            do {
+//                let channels = try PubNub.stringToSubscribablesArray(channels: self.channels)
+//                
+//            } catch let pubNubError as PubNubSubscribableStringParsingError {
+//                let alertController = UIAlertController.alertController(error: pubNubError)
+//                // TODO: investigate the scope of this return (will it prevent the code after the error block from running)
+//                return
+//            } catch {
+//                fatalError()
+//            }
+//        }
+        
         
         func push(result: PNResult) -> IndexPath {
             let pushResultItem = result.createItem(itemType: PushItemType.pushResult)
@@ -278,9 +307,27 @@ public class PushViewController: CollectionViewController, CollectionViewControl
     // MARK: - Actions
     
     public func addChannelsButtonPressed(sender: UIButton) {
-        let channels = ["a"]
-        let deviceToken = Data(capacity: 64)
-        self.client?.addPushNotifications(onChannels: channels, withDevicePushToken: deviceToken, andCompletion: { (status) in
+        guard let currentDataSource = dataSource as? PushDataSource else {
+            fatalError()
+        }
+        var channelsString: [String]?
+        do {
+            channelsString = try PubNub.stringToSubscribablesArray(channels: currentDataSource.channels)
+        } catch let pubNubError as PubNubSubscribableStringParsingError {
+            let alertController = UIAlertController.alertController(error: pubNubError)
+            present(alertController, animated: true)
+            // TODO: investigate the scope of this return (will it prevent the code after the error block from running)
+            return
+        } catch {
+            fatalError()
+        }
+        
+        let deviceToken = currentDataSource.deviceToken
+        guard let finalChannels = channelsString else {
+            return
+        }
+        
+        self.client?.addPushNotifications(onChannels: finalChannels, withDevicePushToken: deviceToken, andCompletion: { (status) in
             
         })
     }
@@ -310,9 +357,6 @@ public class PushViewController: CollectionViewController, CollectionViewControl
     }
     
     // MARK: - CollectionViewControllerDelegate
-    
-    public func collectionView(_ collectionView: UICollectionView, didUpdateItemWithTextViewAtIndexPath indexPath: IndexPath, textView: UITextView, updatedTextFieldString updatedString: String?) {
-    }
     
     // MARK: - UINavigationItem
     
