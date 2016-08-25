@@ -11,7 +11,7 @@ import PubNub
 
 // This needs the bottom toolbar to deal with publish and other actions
 @objc(PNCConsoleViewController)
-public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate {
+public class ConsoleViewController: CollectionViewController, CollectionViewControllerDelegate, PublishViewControllerDelegate, PushViewControllerDelegate {
     
     // MARK: - DataSource
     
@@ -204,7 +204,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
         case channelPresenceButton
         case channelGroupPresenceButton
         case subscribeStatus
-        case publishStatus
+        case publishStatus // TODO: this should probably be "all"
         case message
         case presenceEvent
         case consoleSegmentedControl
@@ -410,8 +410,9 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
             return
         }
         let publishBarButtonItemItem = navController.publishBarButtonItem()
+        let pushBarButtonItemItem = navController.pushBarButtonItem()
         // FIXME: this probably needs attention
-        self.toolbarItems = [publishBarButtonItemItem]
+        self.toolbarItems = [publishBarButtonItemItem, pushBarButtonItemItem]
     }
     
     // MARK: - Memory Warning
@@ -510,10 +511,10 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 client?.subscribe(toChannels: currentSubscribables.Channels!, withPresence: channelPresence)
                 client?.subscribe(toChannelGroups: currentSubscribables.ChannelGroups!, withPresence: channelGroupPresence)
             }
-        } catch let pubNubError as PubNubSubscribableStringParsingError {
+        } catch let userFacingError as UserFacingError {
             // TODO: add channel or channel group into error type here? or earlier?
             // this will enable us to build a better localizedDescription
-            let alertController = UIAlertController.alertController(error: pubNubError)
+            let alertController = UIAlertController.alertController(error: userFacingError)
             present(alertController, animated: true)
             return
         } catch {
@@ -537,7 +538,7 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
     // MARK: - CollectionViewControllerDelegate
     
     public func collectionView(collectionView: UICollectionView, didUpdateItemWithTextFieldAlertControllerAtIndexPath indexPath: IndexPath, selectedAlertAction: UIAlertAction, updatedTextFieldString updatedString: String?) {
-        if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
+        if let actionTitle = selectedAlertAction.title, let alertDecision = UIAlertController.UpdateableItemActions(rawValue: actionTitle) {
             switch (alertDecision) {
             case .OK:
                 client?.unsubscribeFromAll() // unsubscribe whenever a subscribable is changed
@@ -562,6 +563,23 @@ public class ConsoleViewController: CollectionViewController, CollectionViewCont
                 self.collectionView?.insertItems(at: [publishStatusIndexPath])
             }
             })
+    }
+    
+    // MARK: - PushViewControllerDelegate
+    
+    public func pushView(pushView: PushViewController, action: PushOperation, receivedResult: PNResult) {
+        self.collectionView?.performBatchUpdates({
+//            let pushResult = receivedResult.createItem(itemType: ConsoleItemType)
+//            guard let currentDataSource = self.dataSource as? ConsoleDataSource else {
+//                return
+//            }
+//            // the index path is the same for both calls
+//            let publishStatusIndexPath = currentDataSource.push(item: pushResult, consoleSection: .all)
+//            let currentSegmentedControlValue = currentDataSource.selectedConsoleSegment
+//            if currentSegmentedControlValue == .all {
+//                self.collectionView?.insertItems(at: [publishStatusIndexPath])
+//            }
+        })
     }
     
     // MARK: - Update from Client

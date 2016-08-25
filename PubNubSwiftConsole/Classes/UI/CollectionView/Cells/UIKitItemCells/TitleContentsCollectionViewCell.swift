@@ -68,7 +68,7 @@ extension DataSource {
 }
 
 extension UIAlertController {
-    enum ItemAction: String {
+    enum UpdateableItemActions: String {
         case OK, Cancel
     }
     static func updateItemWithAlertController(selectedItem: UpdatableTitleContentsItem?, completionHandler: ((UIAlertAction, String?) -> Void)? = nil) -> UIAlertController {
@@ -80,11 +80,11 @@ extension UIAlertController {
         alertController.addTextField(configurationHandler: { (textField) -> Void in
             textField.text = item.alertControllerTextFieldValue!
         })
-        alertController.addAction(UIAlertAction(title: ItemAction.OK.rawValue, style: .default, handler: { (action) -> Void in
+        alertController.addAction(UIAlertAction(title: UpdateableItemActions.OK.rawValue, style: .default, handler: { (action) -> Void in
             let updatedContentsString = alertController.textFields?[0].text
             completionHandler?(action, updatedContentsString)
         }))
-        alertController.addAction(UIAlertAction(title: ItemAction.Cancel.rawValue, style: .default, handler: { (action) in
+        alertController.addAction(UIAlertAction(title: UpdateableItemActions.Cancel.rawValue, style: .default, handler: { (action) in
             completionHandler?(action, nil)
         }))
         alertController.view.setNeedsLayout() // workaround: https://forums.developer.apple.com/thread/18294

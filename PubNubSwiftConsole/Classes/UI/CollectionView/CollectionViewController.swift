@@ -468,7 +468,7 @@ public class CollectionViewController: ViewController, TextViewCollectionViewCel
             // make sure we at least don't apply the alert controller to this type, because it only applies to the one below
         } else if let selectedUpdatableLabelItem = dataSource?[indexPath] as? UpdatableTitleContentsItem {
             let alertController = UIAlertController.updateItemWithAlertController(selectedItem: selectedUpdatableLabelItem) { (action, updatedTextFieldString) in
-                if let actionTitle = action.title, let alertDecision = UIAlertController.ItemAction(rawValue: actionTitle) {
+                if let actionTitle = action.title, let alertDecision = UIAlertController.UpdateableItemActions(rawValue: actionTitle) {
                     switch (alertDecision) {
                     case .OK:
                         self.collectionView?.performBatchUpdates({
