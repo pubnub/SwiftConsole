@@ -28,15 +28,16 @@ This is a debug console for PubNub that can be easily dropped into any app. It i
   s.source           = { :git => 'https://github.com/pubnub/SwiftConsole.git', :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/PubNub'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '10.0'
 
   s.source_files = 'PubNubSwiftConsole/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'PubNubSwiftConsole' => ['PubNubSwiftConsole/Assets/*.png']
-  # }
+
+  s.resource_bundles = {
+    'PubNubSwiftConsole' => ['PubNubSwiftConsole/Assets/SwiftConsole.xcdatamodeld']
+  }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
+  s.frameworks = 'CoreData'
   s.dependency 'PubNub'
 end

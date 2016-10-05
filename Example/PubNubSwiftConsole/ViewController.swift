@@ -31,11 +31,12 @@ class ViewController: UIViewController {
     }
     
     func clientCreationButtonPressed(_ sender: UIButton!) {
-        let clientCreationViewController = PubNubSwiftConsole.modalClientCreationViewController()
-        self.presentViewController(clientCreationViewController, animated: true, completion: nil)
+        //let clientCreationViewController = PubNubSwiftConsole.modalClientCreationViewController()
+        //self.presentViewController(clientCreationViewController, animated: true, completion: nil)
     }
     
     func consoleButtonPressed(_ sender: UIButton!) {
+        /*
         let config = PNConfiguration(publishKey: "demo-36", subscribeKey: "demo-36")
         client = PubNub.clientWithConfiguration(config)
         guard let currentClient = client else {
@@ -43,6 +44,7 @@ class ViewController: UIViewController {
         }
         let consoleViewController = PubNubSwiftConsole.modalConsoleViewController(currentClient)
         self.presentViewController(consoleViewController, animated: true, completion: nil)
+ */
     }
 
 }
