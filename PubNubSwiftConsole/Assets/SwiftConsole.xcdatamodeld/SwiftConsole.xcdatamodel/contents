@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11232" systemVersion="16A323" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="MessageResult" representedClassName="MessageResult" parentEntity="Result" syncable="YES" codeGenerationType="category">
+    <entity name="MessageResult" representedClassName="MessageResult" parentEntity="Result" syncable="YES">
         <attribute name="data" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
-    <entity name="Result" representedClassName="Result" syncable="YES" codeGenerationType="category">
+    <entity name="Result" representedClassName="Result" syncable="YES">
         <attribute name="authKey" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="clientRequest" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -13,11 +13,11 @@
         <attribute name="stringifiedOperation" attributeType="String" syncable="YES"/>
         <attribute name="uuid" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
-    <entity name="Status" representedClassName="Status" parentEntity="Result" syncable="YES" codeGenerationType="category">
+    <entity name="Status" representedClassName="Status" parentEntity="Result" syncable="YES">
         <attribute name="isError" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="stringifiedCategory" attributeType="String" syncable="YES"/>
     </entity>
-    <entity name="SubscribeStatus" representedClassName="SubscribeStatus" parentEntity="Status" syncable="YES" codeGenerationType="category">
+    <entity name="SubscribeStatus" representedClassName="SubscribeStatus" parentEntity="Status" syncable="YES">
         <attribute name="channel" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="currentTimetoken" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="lastTimetoken" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>

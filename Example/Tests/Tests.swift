@@ -1,6 +1,6 @@
 import UIKit
 import XCTest
-import SwiftConsole
+import PubNubSwiftConsole
 
 class Tests: XCTestCase {
     
