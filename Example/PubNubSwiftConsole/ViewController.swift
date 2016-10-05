@@ -19,10 +19,10 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        clientCreationButton.setTitle("PubNub Client Creation", forState: .Normal)
-        clientCreationButton.addTarget(self, action: #selector(self.clientCreationButtonPressed(_:)), forControlEvents: .TouchUpInside)
-        consoleButton.setTitle("PubNub Console", forState: .Normal)
-        consoleButton.addTarget(self, action: #selector(self.consoleButtonPressed(_:)), forControlEvents: .TouchUpInside)
+        clientCreationButton.setTitle("PubNub Client Creation", for: UIControlState())
+        clientCreationButton.addTarget(self, action: #selector(self.clientCreationButtonPressed(_:)), for: .touchUpInside)
+        consoleButton.setTitle("PubNub Console", for: .normal)
+        consoleButton.addTarget(self, action: #selector(self.consoleButtonPressed(_:)), for: .touchUpInside)
     }
 
     override func didReceiveMemoryWarning() {
@@ -30,12 +30,12 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    func clientCreationButtonPressed(sender: UIButton!) {
+    func clientCreationButtonPressed(_ sender: UIButton!) {
         let clientCreationViewController = PubNubSwiftConsole.modalClientCreationViewController()
         self.presentViewController(clientCreationViewController, animated: true, completion: nil)
     }
     
-    func consoleButtonPressed(sender: UIButton!) {
+    func consoleButtonPressed(_ sender: UIButton!) {
         let config = PNConfiguration(publishKey: "demo-36", subscribeKey: "demo-36")
         client = PubNub.clientWithConfiguration(config)
         guard let currentClient = client else {

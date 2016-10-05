@@ -10,15 +10,15 @@ import Foundation
 import PubNub
 
 @objc(PNCViewController)
-public class ViewController: UIViewController, PNObjectEventListener {
+open class ViewController: UIViewController, PNObjectEventListener {
     
     public required init() {
         super.init(nibName: nil, bundle: nil)
     }
     
-    public override func loadView() {
+    open override func loadView() {
         // don't call super for UIViewController direct subclass
-        let frame = UIScreen.mainScreen().bounds
+        let frame = UIScreen.main.bounds
         self.view = UIView(frame: frame)
     }
     
@@ -26,7 +26,7 @@ public class ViewController: UIViewController, PNObjectEventListener {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public var client: PubNub? {
+    open var client: PubNub? {
         didSet {
             oldValue?.removeListener(self)
             client?.addListener(self)
@@ -37,29 +37,29 @@ public class ViewController: UIViewController, PNObjectEventListener {
         client?.removeListener(self) // not really necessary, just to be safe
     }
     
-    public override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor.redColor()
+        self.view.backgroundColor = UIColor.red
         self.navigationItem.title = navBarTitle
-        let closeButton = UIBarButtonItem(title: "Close", style: .Plain, target: self, action: #selector(self.closeButtonPressed(_:)))
+        let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(self.closeButtonPressed(_:)))
         navigationItem.rightBarButtonItem = closeButton
     }
     
     // MARK: - NavigationController Additions
     
-    public func closeButtonPressed(sender: UIBarButtonItem!) {
+    open func closeButtonPressed(_ sender: UIBarButtonItem!) {
         guard let navController = self.navigationController as? NavigationController else {
             return
         }
         navController.close(sender)
     }
     
-    public var navBarTitle: String {
+    open var navBarTitle: String {
         return "PubNub"
     }
     
     // must be in a nav controller
-    public var showsToolbar: Bool {
+    open var showsToolbar: Bool {
         return false
     }
 }
