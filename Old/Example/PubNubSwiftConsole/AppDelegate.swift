@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  SwiftConsole
+//  PubNubSwiftConsole
 //
-//  Created by Jordan Zucker on 10/05/2016.
+//  Created by Jordan Zucker on 07/13/2016.
 //  Copyright (c) 2016 Jordan Zucker. All rights reserved.
 //
 

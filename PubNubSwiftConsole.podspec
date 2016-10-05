@@ -1,5 +1,5 @@
 #
-# Be sure to run `pod lib lint SwiftConsole.podspec' to ensure this is a
+# Be sure to run `pod lib lint PubNubSwiftConsole.podspec' to ensure this is a
 # valid spec before submitting.
 #
 # Any lines starting with a # are optional, but their use is encouraged
@@ -7,9 +7,9 @@
 #
 
 Pod::Spec.new do |s|
-  s.name             = 'SwiftConsole'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of SwiftConsole.'
+  s.name             = 'PubNubSwiftConsole'
+  s.version          = '0.7.0'
+  s.summary          = 'A debug console for PubNub built entirely in Swift.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,25 +18,26 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+This is a debug console for PubNub that can be easily dropped into any app. It is built entirely in Swift as an example of how to use PubNub with Swift.
                        DESC
 
-  s.homepage         = 'https://github.com/<GITHUB_USERNAME>/SwiftConsole'
+  s.homepage         = 'https://github.com/pubnub/SwiftConsole'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Jordan Zucker' => 'jordan.zucker@gmail.com' }
-  s.source           = { :git => 'https://github.com/<GITHUB_USERNAME>/SwiftConsole.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.source           = { :git => 'https://github.com/pubnub/SwiftConsole.git', :tag => s.version.to_s }
+  s.social_media_url = 'https://twitter.com/PubNub'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '10.0'
 
-  s.source_files = 'SwiftConsole/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'SwiftConsole' => ['SwiftConsole/Assets/*.png']
-  # }
+  s.source_files = 'PubNubSwiftConsole/Classes/**/*'
+
+  s.resource_bundles = {
+    'PubNubSwiftConsole' => ['PubNubSwiftConsole/Assets/SwiftConsole.xcdatamodeld']
+  }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.frameworks = 'CoreData'
+  s.dependency 'PubNub'
 end

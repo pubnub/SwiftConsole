@@ -1,0 +1,21 @@
+PODS:
+  - PubNub (4.5.3):
+    - PubNub/Core (= 4.5.3)
+  - PubNub/Core (4.5.3)
+  - PubNubSwiftConsole (0.7.0):
+    - PubNub
+
+DEPENDENCIES:
+  - PubNubSwiftConsole (from `.`)
+
+EXTERNAL SOURCES:
+  PubNubSwiftConsole:
+    :path: .
+
+SPEC CHECKSUMS:
+  PubNub: 42623b6046ab65bb2ec9c4fb51791d86aa956926
+  PubNubSwiftConsole: bff0a1dbbe37a5f8c4e5d2599f41954c30466b2d
+
+PODFILE CHECKSUM: 6623c93535c8ed586095de4d2c6f61642abcbd0d
+
+COCOAPODS: 1.0.1
