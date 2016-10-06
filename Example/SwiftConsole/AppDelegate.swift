@@ -7,15 +7,29 @@
 //
 
 import UIKit
+import PubNub
+import PubNubSwiftConsole
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    let client: PubNub
+    let console: SwiftConsole
+    
+    override init() {
+        let config = PNConfiguration(publishKey: "demo-36", subscribeKey: "demo-36")
+        let initialClient = PubNub.clientWithConfiguration(config)
+        self.client = initialClient
+        self.console = SwiftConsole(client: initialClient)
+        super.init()
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        client.subscribeToChannels(["a"], withPresence: true)
         return true
     }
 

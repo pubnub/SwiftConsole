@@ -25,25 +25,54 @@ public func modalPublishViewController(client: PubNub) -> PublishViewController 
  */
 
 public class SwiftConsole: NSObject, PNObjectEventListener {
-    var client: PubNub? {
-        willSet {
-            client?.removeListener(self)
-        }
-        didSet {
-            client?.addListener(self)
-        }
+    
+    let client: PubNub
+    
+    public required init(client: PubNub) {
+        self.client = client
+        super.init()
+        client.addListener(self)
+    }
+    
+    // MARK: - Views
+    
+    public func consoleViewController() -> NavigationController {
+        return NavigationController(pubNubViewController: ConsoleViewController(console: self))
     }
     
     // MARK: - Core Data stack
     
     lazy var persistentContainer: NSPersistentContainer = {
         /*
+        NSBundle *podBundle = [NSBundle bundleForClass:self.classForCoder];
+        NSURL *dataModelBundleURL = [podBundle URLForResource:@"DataModel" withExtension:@"bundle"];
+        NSBundle *dataModelBundle = [NSBundle bundleWithURL:dataModelBundleURL];
+        //NSURL *dataModelURL = [dataModelBundle URLForResource:@"PubNubPersistence" withExtension:@"xcdatamodeld"];
+        //NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"DataModel" ofType:@"bundle"];
+        //NSBundle *podBundle = [NSBundle bundleWithPath:bundlePath];
+        NSManagedObjectModel *model = [NSManagedObjectModel mergedModelFromBundles:@[dataModelBundle]];
+        
+        //NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:dataModelURL];
+        _persistentContainer = [[NSPersistentContainer alloc] initWithName:@"PubNubPersistence" managedObjectModel:model];
+         */
+        /*
          The persistent container for the application. This implementation
          creates and returns a container, having loaded the store for the
          application to it. This property is optional since there are legitimate
          error conditions that could cause the creation of the store to fail.
          */
-        let container = NSPersistentContainer(name: "Spotella")
+        let podBundle = Bundle(for: self.classForCoder)
+        guard let dataModelBundleURL = podBundle.url(forResource: "PubNubSwiftConsole", withExtension: "bundle") else {
+            fatalError("no pod bundle URL")
+        }
+        guard let dataModelBundle = Bundle(url: dataModelBundleURL) else {
+            fatalError("no pod bundle")
+        }
+        guard let model = NSManagedObjectModel.mergedModel(from: [dataModelBundle]) else {
+            fatalError("no managed object model")
+        }
+        let container = NSPersistentContainer(name: "SwiftConsole", managedObjectModel: model)
+        //let container = NSPersistentContainer(name: "SwiftConsole")
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
@@ -63,6 +92,10 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
         container.viewContext.automaticallyMergesChangesFromParent = true
         return container
     }()
+    
+    var viewContext: NSManagedObjectContext {
+        return persistentContainer.viewContext
+    }
     
     // MARK: - Core Data Saving support
     
