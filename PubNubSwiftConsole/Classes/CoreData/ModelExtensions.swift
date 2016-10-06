@@ -15,11 +15,17 @@ enum ResultType {
     case status
     case subscribeStatus
     case messageResult
+    case presenceEventResult
+    case publishStatus
     
     var resultType: Result.Type {
         switch self {
+        case .publishStatus:
+            return PublishStatus.self
         case .subscribeStatus:
             return SubscribeStatus.self
+        case .presenceEventResult:
+            return PresenceEventResult.self
         case .messageResult:
             return MessageResult.self
         case .status:
@@ -34,8 +40,12 @@ enum ResultType {
             return nil
         }
         switch actualResult {
+        case let publishStatus as PNPublishStatus:
+            self = ResultType.publishStatus
         case let subscribeStatus as PNSubscribeStatus:
             self = ResultType.subscribeStatus
+        case let presenceEventResult as PNPresenceEventResult:
+            self = ResultType.presenceEventResult
         case let messageResult as PNMessageResult:
             self = ResultType.messageResult
         case let status as PNStatus:
@@ -54,7 +64,6 @@ enum ResultType {
         }
         let actualResultType = resultType.resultType
         let entity = actualResultType.entity()
-        print("actualResultType: \(actualResultType.debugDescription()), entity: \(entity.debugDescription)")
         return actualResultType.init(result: actualResult, entity: entity, context: context)
     }
     

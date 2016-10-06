@@ -138,4 +138,16 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
             }
         }
     }
+    
+    public func client(_ client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
+        persistentContainer.performBackgroundTask { (context) in
+            // do something
+            let _ = ResultType.createCoreDataObject(result: event, in: context)
+            do {
+                try context.save()
+            } catch {
+                fatalError(error.localizedDescription)
+            }
+        }
+    }
 }

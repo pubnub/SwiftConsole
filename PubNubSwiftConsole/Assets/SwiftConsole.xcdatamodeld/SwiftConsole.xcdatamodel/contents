@@ -3,6 +3,16 @@
     <entity name="MessageResult" representedClassName="MessageResult" parentEntity="Result" syncable="YES">
         <attribute name="data" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
+    <entity name="PresenceEventResult" representedClassName="PresenceEventResult" parentEntity="Result" syncable="YES">
+        <attribute name="occupancy" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="presenceEvent" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="presenceTimetoken" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
+        <attribute name="presenceUUID" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="PublishStatus" representedClassName="PublishStatus" parentEntity="Status" syncable="YES">
+        <attribute name="information" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="timetoken" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
+    </entity>
     <entity name="Result" representedClassName="Result" syncable="YES">
         <attribute name="authKey" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="clientRequest" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
@@ -30,5 +40,7 @@
         <element name="Result" positionX="-54" positionY="-9" width="128" height="165"/>
         <element name="Status" positionX="-36" positionY="9" width="128" height="75"/>
         <element name="SubscribeStatus" positionX="-18" positionY="72" width="128" height="135"/>
+        <element name="PresenceEventResult" positionX="-18" positionY="81" width="128" height="105"/>
+        <element name="PublishStatus" positionX="-9" positionY="90" width="128" height="75"/>
     </elements>
 </model>
