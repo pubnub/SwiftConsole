@@ -48,5 +48,9 @@ class ResultTableViewCell: UITableViewCell {
         textView.text = result.textViewDisplayText
         contentView.setNeedsLayout()
     }
+    
+    static var height: CGFloat {
+        return 100.0
+    }
 
 }

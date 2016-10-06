@@ -54,6 +54,7 @@ enum ResultType {
         }
         let actualResultType = resultType.resultType
         let entity = actualResultType.entity()
+        print("actualResultType: \(actualResultType.debugDescription()), entity: \(entity.debugDescription)")
         return actualResultType.init(result: actualResult, entity: entity, context: context)
     }
     

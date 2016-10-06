@@ -13,6 +13,11 @@ import PubNub
 @objc(SubscribeStatus)
 public class SubscribeStatus: Status {
     
+    @objc
+    public override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
+    }
+    
     public required init(result: PNResult, entity: NSEntityDescription, context: NSManagedObjectContext) {
         super.init(result: result, entity: entity, context: context)
         guard let subscribeStatus = result as? PNSubscribeStatus else {

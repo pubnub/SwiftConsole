@@ -25,7 +25,7 @@ open class ConsoleViewController: ViewController, UITableViewDelegate, UITableVi
     
     public required init(console: SwiftConsole) {
         let bounds = UIScreen.main.bounds
-        self.tableView = UITableView(frame: bounds, style: .plain)
+        self.tableView = UITableView(frame: .zero, style: .plain)
         self.console = console
         super.init()
     }
@@ -46,11 +46,13 @@ open class ConsoleViewController: ViewController, UITableViewDelegate, UITableVi
         tableView.delegate = self
         tableView.dataSource = self
         tableView.forceAutoLayout()
+        tableView.register(ResultTableViewCell.self, forCellReuseIdentifier: ResultTableViewCell.reuseIdentifier())
+        tableView.rowHeight = ResultTableViewCell.height
         let views = [
             "tableView": tableView,
         ]
         let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[tableView]|", options: [], metrics: nil, views: views)
-        let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:[tableView]", options: [], metrics: nil, views: views)
+        let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|[tableView]|", options: [], metrics: nil, views: views)
         NSLayoutConstraint.activate(verticalConstraints)
         NSLayoutConstraint.activate(horizontalConstraints)
         self.view.setNeedsLayout()
