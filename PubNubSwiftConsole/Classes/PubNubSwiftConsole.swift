@@ -24,7 +24,7 @@ public func modalPublishViewController(client: PubNub) -> PublishViewController 
 }
  */
 
-class SwiftConsole: NSObject, PNObjectEventListener {
+public class SwiftConsole: NSObject, PNObjectEventListener {
     var client: PubNub? {
         willSet {
             client?.removeListener(self)
@@ -82,38 +82,10 @@ class SwiftConsole: NSObject, PNObjectEventListener {
     
     // MARK: - PNObjectEventListener
     
-    func client(_ client: PubNub, didReceive status: PNStatus) {
+    public func client(_ client: PubNub, didReceive status: PNStatus) {
         persistentContainer.performBackgroundTask { (context) in
-            var object: NSManagedObject?
-            switch status {
-            case let subscribeStatus as PNSubscribeStatus:
-                let createdStatus = SubscribeStatus(context: context)
-                createdStatus.timetoken = subscribeStatus.data.timetoken.int64Value
-                createdStatus.isError = subscribeStatus.isError
-                createdStatus.stringifiedCategory = subscribeStatus.stringifiedCategory()
-                createdStatus.clientRequest = subscribeStatus.clientRequest?.url?.absoluteString
-                createdStatus.isTLSEnabled = subscribeStatus.isTLSEnabled
-                createdStatus.origin = subscribeStatus.origin
-                createdStatus.stringifiedOperation = subscribeStatus.stringifiedOperation()
-                createdStatus.statusCode = Int16(subscribeStatus.statusCode)
-                object = createdStatus
-            case let basicStatus as PNStatus:
-                let createdStatus = Status(context: context)
-                createdStatus.isError = basicStatus.isError
-                createdStatus.stringifiedCategory = basicStatus.stringifiedCategory()
-                object = createdStatus
-            default:
-                guard let result = status as? PNResult else {
-                    fatalError()
-                }
-                let createdResult = Result(context: context)
-                createdResult.stringifiedOperation = result.stringifiedOperation()
-                createdResult.clientRequest = result.clientRequest?.url?.absoluteString
-                createdResult.isTLSEnabled = result.isTLSEnabled
-                createdResult.origin = result.origin
-                createdResult.statusCode = Int16(result.statusCode)
-                object = createdResult
-            }
+            // do something
+            let _ = ResultType.createCoreDataObject(result: status, in: context)
             do {
                 try context.save()
             } catch {
@@ -122,15 +94,10 @@ class SwiftConsole: NSObject, PNObjectEventListener {
         }
     }
     
-    func client(_ client: PubNub, didReceiveMessage message: PNMessageResult) {
+    public func client(_ client: PubNub, didReceiveMessage message: PNMessageResult) {
         persistentContainer.performBackgroundTask { (context) in
-            let createdMessage = MessageResult(context: context)
-            createdMessage.stringifiedOperation = message.stringifiedOperation()
-            createdMessage.clientRequest = message.clientRequest?.url?.absoluteString
-            createdMessage.isTLSEnabled = message.isTLSEnabled
-            createdMessage.origin = message.origin
-            createdMessage.statusCode = Int16(message.statusCode)
-            createdMessage.data = "\(message.data.message)"
+            // do something
+            let _ = ResultType.createCoreDataObject(result: message, in: context)
             do {
                 try context.save()
             } catch {

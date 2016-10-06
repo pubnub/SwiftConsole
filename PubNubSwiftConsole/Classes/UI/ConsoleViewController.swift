@@ -8,15 +8,30 @@
 
 import UIKit
 
-class ConsoleViewController: UIViewController {
+open class ConsoleViewController: ViewController {
+    
+    let console: SwiftConsole
+    
+    public required init(console: SwiftConsole) {
+        self.console = console
+        super.init()
+    }
+    
+    public required init() {
+        fatalError("init() has not been implemented")
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
-    override func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
     }
 
-    override func didReceiveMemoryWarning() {
+    override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
