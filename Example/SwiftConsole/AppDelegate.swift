@@ -30,6 +30,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         client.subscribeToChannels(["a"], withPresence: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { 
+            self.client.subscribeToChannels(["d"], withPresence: true)
+        }
         return true
     }
 

@@ -117,7 +117,6 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     
     public func client(_ client: PubNub, didReceive status: PNStatus) {
         persistentContainer.performBackgroundTask { (context) in
-            // do something
             let _ = ResultType.createCoreDataObject(result: status, in: context)
             do {
                 try context.save()
@@ -129,7 +128,6 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     
     public func client(_ client: PubNub, didReceiveMessage message: PNMessageResult) {
         persistentContainer.performBackgroundTask { (context) in
-            // do something
             let _ = ResultType.createCoreDataObject(result: message, in: context)
             do {
                 try context.save()
@@ -141,7 +139,6 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     
     public func client(_ client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
         persistentContainer.performBackgroundTask { (context) in
-            // do something
             let _ = ResultType.createCoreDataObject(result: event, in: context)
             do {
                 try context.save()

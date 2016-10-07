@@ -83,18 +83,18 @@ open class NavigationController: UINavigationController, UINavigationControllerD
         //pushPublishViewController(currentClient)
     }
     
-    /*
     open func pushPublishViewController(_ client: PubNub) {
+        /*
         let publishViewController = PublishViewController(client: client)
         if let viewController = topViewController as? PublishViewControllerDelegate {
             publishViewController.publishDelegate = viewController
         }
         self.pushViewController(publishViewController, animated: true)
-    }
  */
+    }
     
     // MARK: - Properties
-        
+    
     open var client: PubNub? {
         guard let topViewController = topViewController as? ViewController else {
             return nil

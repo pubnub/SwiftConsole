@@ -10,7 +10,7 @@ import Foundation
 import PubNub
 
 @objc(PNCViewController)
-open class ViewController: UIViewController, PNObjectEventListener {
+public class ViewController: UIViewController {
     
     public required init() {
         super.init(nibName: nil, bundle: nil)
@@ -63,3 +63,5 @@ open class ViewController: UIViewController, PNObjectEventListener {
         return false
     }
 }
+
+extension ViewController: PNObjectEventListener {}
