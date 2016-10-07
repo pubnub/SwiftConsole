@@ -28,6 +28,15 @@ enum StaticCellType: String {
             return client.channelGroupsString()
         }
     }
+    
+    var isTappable: Bool {
+        switch self {
+        case .channels, .channelGroups:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 protocol StaticItemSection {
@@ -257,6 +266,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
     
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard indexPath.section == 0 else {
+            return
+        }
+        guard configurationSection.type(for: indexPath).isTappable else {
             return
         }
         let alertController = UIAlertController(title: "Change channel", message: "Enter new channels, or remove some, comma separated", preferredStyle: .alert)
