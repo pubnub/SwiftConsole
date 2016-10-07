@@ -8,8 +8,42 @@
 
 import UIKit
 import CoreData
+import PubNub
 
 open class ConsoleViewController: ViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
+    
+    enum StaticCellType: String {
+        case pubKey = "Publish Key"
+        case subKey = "Subscribe Key"
+        case channels = "Channels"
+        case channelGroups = "Channel Groups"
+        
+        func contents(client: PubNub) -> String? {
+            switch self {
+            case .pubKey:
+                return client.currentConfiguration().publishKey
+            case .subKey:
+                return client.currentConfiguration().subscribeKey
+            case .channels:
+                return client.channelsString()
+            case .channelGroups:
+                return client.channelGroupsString()
+            }
+        }
+        
+        var indexPath: IndexPath {
+            switch self {
+            case .pubKey:
+                return IndexPath(item: 0, section: 0)
+            case .subKey:
+                return IndexPath(item: 1, section: 0)
+            case .channels:
+                return IndexPath(item: 2, section: 0)
+            case .channelGroups:
+                return IndexPath(item: 3, section: 0)
+            }
+        }
+    }
     
     let console: SwiftConsole
     let collectionView: UICollectionView
@@ -26,10 +60,10 @@ open class ConsoleViewController: ViewController, UICollectionViewDataSource, UI
     public required init(console: SwiftConsole) {
         let bounds = UIScreen.main.bounds
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = ResultCollectionViewCell.size
         self.collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         self.console = console
         super.init()
+        console.client.addListener(self)
     }
     
     public required init() {
@@ -67,6 +101,8 @@ open class ConsoleViewController: ViewController, UICollectionViewDataSource, UI
         } catch {
             fatalError(error.localizedDescription)
         }
+        updateConfigurationCells(client: console.client)
+        updateSubscriablesCells(client: console.client)
     }
 
     override open func didReceiveMemoryWarning() {
@@ -86,12 +122,40 @@ open class ConsoleViewController: ViewController, UICollectionViewDataSource, UI
         
     }
     
+    // MARK: - UI Updates
+    
+    func updateConfigurationCells(client: PubNub) {
+        collectionView.performBatchUpdates({
+            guard let pubKeyCell = self.collectionView.cellForItem(at: StaticCellType.pubKey.indexPath) as? TitleContentsCollectionViewCell else {
+                fatalError()
+            }
+            pubKeyCell.update(title: StaticCellType.pubKey.rawValue, contents: StaticCellType.pubKey.contents(client: client))
+            guard let subKeyCell = self.collectionView.cellForItem(at: StaticCellType.subKey.indexPath) as? TitleContentsCollectionViewCell else {
+                fatalError()
+            }
+            subKeyCell.update(title: StaticCellType.subKey.rawValue, contents: StaticCellType.subKey.contents(client: client))
+        })
+    }
+    
+    func updateSubscriablesCells(client: PubNub) {
+        collectionView.performBatchUpdates({
+            guard let channelsCell = self.collectionView.cellForItem(at: StaticCellType.channels.indexPath) as? TitleContentsCollectionViewCell else {
+                fatalError()
+            }
+            channelsCell.update(title: StaticCellType.channels.rawValue, contents: StaticCellType.channels.contents(client: client))
+            guard let channelGroupsCell = self.collectionView.cellForItem(at: StaticCellType.channelGroups.indexPath) as? TitleContentsCollectionViewCell else {
+                fatalError()
+            }
+            channelGroupsCell.update(title: StaticCellType.channelGroups.rawValue, contents: StaticCellType.channelGroups.contents(client: client))
+        })
+    }
+    
     // MARK: - UICollectionViewDataSource
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return 1
+            return 4
         case 1:
             guard let onlySectionInfo = fetchedResultsController.sections?.first else {
                 fatalError("No sections in fetchedResultsController")
@@ -117,6 +181,18 @@ open class ConsoleViewController: ViewController, UICollectionViewDataSource, UI
         case 0:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier(), for: indexPath) as? TitleContentsCollectionViewCell else {
                 fatalError("Unexpected cell type")
+            }
+            switch indexPath.item {
+            case 0:
+                cell.update(title: StaticCellType.pubKey.rawValue, contents: StaticCellType.pubKey.contents(client: self.console.client))
+            case 1:
+                cell.update(title: StaticCellType.subKey.rawValue, contents: StaticCellType.subKey.contents(client: self.console.client))
+            case 2:
+                cell.update(title: StaticCellType.channels.rawValue, contents: StaticCellType.channels.contents(client: self.console.client))
+            case 3:
+                cell.update(title: StaticCellType.channelGroups.rawValue, contents: StaticCellType.channelGroups.contents(client: self.console.client))
+            default:
+                fatalError("Not expecting anything but 4")
             }
             cell.update(title: "Channels", contents: "a, c")
             return cell
@@ -151,9 +227,25 @@ open class ConsoleViewController: ViewController, UICollectionViewDataSource, UI
         }
     }
     
+    // MARK: - UICollectionViewDelegateFlowLayout
+    
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        switch indexPath.section {
+        case 0:
+            return TitleContentsCollectionViewCell.size(collectionViewSize: collectionView.frame.size)
+        case 1:
+            return ResultCollectionViewCell.size
+        default:
+            fatalError("Unexpected section number encountered")
+        }
+    }
+    
     // MARK: - UICollectionViewDelegate
     
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.section == 0 else {
+            return
+        }
         let alertController = UIAlertController(title: "Change channel", message: "Enter new channels, or remove some, comma separated", preferredStyle: .alert)
         alertController.addTextField { (textField) in
             textField.placeholder = "Enter channels ..."
@@ -212,6 +304,15 @@ open class ConsoleViewController: ViewController, UICollectionViewDataSource, UI
                 self.collectionView.moveItem(at: adjustedIndexPath!, to: adjustedNewIndexPath!)
             }
             })
+    }
+    
+    // MARK: - PNObjectEventListener
+    
+    func client(_ client: PubNub, didReceive status: PNStatus) {
+        guard (status.operation == .subscribeOperation) || (status.operation == .unsubscribeOperation) else {
+            return
+        }
+        updateSubscriablesCells(client: client)
     }
 
 }

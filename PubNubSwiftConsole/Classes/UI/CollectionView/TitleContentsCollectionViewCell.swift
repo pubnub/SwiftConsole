@@ -40,10 +40,14 @@ class TitleContentsCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(title: String, contents: String) {
+    func update(title: String, contents: String?) {
         titleLabel.text = title
         contentsLabel.text = contents
         contentView.setNeedsLayout()
+    }
+    
+    static func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 75.0, height: 75.0)
     }
     
 }
