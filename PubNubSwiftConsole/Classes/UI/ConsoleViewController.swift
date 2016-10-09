@@ -10,6 +10,48 @@ import UIKit
 import CoreData
 import PubNub
 
+protocol Thing {
+    
+}
+
+protocol ThingSection {
+    var items: [Thing] {get}
+    var count: Int {get}
+    var section: Int {get}
+    func item(for thing: Thing) -> Int
+    func thing(for item: Int) -> Thing
+    func indexPath(for thing: Thing) -> IndexPath
+    func indexPath(for item: Int) -> IndexPath
+    subscript(indexPath: IndexPath) -> Thing {get}
+    subscript(item: Int) -> Thing {get}
+}
+
+extension ThingSection {
+    var count: Int {
+        return items.count
+    }
+    
+    func thing(for item: Int) -> Thing {
+        return items[item]
+    }
+    
+    func indexPath(for thing: Thing) -> IndexPath {
+        let foundItem = item(for: thing)
+        return indexPath(for: foundItem)
+    }
+    
+    func indexPath(for item: Int) -> IndexPath {
+        return IndexPath(item: item, section: section)
+    }
+    subscript(indexPath: IndexPath) -> Thing {
+        return self[indexPath.item]
+    }
+    
+    subscript(item: Int) -> Thing {
+        return thing(for: item)
+    }
+}
+
 enum StaticCellType: String {
     case pubKey = "Publish Key"
     case subKey = "Subscribe Key"
