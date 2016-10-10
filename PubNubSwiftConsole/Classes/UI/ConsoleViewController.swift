@@ -11,10 +11,21 @@ import CoreData
 import PubNub
 
 protocol Thing {
-    
+    var isTappable: Bool { get }
+}
+
+extension Thing {
+    var isTappable: Bool {
+        return false
+    }
+}
+
+protocol TitleContentsThing: Thing {
+    var title: String { get }
 }
 
 protocol ThingSection {
+    init(items: [Thing])
     var items: [Thing] {get}
     var count: Int {get}
     var section: Int {get}
@@ -24,6 +35,8 @@ protocol ThingSection {
     func indexPath(for item: Int) -> IndexPath
     subscript(indexPath: IndexPath) -> Thing {get}
     subscript(item: Int) -> Thing {get}
+    func isTappable(at indexPath: IndexPath) -> Bool
+    func isTappable(at item: Int) -> Bool
 }
 
 extension ThingSection {
@@ -50,9 +63,17 @@ extension ThingSection {
     subscript(item: Int) -> Thing {
         return thing(for: item)
     }
+    
+    func isTappable(at indexPath: IndexPath) -> Bool {
+        return self[indexPath].isTappable
+    }
+    
+    func isTappable(at item: Int) -> Bool {
+        return self[item].isTappable
+    }
 }
 
-enum StaticCellType: String {
+enum StaticCellType: String, Thing {
     case pubKey = "Publish Key"
     case subKey = "Subscribe Key"
     case channels = "Channels"
@@ -79,6 +100,83 @@ enum StaticCellType: String {
             return false
         }
     }
+}
+
+enum ClientCellThing: TitleContentsThing, Equatable {
+    case pubKey(client: PubNub)
+    case subKey(client: PubNub)
+    case channels(client: PubNub)
+    case channelGroups(client: PubNub)
+    
+    var title: String {
+        switch self {
+        case let .pubKey(client):
+            return "Publish Key"
+        case let .subKey(client):
+            return "Subscribe Key"
+        case let .channels(client):
+            return "Channels"
+        case let .channelGroups(client):
+            return "Channel Groups"
+        }
+    }
+    
+    func generateContents(client: PubNub) -> String? {
+        switch self {
+        case .pubKey:
+            return client.currentConfiguration().publishKey
+        case .subKey:
+            return client.currentConfiguration().subscribeKey
+        case .channels:
+            return client.channelsString()
+        case .channelGroups:
+            return client.channelGroupsString()
+        }
+    }
+    
+    var isTappable: Bool {
+        switch self {
+        case .channels, .channelGroups:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    static func ==(lhs: ClientCellThing, rhs: ClientCellThing) -> Bool {
+        switch (lhs, rhs) {
+        case let (.pubKey(clientA), .pubKey(clientB)), let (.subKey(clientA), .subKey(clientB)), let (.channels(clientA), .channels(clientB)), let (.channelGroups(clientA), .channelGroups(clientB)):
+            return clientA == clientB
+        default:
+            return false
+        }
+        /*
+        switch (lhs, rhs) {
+        case let (lhs(clientA), rhs(clientB)):
+            return clientA && clientB
+            
+        default:
+            return false
+        }
+ */
+    }
+}
+
+protocol ClientThingSection: ThingSection {
+    init(items: [ClientCellThing])
+    func item(for type: StaticCellType) -> Int?
+    /*
+    func title(for type: StaticCellType) -> String
+    func title(for indexPath: IndexPath) -> String
+    func contents(for indexPath: IndexPath, with client: PubNub) -> String?
+    func contents(for type: StaticCellType, with client: PubNub) -> String?
+    func indexPath(for type: StaticCellType) -> IndexPath?
+    func type(for indexPath: IndexPath) -> StaticCellType
+ */
+}
+
+extension ClientThingSection {
+    
 }
 
 protocol StaticItemSection {

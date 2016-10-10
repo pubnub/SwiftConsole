@@ -68,3 +68,5 @@ enum ResultType {
     }
     
 }
+
+extension Result: Thing { }
