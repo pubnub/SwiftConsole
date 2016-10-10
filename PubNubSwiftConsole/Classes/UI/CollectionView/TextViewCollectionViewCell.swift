@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TextViewCollectionViewCell: UICollectionViewCell {
+class TextViewCollectionViewCell: ThingCollectionViewCell {
     
     let textView: UITextView
     
@@ -38,8 +38,11 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         // Initialization code
     }
     
-    func update(text: String) {
-        textView.text = text
+    override func update(thing: Thing) {
+        guard let text = thing as? TextThing else {
+            fatalError()
+        }
+        textView.text = text.text
         contentView.setNeedsLayout()
     }
     
@@ -49,6 +52,10 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         contentView.setNeedsLayout()
     }
  */
+    override class func size(collectionViewSize: CGSize) -> CGSize {
+        let bounds = UIScreen.main.bounds
+        return CGSize(width: bounds.width, height: 100.0)
+    }
     
     static var size: CGSize {
         let bounds = UIScreen.main.bounds

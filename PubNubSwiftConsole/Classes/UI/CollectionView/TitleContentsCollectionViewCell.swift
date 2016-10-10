@@ -8,7 +8,17 @@
 
 import UIKit
 
-class TitleContentsCollectionViewCell: UICollectionViewCell {
+class ThingCollectionViewCell: UICollectionViewCell {
+    func update(thing: Thing) {
+        
+    }
+    
+    class func size(collectionViewSize: CGSize) -> CGSize {
+        return CGSize(width: 100.0, height: 100.0)
+    }
+}
+
+class TitleContentsCollectionViewCell: ThingCollectionViewCell {
     
     private let titleLabel: UILabel
     private let contentsLabel: UILabel
@@ -40,13 +50,16 @@ class TitleContentsCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(title: String, contents: String?) {
-        titleLabel.text = title
-        contentsLabel.text = contents
+    override func update(thing: Thing) {
+        guard let titleContents = thing as? TitleContentsThing else {
+            fatalError()
+        }
+        titleLabel.text = titleContents.title
+        contentsLabel.text = titleContents.contents
         contentView.setNeedsLayout()
     }
     
-    static func size(collectionViewSize: CGSize) -> CGSize {
+    override class func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 75.0, height: 75.0)
     }
     

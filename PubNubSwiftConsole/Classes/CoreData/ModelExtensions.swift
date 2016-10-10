@@ -68,3 +68,17 @@ enum ResultType {
     }
     
 }
+
+extension Result: TextThing {
+    var text: String {
+        return textViewDisplayText
+    }
+    
+    var isTappable: Bool {
+        return false
+    }
+    
+    var isUpdateable: Bool {
+        return false
+    }
+}

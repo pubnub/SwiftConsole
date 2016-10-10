@@ -11,19 +11,29 @@ import CoreData
 import PubNub
 
 protocol Thing {
-    
+    var isTappable: Bool {get}
+    var isUpdateable: Bool { get }
+}
+
+extension Thing {
+    var isUpdateable: Bool {
+        return false
+    }
 }
 
 protocol ThingSection {
-    var items: [Thing] {get}
+    var items: [Thing] {get set}
     var count: Int {get}
     var section: Int {get}
-    func item(for thing: Thing) -> Int
+    //func item(for thing: Thing) -> Int
     func thing(for item: Int) -> Thing
-    func indexPath(for thing: Thing) -> IndexPath
+    //func indexPath(for thing: Thing) -> IndexPath
     func indexPath(for item: Int) -> IndexPath
     subscript(indexPath: IndexPath) -> Thing {get}
     subscript(item: Int) -> Thing {get}
+    func isTappable(at indexPath: IndexPath) -> Bool
+    func isTappable(at item: Int) -> Bool
+    mutating func update(item: Int, with thing: Thing)
 }
 
 extension ThingSection {
@@ -35,10 +45,12 @@ extension ThingSection {
         return items[item]
     }
     
+    /*
     func indexPath(for thing: Thing) -> IndexPath {
         let foundItem = item(for: thing)
         return indexPath(for: foundItem)
     }
+ */
     
     func indexPath(for item: Int) -> IndexPath {
         return IndexPath(item: item, section: section)
@@ -50,6 +62,148 @@ extension ThingSection {
     subscript(item: Int) -> Thing {
         return thing(for: item)
     }
+    
+    func isTappable(at indexPath: IndexPath) -> Bool {
+        return self[indexPath].isTappable
+    }
+    
+    func isTappable(at item: Int) -> Bool {
+        return self[item].isTappable
+    }
+    
+    mutating func update(item: Int, with thing: Thing) {
+        guard items[item].isUpdateable else {
+            return
+        }
+        items[item] = thing
+    }
+    
+}
+
+class CoreDataThingSection: ThingSection, NSFetchedResultsControllerDelegate {
+    internal var items: [Thing] = [Thing]()
+    let section: Int
+    init(container: NSPersistentContainer, section: Int) {
+        self.section = section
+        self.container = container
+    }
+    
+    var count: Int {
+        guard let onlySectionInfo = fetchedResultsController.sections?.first else {
+            fatalError("No sections in fetchedResultsController")
+        }
+        return onlySectionInfo.numberOfObjects
+    }
+
+    let container: NSPersistentContainer
+    lazy var fetchedResultsController: NSFetchedResultsController<Result> = {
+        let allResultsFetchRequest: NSFetchRequest<Result> = Result.fetchRequest()
+        let creationDateSortDescriptor = NSSortDescriptor(key: #keyPath(Result.creationDate), ascending: false)
+        allResultsFetchRequest.sortDescriptors = [creationDateSortDescriptor]
+        let creatingFetchedResultsController = NSFetchedResultsController(fetchRequest: allResultsFetchRequest, managedObjectContext: self.container.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        creatingFetchedResultsController.delegate = self
+        return creatingFetchedResultsController
+    }()
+    
+    // MARK: - NSFetchedResultsControllerDelegate
+}
+
+/*
+protocol CoreDataThingSection: ThingSection, NSFetchedResultsControllerDelegate {
+    var container: NSPersistentContainer { get }
+    var fetchRequest: NSFetchRequest<NSFetchRequestResult> { get set }
+    //<ResultType : NSFetchRequestResult>
+    var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> { get }
+    
+}
+
+extension CoreDataThingSection {
+    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> {
+        let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: container.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        controller.delegate = self
+    }
+}
+ */
+
+protocol TitleContentsThing: Thing {
+    var title: String { get }
+    var contents: String? { get }
+}
+
+protocol TextThing: Thing {
+    var text: String {get}
+}
+
+protocol DataSource {
+    var sections: [ThingSection] { get set }
+    subscript(section: Int) -> ThingSection { get }
+    subscript(indexPath: IndexPath) -> Thing { get set }
+    mutating func update(indexPath: IndexPath, with thing: Thing)
+}
+
+extension DataSource {
+    subscript(section: Int) -> ThingSection {
+        return sections[section]
+    }
+    
+    subscript(indexPath: IndexPath) -> Thing {
+        get {
+            return self[indexPath.section][indexPath.item]
+        }
+    }
+    
+    mutating func update(indexPath: IndexPath, with thing: Thing) {
+        guard self[indexPath].isUpdateable else {
+            return
+        }
+        var updatingSection = self[indexPath.section]
+        updatingSection.update(item: indexPath.item, with: thing)
+        sections[indexPath.section] =  updatingSection
+    }
+}
+
+enum ConfigurationThing: TitleContentsThing {
+    case pubKey(client: PubNub), subKey(client: PubNub), channels(client: PubNub), channelGroups(client: PubNub)
+    
+    var title: String {
+        switch self {
+        case .pubKey:
+            return "Publish Key"
+        case .subKey:
+            return "Subscribe Key"
+        case .channels:
+            return "Channels"
+        case .channelGroups:
+            return "Channel Groups"
+        }
+    }
+    
+    var contents: String? {
+        switch self {
+        case let .pubKey(client):
+            return client.currentConfiguration().publishKey
+        case let .subKey(client):
+            return client.currentConfiguration().subscribeKey
+        case let .channels(client):
+            return client.channelsString()
+        case let .channelGroups(client):
+            return client.channelGroupsString()
+        }
+    }
+    
+    var isTappable: Bool {
+        switch self {
+        case .channels, .channelGroups:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    var isUpdateable: Bool {
+        return true
+    }
+    
 }
 
 enum StaticCellType: String {
@@ -149,6 +303,18 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
     }
     let configurationSection = ConfigurationSection()
     
+    struct TopSection: ThingSection {
+        var items: [Thing]
+        init(client: PubNub) {
+            self.items = [ConfigurationThing.pubKey(client: client), ConfigurationThing.subKey(client: client), ConfigurationThing.channels(client: client), ConfigurationThing.channelGroups(client: client)]
+        }
+        var section: Int {
+            return 0
+        }
+    }
+    
+    
+    
     let console: SwiftConsole
     let collectionView: UICollectionView
     
@@ -187,7 +353,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
         collectionView.forceAutoLayout()
         collectionView.backgroundColor = UIColor.red
         collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier())
-        collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: ResultCollectionViewCell.reuseIdentifier())
+        collectionView.register(TextViewCollectionViewCell.self, forCellWithReuseIdentifier: TextViewCollectionViewCell.reuseIdentifier())
         let views = [
             "collectionView": collectionView,
         ]
@@ -242,7 +408,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
             let contents = configurationSection.contents(for: indexPath, with: console.client)
             titleContentsCell.update(title: title, contents: contents)
         case 1:
-            guard let resultCell = cell as? ResultCollectionViewCell else {
+            guard let resultCell = cell as? TextViewCollectionViewCell else {
                 fatalError()
             }
             var adjustedIndexPath = indexPath

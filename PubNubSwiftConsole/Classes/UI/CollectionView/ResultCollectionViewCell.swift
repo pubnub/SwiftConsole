@@ -8,6 +8,7 @@
 
 import UIKit
 
+/*
 class ResultCollectionViewCell: TextViewCollectionViewCell {
     
     func update(result: Result) {
@@ -15,3 +16,4 @@ class ResultCollectionViewCell: TextViewCollectionViewCell {
     }
 
 }
+ */
