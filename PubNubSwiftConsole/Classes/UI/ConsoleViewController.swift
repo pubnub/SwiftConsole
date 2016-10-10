@@ -148,6 +148,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
         let items: [StaticCellType] = [.pubKey, .subKey, .channels, .channelGroups]
     }
     let configurationSection = ConfigurationSection()
+    let coreDataSection: Int = 1
     
     let console: SwiftConsole
     let collectionView: UICollectionView
@@ -247,7 +248,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
             }
             var adjustedIndexPath = indexPath
             // need to adjust the indexPath section to match the fetched results controller
-            adjustedIndexPath.section -= 1
+            adjustedIndexPath.section = 0
             let result = fetchedResultsController.object(at: adjustedIndexPath)
             // Populate cell from the NSManagedObject instance
             resultCell.update(result: result)
@@ -262,7 +263,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
         switch section {
         case 0:
             return configurationSection.count
-        case 1:
+        case coreDataSection:
             guard let onlySectionInfo = fetchedResultsController.sections?.first else {
                 fatalError("No sections in fetchedResultsController")
             }
@@ -281,7 +282,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
         switch indexPath.section {
         case 0:
             reuseIdentifier = TitleContentsCollectionViewCell.reuseIdentifier()
-        case 1:
+        case coreDataSection:
             reuseIdentifier = ResultCollectionViewCell.reuseIdentifier()
         default:
             fatalError("Can't handle section 3")
@@ -297,7 +298,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
         switch indexPath.section {
         case 0:
             return TitleContentsCollectionViewCell.size(collectionViewSize: collectionView.frame.size)
-        case 1:
+        case coreDataSection:
             return ResultCollectionViewCell.size
         default:
             fatalError("Unexpected section number encountered")
@@ -335,13 +336,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
         collectionView.performBatchUpdates({ 
             switch type {
             case .insert:
-                var adjustedSectionIndex = sectionIndex
-                adjustedSectionIndex += 1
-                self.collectionView.insertSections(IndexSet(integer: adjustedSectionIndex))
+                self.collectionView.insertSections(IndexSet(integer: self.coreDataSection))
             case .delete:
-                var adjustedSectionIndex = sectionIndex
-                adjustedSectionIndex += 1
-                self.collectionView.deleteSections(IndexSet(integer: adjustedSectionIndex))
+                self.collectionView.deleteSections(IndexSet(integer: self.coreDataSection))
             case .move:
                 break
             case .update:
@@ -353,9 +350,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDataSource, 
     
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         var adjustedIndexPath = indexPath
-        adjustedIndexPath?.section += 1
+        adjustedIndexPath?.section = coreDataSection
         var adjustedNewIndexPath = newIndexPath
-        adjustedNewIndexPath?.section += 1
+        adjustedNewIndexPath?.section = coreDataSection
         collectionView.performBatchUpdates({ 
             switch type {
             case .insert:
