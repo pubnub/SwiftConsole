@@ -69,4 +69,4 @@ enum ResultType {
     
 }
 
-extension Result: Thing { }
+//extension Result: Thing { }

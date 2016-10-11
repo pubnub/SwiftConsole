@@ -19,6 +19,8 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(textView)
         textView.isEditable = false
         textView.isSelectable = false
+        textView.isScrollEnabled = false
+        textView.isUserInteractionEnabled = false
         let views = [
             "textView": textView,
             ]
