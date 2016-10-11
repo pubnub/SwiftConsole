@@ -10,181 +10,102 @@ import UIKit
 import CoreData
 import PubNub
 
-final class ConsoleCollectionView: UICollectionView, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
+enum StaticCellType: String {
+    case pubKey = "Publish Key"
+    case subKey = "Subscribe Key"
+    case channels = "Channels"
+    case channelGroups = "Channel Groups"
     
-    weak var consoleDataSource: ConsoleDataSource?
-    weak var consoleDelegate: ConsoleDelegate?
-    
-    override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
-        super.init(frame: frame, collectionViewLayout: layout)
-        register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: ResultCollectionViewCell.reuseIdentifier())
-        dataSource = self
-        delegate = self
+    func contents(client: PubNub) -> String? {
+        switch self {
+        case .pubKey:
+            return client.currentConfiguration().publishKey
+        case .subKey:
+            return client.currentConfiguration().subscribeKey
+        case .channels:
+            return client.channelsString()
+        case .channelGroups:
+            return client.channelGroupsString()
+        }
     }
     
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    weak var viewContext: NSManagedObjectContext?
-    
-    lazy var fetchedResultsController: NSFetchedResultsController<Result> = {
-        guard let existingViewContext = self.viewContext else {
-            fatalError()
-        }
-        let allResultsFetchRequest: NSFetchRequest<Result> = Result.fetchRequest()
-        let creationDateSortDescriptor = NSSortDescriptor(key: #keyPath(Result.creationDate), ascending: false)
-        allResultsFetchRequest.sortDescriptors = [creationDateSortDescriptor]
-        let creatingFetchedResultsController = NSFetchedResultsController(fetchRequest: allResultsFetchRequest, managedObjectContext: existingViewContext, sectionNameKeyPath: nil, cacheName: nil)
-        creatingFetchedResultsController.delegate = self
-        return creatingFetchedResultsController
-    }()
-    
-    func configureCell(cell: UICollectionViewCell, indexPath: IndexPath) {
-        print(#function)
-        guard let currentDataSource = consoleDataSource else {
-            return
-        }
-        switch indexPath.section {
-        case let coreDataSection as Int where (currentDataSource.coreDataSection != nil) && (indexPath.section == currentDataSource.coreDataSection!):
-            guard let resultCell = cell as? ResultCollectionViewCell else {
-                fatalError()
-            }
-            var adjustedIndexPath = indexPath
-            // need to adjust the indexPath section to match the fetched results controller
-            adjustedIndexPath.section = 0
-            let result = fetchedResultsController.object(at: adjustedIndexPath)
-            // Populate cell from the NSManagedObject instance
-            resultCell.update(result: result)
+    var isTappable: Bool {
+        switch self {
+        case .channels, .channelGroups:
+            return true
         default:
-            currentDataSource.consoleView(self, configure: cell, forItemAt: indexPath)
+            return false
         }
     }
-    
-    func performFetch() {
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            fatalError(error.localizedDescription)
-        }
+}
+
+protocol StaticItemSection {
+    var items: [StaticCellType] {get}
+    var count: Int {get}
+    func item(for type: StaticCellType) -> Int?
+    var section: Int {get}
+    func title(for type: StaticCellType) -> String
+    func title(for indexPath: IndexPath) -> String
+    func contents(for indexPath: IndexPath, with client: PubNub) -> String?
+    func contents(for type: StaticCellType, with client: PubNub) -> String?
+    func indexPath(for type: StaticCellType) -> IndexPath?
+    func type(for indexPath: IndexPath) -> StaticCellType
+}
+
+extension StaticItemSection {
+    var count: Int {
+        return items.count
+    }
+    func item(for type: StaticCellType) -> Int? {
+        return items.index(of: type)
     }
     
-    /*
-    override func reloadData() {
-        super.reloadData() // is this necessary?
-    }
- */
-    
-    // MARK: - UICollectionViewDataSource
-    
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let currentDataSource = consoleDataSource else {
-            return 0
-        }
-        switch section {
-        case let coreDataSection as Int where (currentDataSource.coreDataSection != nil) && (section == currentDataSource.coreDataSection!):
-            guard let onlySectionInfo = fetchedResultsController.sections?.first else {
-                fatalError("No sections in fetchedResultsController")
-            }
-            return onlySectionInfo.numberOfObjects
-        default:
-            return currentDataSource.consoleView(self, numberOfItemsInConfigurationSection: section)
-        }
+    func title(for type: StaticCellType) -> String {
+        return type.rawValue
     }
     
-    public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        guard let currentDataSource = consoleDataSource else {
-            return 0
-        }
-        var totalSections = currentDataSource.numberOfSectionsInConfigurationSection(in: self)
-        if let _ = currentDataSource.coreDataSection {
-            return totalSections + 1
-        } else {
-            return totalSections
-        }
+    func contents(for type: StaticCellType, with client: PubNub) -> String? {
+        return type.contents(client: client)
     }
     
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let currentDataSource = consoleDataSource else {
-            fatalError()
+    func type(for indexPath: IndexPath) -> StaticCellType {
+        guard indexPath.section == section else {
+            fatalError("Wrong section")
         }
-        var reuseIdentifier: String
-        switch indexPath.section {
-        case let coreDataSection as Int where (currentDataSource.coreDataSection != nil) && (indexPath.section == currentDataSource.coreDataSection!):
-            reuseIdentifier = ResultCollectionViewCell.reuseIdentifier()
-        default:
-            reuseIdentifier = currentDataSource.consoleView(self, reuseIdentifierforItemAt: indexPath)
+        guard indexPath.item >= 0 else {
+            fatalError("Must be positive or 0 index")
         }
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
-        configureCell(cell: cell, indexPath: indexPath)
-        return cell
+        guard indexPath.item < count else {
+            fatalError("Can't index past array")
+        }
+        return items[indexPath.row]
     }
     
-    // MARK: - UICollectionViewDelegate
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let currentDataSource = consoleDataSource else {
-            fatalError()
-        }
-        switch indexPath.section {
-        case let coreDataSection as Int where (currentDataSource.coreDataSection != nil) && (indexPath.section == currentDataSource.coreDataSection!):
-            var adjustedIndexPath = indexPath
-            adjustedIndexPath.section = 0
-            let selectedResult = fetchedResultsController.object(at: adjustedIndexPath)
-            consoleDelegate?.consoleView(self, didSelect: selectedResult)
-        default:
-            consoleDelegate?.consoleView(self, didSelectItemAt: indexPath)
-        }
+    func title(for indexPath: IndexPath) -> String {
+        return type(for: indexPath).rawValue
     }
     
-    // MARK: - NSFetchedResultsControllerDelegate
-    
-    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-        guard let currentDataSource = consoleDataSource, let coreDataSection = currentDataSource.coreDataSection else {
-            return
-        }
-        performBatchUpdates({
-            switch type {
-            case .insert:
-                self.insertSections(IndexSet(integer: coreDataSection))
-            case .delete:
-                self.deleteSections(IndexSet(integer: coreDataSection))
-            case .move:
-                break
-            case .update:
-                break
-            }
-        })
-        
+    func contents(for indexPath: IndexPath, with client: PubNub) -> String? {
+        return type(for: indexPath).contents(client: client)
     }
     
-    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        guard let currentDataSource = consoleDataSource, let coreDataSection = currentDataSource.coreDataSection else {
-            return
+    func indexPath(for type: StaticCellType) -> IndexPath? {
+        guard let item = item(for: type) else {
+            return nil
         }
-        var adjustedIndexPath = indexPath
-        var adjustedNewIndexPath = newIndexPath
-        adjustedIndexPath?.section = coreDataSection
-        adjustedNewIndexPath?.section = coreDataSection
-        performBatchUpdates({
-            switch type {
-            case .insert:
-                self.insertItems(at: [adjustedNewIndexPath!])
-            case .delete:
-                self.deleteItems(at: [adjustedIndexPath!])
-            case .update:
-                guard let cell = self.cellForItem(at: adjustedIndexPath!) else {
-                    fatalError()
-                }
-                self.configureCell(cell: cell, indexPath: adjustedIndexPath!)
-            case .move:
-                self.moveItem(at: adjustedIndexPath!, to: adjustedNewIndexPath!)
-            }
-        })
+        return IndexPath(item: item, section: section)
     }
 }
 
 public class ConsoleViewController: ViewController, ConsoleLayoutDelegate, ConsoleDelegate, ConsoleDataSource, NSFetchedResultsControllerDelegate {
+    
+    struct ConfigurationSection: StaticItemSection {
+        var section: Int {
+            return 0
+        }
+        let items: [StaticCellType] = [.pubKey, .subKey, .channels, .channelGroups]
+    }
+    let configurationSection = ConfigurationSection()
     
     let console: SwiftConsole
     let collectionView: ConsoleCollectionView
@@ -216,8 +137,7 @@ public class ConsoleViewController: ViewController, ConsoleLayoutDelegate, Conso
         collectionView.forceAutoLayout()
         collectionView.backgroundColor = UIColor.red
         collectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier())
-        //collectionView.register(TitleContentsCollectionViewCell.self, forSupplementaryViewOfKind: "Test", withReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier())
-        //collectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: ResultCollectionViewCell.reuseIdentifier())
+
         let views = [
             "collectionView": collectionView,
         ]
@@ -227,10 +147,9 @@ public class ConsoleViewController: ViewController, ConsoleLayoutDelegate, Conso
         NSLayoutConstraint.activate(horizontalConstraints)
         self.view.setNeedsLayout()
         
-        collectionView.performFetch()
+        
+        collectionView.reloadData()
         console.client.addListener(self)
-        updateConfigurationCells(client: console.client)
-        updateSubscribablesCells(client: console.client)
     }
 
     override open func didReceiveMemoryWarning() {
@@ -240,23 +159,18 @@ public class ConsoleViewController: ViewController, ConsoleLayoutDelegate, Conso
     
     // MARK: - UI Updates
     
-    func updateConfigurationCells(client: PubNub) {
-    
-    }
-    
     func updateSubscribablesCells(client: PubNub) {
-        
+        let channelsIndexPath = configurationSection.indexPath(for: .channels)
+        let channelGroupsIndexPath = configurationSection.indexPath(for: .channelGroups)
+        collectionView.performBatchUpdates({
+            self.collectionView.reloadItems(at: [channelsIndexPath!, channelGroupsIndexPath!])
+        })
     }
     
     // MARK: - ConsoleDataSource
     
     func consoleView(_ consoleView: ConsoleCollectionView, numberOfItemsInConfigurationSection subSection: Int) -> Int {
-        switch subSection {
-        case 0:
-            return 2
-        default:
-            return 0
-        }
+        return configurationSection.count
     }
     
     func numberOfSectionsInConfigurationSection(in consoleView: ConsoleCollectionView) -> Int {
@@ -267,20 +181,17 @@ public class ConsoleViewController: ViewController, ConsoleLayoutDelegate, Conso
         guard let titleContentsCell = cell as? TitleContentsCollectionViewCell else {
             fatalError()
         }
-        titleContentsCell.update(title: "Pub", contents: "Nub")
+        let title = configurationSection.title(for: indexPath)
+        let contents = configurationSection.contents(for: indexPath, with: console.client)
+        titleContentsCell.update(title: title, contents: contents)
     }
     
     var coreDataSection: Int? {
         return 1
     }
     
-    func consoleView(_ consoleView: ConsoleCollectionView, reuseIdentifierforItemAt indexPath: IndexPath) -> String {
-        switch indexPath.section {
-        case 0:
-            return TitleContentsCollectionViewCell.reuseIdentifier()
-        default:
-            fatalError()
-        }
+    func consoleView(_ consoleView: ConsoleCollectionView, reuseIdentifierForConfigurationItemAt indexPath: IndexPath) -> String {
+        return TitleContentsCollectionViewCell.reuseIdentifier()
     }
     
     // MARK: - UIConsoleDelegate
@@ -291,6 +202,17 @@ public class ConsoleViewController: ViewController, ConsoleLayoutDelegate, Conso
     
     func consoleView(_ consoleView: ConsoleCollectionView, didSelectItemAt indexPath: IndexPath) {
         print("\(#function) indexPath: \(indexPath.debugDescription)")
+    }
+    
+    // MARK: - PNObjectEventListener
+    
+    @objc(client:didReceiveStatus:)
+    public func client(_ client: PubNub, didReceive status: PNStatus) {
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \(#function)")
+        guard (status.operation == .subscribeOperation) || (status.operation == .unsubscribeOperation) else {
+            return
+        }
+        updateSubscribablesCells(client: client)
     }
     
 }
