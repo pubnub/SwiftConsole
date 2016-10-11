@@ -26,7 +26,7 @@ protocol ConsoleLayoutDelegate: UICollectionViewDelegateFlowLayout {
 }
 
 protocol ConsoleDelegate: class {
-    func consoleView(_ consoleView: ConsoleCollectionView, didSelectItemAt indexPath: IndexPath)
+    func consoleView(_ consoleView: ConsoleCollectionView, didSelectConfigurationItemAt indexPath: IndexPath)
     func consoleView(_ consoleView: ConsoleCollectionView, didSelect result: Result)
 }
 
@@ -152,7 +152,7 @@ final class ConsoleCollectionView: UICollectionView, UICollectionViewDataSource,
             let selectedResult = fetchedResultsController.object(at: adjustedIndexPath)
             consoleDelegate?.consoleView(self, didSelect: selectedResult)
         default:
-            consoleDelegate?.consoleView(self, didSelectItemAt: indexPath)
+            consoleDelegate?.consoleView(self, didSelectConfigurationItemAt: indexPath)
         }
     }
     
