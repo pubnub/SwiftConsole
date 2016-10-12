@@ -47,24 +47,19 @@ typealias ResultHeaderViewFactory = TitledSupplementaryViewFactory<Result>
 public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     
     //let configurationDataSource = MainConsoleDataSource()
-    
+    /*
     var consoleDataSourceProvider: DataSourceProvider<FetchedResultsController<Result>, ResultCellFactory, ResultHeaderViewFactory>!
     
     var consoleDelegateProvider: FetchedResultsDelegateProvider<ResultCellFactory>!
     
     var fetchedResultsController: FetchedResultsController<Result>!
-    
+    */
     let console: SwiftConsole
-    let consoleCollectionView: UICollectionView
+    let consoleCollectionView: ConsoleCollectionView
     
     public required init(console: SwiftConsole) {
-        let bounds = UIScreen.main.bounds
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = ResultCollectionViewCell.size
-        layout.estimatedItemSize = ResultCollectionViewCell.size
-        layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
-        self.consoleCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         self.console = console
+        self.consoleCollectionView = ConsoleCollectionView(console: console)
         super.init()
     }
     
@@ -84,8 +79,6 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         consoleCollectionView.forceAutoLayout()
         consoleCollectionView.backgroundColor = UIColor.red
         //consoleCollectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier())
-        consoleCollectionView.register(ResultCollectionViewCell.self, forCellWithReuseIdentifier: ResultCollectionViewCell.reuseIdentifier())
-        consoleCollectionView.register(TitledSupplementaryView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: TitledSupplementaryView.identifier)
         
         let views = [
             "consoleCollectionView": consoleCollectionView,
@@ -97,41 +90,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         NSLayoutConstraint.activate(horizontalConstraints)
         self.view.setNeedsLayout()
         
-        let cellFactory = ViewFactory(reuseIdentifier: ResultCollectionViewCell.reuseIdentifier()) { (cell, model: Result?, type, collectionView, indexPath) -> ResultCollectionViewCell in
-            cell.update(result: model)
-            return cell
-        }
-        
-        let headerFactory = TitledSupplementaryViewFactory { (header, model: Result?, kind, collectionView, indexPath) -> TitledSupplementaryView in
-            //header.label.text = "\(item!.colorName) header (\(indexPath.section))"
-            //header.label.textColor = item?.displayColor
-            if let creationDate = model?.creationDate {
-                header.label.text = "\(creationDate)"
-            } else {
-                header.label.text = "No date"
-            }
-            header.backgroundColor = .darkGray
-            return header
-        }
-        
-        consoleDelegateProvider = FetchedResultsDelegateProvider(cellFactory: cellFactory, collectionView: consoleCollectionView)
-        
-        let allResultsFetchRequest: NSFetchRequest<Result> = Result.fetchRequest()
-        let creationDateSortDescriptor = NSSortDescriptor(key: #keyPath(Result.creationDate), ascending: false)
-        allResultsFetchRequest.sortDescriptors = [creationDateSortDescriptor]
-        fetchedResultsController = FetchedResultsController<Result>(fetchRequest: allResultsFetchRequest, managedObjectContext: console.viewContext, sectionNameKeyPath: #keyPath(Result.creationDate), cacheName: nil)
-        fetchedResultsController.delegate = consoleDelegateProvider.collectionDelegate
-        
-        consoleDataSourceProvider = DataSourceProvider(dataSource: fetchedResultsController, cellFactory: cellFactory, supplementaryFactory: headerFactory)
-        
         consoleCollectionView.delegate = self
-        consoleCollectionView.dataSource = consoleDataSourceProvider.collectionViewDataSource
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            fatalError(error.localizedDescription)
-        }
+        consoleCollectionView.reloadData()
         
         console.client.addListener(self)
     }
@@ -145,6 +105,12 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     
     func updateSubscribablesCells(client: PubNub) {
         
+    }
+    
+    // MARK: - UICollectionViewDelegate
+    
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print(#function)
     }
     
 
