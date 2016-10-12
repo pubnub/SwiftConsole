@@ -8,6 +8,16 @@
 
 import UIKit
 
+protocol TitleContents {
+    var title: String { get }
+    var contents: String? { get }
+}
+
+struct TitleContentsItem: TitleContents {
+    var title: String
+    var contents: String?
+}
+
 class TitleContentsCollectionViewCell: UICollectionViewCell {
     
     private let titleLabel: UILabel
@@ -44,6 +54,17 @@ class TitleContentsCollectionViewCell: UICollectionViewCell {
         titleLabel.text = title
         contentsLabel.text = contents
         contentView.setNeedsLayout()
+    }
+    
+    func update(titleContents: TitleContents?) {
+        guard let actualTitleContents = titleContents else {
+            return
+        }
+        update(title: actualTitleContents.title, contents: actualTitleContents.contents)
+    }
+    
+    static var size: CGSize {
+        return CGSize(width: 75.0, height: 75.0)
     }
     
     static func size(collectionViewSize: CGSize) -> CGSize {

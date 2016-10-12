@@ -60,7 +60,7 @@ class ConsoleCollectionView: UICollectionView {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = ResultCollectionViewCell.size
         layout.estimatedItemSize = ResultCollectionViewCell.size
-        layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
+        //layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
         self.console = console
         
         let cellFactory = ViewFactory(reuseIdentifier: ResultCollectionViewCell.reuseIdentifier()) { (cell, model: Result?, type, collectionView, indexPath) -> ResultCollectionViewCell in
