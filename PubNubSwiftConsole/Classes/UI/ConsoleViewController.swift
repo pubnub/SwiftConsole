@@ -109,6 +109,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     let consoleCollectionView: ConsoleCollectionView
     let configurationCollectionView: UICollectionView
     
+    let channelsIndexPath = IndexPath(item: 0, section: 1)
+    let channelGroupsIndexPath = IndexPath(item: 1, section: 1)
+    
     public required init(console: SwiftConsole) {
         self.console = console
         self.consoleCollectionView = ConsoleCollectionView(console: console)
@@ -183,6 +186,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         
         let dataSource: ConfigurationDataSource = DataSource(sections: section0, section1)
         
+        
         configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: configurationCellFactory, supplementaryFactory: headerFactory)
         
         configurationCollectionView.dataSource = configurationDataSourceProvider.collectionViewDataSource
@@ -199,7 +203,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     // MARK: - UI Updates
     
     func updateSubscribablesCells(client: PubNub) {
-        
+        configurationCollectionView.performBatchUpdates({ 
+            self.configurationCollectionView.reloadItems(at: [self.channelsIndexPath, self.channelGroupsIndexPath])
+            })
     }
     
     // MARK: - UICollectionViewDelegate
