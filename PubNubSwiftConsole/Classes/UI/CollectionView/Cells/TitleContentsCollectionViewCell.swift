@@ -46,10 +46,6 @@ class TitleContentsCollectionViewCell: UICollectionViewCell {
         contentView.setNeedsLayout()
     }
     
-    func update(thing: TitleContentsThing) {
-        update(title: thing.title, contents: thing.contents)
-    }
-    
     static func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 75.0, height: 75.0)
     }

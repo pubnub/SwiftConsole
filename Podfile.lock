@@ -1,8 +1,10 @@
 PODS:
+  - JSQDataSourcesKit (6.0.0)
   - PubNub (4.5.3):
     - PubNub/Core (= 4.5.3)
   - PubNub/Core (4.5.3)
   - PubNubSwiftConsole (0.7.0):
+    - JSQDataSourcesKit
     - PubNub
 
 DEPENDENCIES:
@@ -13,8 +15,9 @@ EXTERNAL SOURCES:
     :path: .
 
 SPEC CHECKSUMS:
+  JSQDataSourcesKit: 20cda71984408006b4c3e0cf224343fd1a913d58
   PubNub: 42623b6046ab65bb2ec9c4fb51791d86aa956926
-  PubNubSwiftConsole: bff0a1dbbe37a5f8c4e5d2599f41954c30466b2d
+  PubNubSwiftConsole: 8a2f356d61da9731d36d19fa4e968716e9c2fcce
 
 PODFILE CHECKSUM: 58e775931b82673475468c9faa289f23a837d35a
 

@@ -10,8 +10,11 @@ import UIKit
 
 class ResultCollectionViewCell: TextViewCollectionViewCell {
     
-    func update(result: Result) {
-        update(text: result.textViewDisplayText)
+    func update(result: Result?) {
+        guard let actualResult = result else {
+            return
+        }
+        update(text: actualResult.textViewDisplayText)
     }
 
 }

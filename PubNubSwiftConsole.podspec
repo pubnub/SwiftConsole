@@ -40,4 +40,5 @@ This is a debug console for PubNub that can be easily dropped into any app. It i
   # s.frameworks = 'UIKit', 'MapKit'
   s.frameworks = 'CoreData'
   s.dependency 'PubNub'
+  s.dependency 'JSQDataSourcesKit'
 end
