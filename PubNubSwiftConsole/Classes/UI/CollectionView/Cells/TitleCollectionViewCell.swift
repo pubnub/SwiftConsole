@@ -7,12 +7,21 @@
 //
 
 import UIKit
+import PubNub
 
 protocol Tappable {
     
 }
 
-protocol Title {
+protocol StaticItem {
+    
+}
+
+protocol PubNubStaticItemGenerator {
+    func generateStaticItem(client: PubNub) -> StaticItem
+}
+
+protocol Title: StaticItem {
     var title: String { get }
 }
 

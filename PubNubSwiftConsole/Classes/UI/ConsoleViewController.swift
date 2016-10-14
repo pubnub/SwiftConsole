@@ -82,6 +82,58 @@ enum ClientConfigurationType: TitleContents {
     }
 }
 
+enum ClientProperty: String, PubNubStaticItemGenerator {
+    case pubKey = "Publish Key"
+    case subKey = "Subscribe Key"
+    case channels = "Channels"
+    case channelGroups = "Channel Groups"
+    case authKey = "PAM Key"
+    
+    var title: String {
+        return rawValue
+        /*
+        switch self {
+        case .pubKey:
+            return "Publish Key"
+        case .subKey:
+            return "Subscribe Key"
+        case .channels:
+            return "Channels"
+        case .channelGroups:
+            return "Channel Groups"
+        case .authKey:
+            return "PAM Key"
+        }
+ */
+    }
+    
+    init?(staticItem: StaticItem) {
+        guard let title = staticItem as? Title else {
+            return nil
+        }
+        if let actualProperty = ClientProperty(rawValue: title.title) {
+            self = actualProperty
+        } else {
+            return nil
+        }
+    }
+    
+    func generateStaticItem(client: PubNub) -> StaticItem {
+        switch self {
+        case .pubKey:
+            return TitleContentsItem(title: title, contents: client.currentConfiguration().publishKey)
+        case .subKey:
+            return TitleContentsItem(title: title, contents: client.currentConfiguration().subscribeKey)
+        case .channels:
+            return TitleContentsItem(title: title, contents: client.channelsString())
+        case .channelGroups:
+            return TitleContentsItem(title: title, contents: client.channelGroupsString())
+        case .authKey:
+            return TitleContentsItem(title: title, contents: client.currentConfiguration().authKey)
+        }
+    }
+}
+
 /*
 typealias TitleContentsCellFactory = ViewFactory<TitleContents, TitleContentsCollectionViewCell>
 typealias TitleContentsHeaderViewFactory = TitledSupplementaryViewFactory<TitleContents>
