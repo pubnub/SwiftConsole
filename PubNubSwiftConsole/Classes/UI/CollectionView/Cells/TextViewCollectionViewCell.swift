@@ -35,6 +35,18 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override var isHighlighted: Bool {
+        get {
+            print(#function)
+            return super.isHighlighted
+        }
+        set {
+            print(#function)
+            super.isHighlighted = newValue
+            textView.backgroundColor = (newValue ? .lightGray : .white)
+        }
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -45,12 +57,27 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         contentView.setNeedsLayout()
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        textView.text = nil
+        isHighlighted = false
+        textView.backgroundColor = .white
+        setNeedsLayout() // is this necessary?
+    }
+    
     /*
     func update(result: Result) {
         textView.text = result.textViewDisplayText
         contentView.setNeedsLayout()
     }
  */
+    
+    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
+        let bounds = UIScreen.main.bounds
+        attributes.size.width = bounds.width
+        return attributes
+    }
     
     static var size: CGSize {
         let bounds = UIScreen.main.bounds

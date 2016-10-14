@@ -8,8 +8,7 @@
 
 import UIKit
 
-protocol TitleContents {
-    var title: String { get }
+protocol TitleContents: Title {
     var contents: String? { get }
 }
 
@@ -18,31 +17,15 @@ struct TitleContentsItem: TitleContents {
     var contents: String?
 }
 
-class TitleContentsCollectionViewCell: UICollectionViewCell {
+class TitleContentsCollectionViewCell: TitleCollectionViewCell {
     
-    private let titleLabel: UILabel
     private let contentsLabel: UILabel
-    private let stackView: UIStackView
     
     override init(frame: CGRect) {
-        let title = UILabel(frame: .zero)
-        let contents = UILabel(frame: .zero)
-        self.stackView = UIStackView(arrangedSubviews: [title, contents])
-        self.titleLabel = title
-        self.contentsLabel = contents
+        self.contentsLabel = UILabel(frame: .zero)
         super.init(frame: frame)
-        contentView.addSubview(self.stackView)
-        stackView.forceAutoLayout()
-        stackView.axis = .vertical
-        stackView.distribution = .fillEqually
-        stackView.alignment = .center
-        let views = [
-            "stackView": stackView
-        ]
-        let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[stackView]|", options: [], metrics: nil, views: views)
-        let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|[stackView]|", options: [], metrics: nil, views: views)
-        NSLayoutConstraint.activate(verticalConstraints)
-        NSLayoutConstraint.activate(horizontalConstraints)
+        contentsLabel.textAlignment = .center
+        stackView.addArrangedSubview(contentsLabel)
         contentView.setNeedsLayout()
     }
     
@@ -51,7 +34,7 @@ class TitleContentsCollectionViewCell: UICollectionViewCell {
     }
     
     func update(title: String, contents: String?) {
-        titleLabel.text = title
+        super.update(title: title)
         contentsLabel.text = contents
         contentView.setNeedsLayout()
     }
@@ -63,11 +46,11 @@ class TitleContentsCollectionViewCell: UICollectionViewCell {
         update(title: actualTitleContents.title, contents: actualTitleContents.contents)
     }
     
-    static var size: CGSize {
+    class override var size: CGSize {
         return CGSize(width: 75.0, height: 75.0)
     }
     
-    static func size(collectionViewSize: CGSize) -> CGSize {
+    class override func size(collectionViewSize: CGSize) -> CGSize {
         return CGSize(width: 75.0, height: 75.0)
     }
     

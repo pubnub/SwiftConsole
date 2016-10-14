@@ -109,6 +109,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     let consoleCollectionView: ConsoleCollectionView
     let configurationCollectionView: UICollectionView
     
+    
     let channelsIndexPath = IndexPath(item: 0, section: 1)
     let channelGroupsIndexPath = IndexPath(item: 1, section: 1)
     
@@ -118,6 +119,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         let bounds = UIScreen.main.bounds
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = TitleContentsCollectionViewCell.size
+        layout.minimumLineSpacing = 20.0
+        layout.minimumInteritemSpacing = 20.0
         layout.estimatedItemSize = TitleContentsCollectionViewCell.size
         //layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
         self.configurationCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -189,6 +192,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         
         configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: configurationCellFactory, supplementaryFactory: headerFactory)
         
+        configurationCollectionView.delegate = self
+        
         configurationCollectionView.dataSource = configurationDataSourceProvider.collectionViewDataSource
         
         
@@ -218,7 +223,21 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
             print("other collection view tapped")
         }
     }
+    /*
+    public func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) else {
+            fatalError()
+        }
+        cell.contentView.backgroundColor = .blue
+    }
     
+    public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) else {
+            fatalError()
+        }
+        cell.contentView.backgroundColor = nil
+    }
+ */
 
     
     // MARK: - PNObjectEventListener

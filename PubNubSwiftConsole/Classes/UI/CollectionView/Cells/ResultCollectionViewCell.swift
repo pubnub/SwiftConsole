@@ -16,5 +16,5 @@ class ResultCollectionViewCell: TextViewCollectionViewCell {
         }
         update(text: actualResult.textViewDisplayText)
     }
-
+    
 }
