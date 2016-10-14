@@ -91,20 +91,6 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     
     var title: String {
         return rawValue
-        /*
-        switch self {
-        case .pubKey:
-            return "Publish Key"
-        case .subKey:
-            return "Subscribe Key"
-        case .channels:
-            return "Channels"
-        case .channelGroups:
-            return "Channel Groups"
-        case .authKey:
-            return "PAM Key"
-        }
- */
     }
     
     init?(staticItem: StaticItem) {
@@ -118,52 +104,156 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
         }
     }
     
-    func generateStaticItem(client: PubNub) -> StaticItem {
+    func generateStaticItem(client: PubNub, isTappable: Bool = false) -> StaticItem {
         switch self {
         case .pubKey:
-            return TitleContentsItem(title: title, contents: client.currentConfiguration().publishKey)
+            return TitleContentsItem(title: title, contents: client.currentConfiguration().publishKey, isTappable: isTappable)
         case .subKey:
-            return TitleContentsItem(title: title, contents: client.currentConfiguration().subscribeKey)
+            return TitleContentsItem(title: title, contents: client.currentConfiguration().subscribeKey, isTappable: isTappable)
         case .channels:
-            return TitleContentsItem(title: title, contents: client.channelsString())
+            return TitleContentsItem(title: title, contents: client.channelsString(), isTappable: isTappable)
         case .channelGroups:
-            return TitleContentsItem(title: title, contents: client.channelGroupsString())
+            return TitleContentsItem(title: title, contents: client.channelGroupsString(), isTappable: isTappable)
         case .authKey:
-            return TitleContentsItem(title: title, contents: client.currentConfiguration().authKey)
+            return TitleContentsItem(title: title, contents: client.currentConfiguration().authKey, isTappable: isTappable)
+        }
+    }
+    func generateStaticItemType(client: PubNub, isTappable: Bool = false) -> StaticItemType {
+        return StaticItemType(staticItem: generateStaticItem(client: client, isTappable: isTappable))
+    }
+}
+
+enum StaticItemType {
+    case staticItem(StaticItem)
+    case title(Title)
+    case titleContents(TitleContents)
+    
+    var reuseIdentifier: String {
+        switch self {
+        case .title(_):
+            return TitleCollectionViewCell.reuseIdentifier()
+        case .titleContents(_):
+            return TitleContentsCollectionViewCell.reuseIdentifier()
+        default:
+            fatalError()
+        }
+    }
+    
+    init(staticItem: StaticItem) {
+        switch staticItem {
+        case let staticItem as TitleContents:
+            self = StaticItemType.titleContents(staticItem)
+        case let staticItem as Title:
+            self = StaticItemType.title(staticItem)
+        default:
+            self = StaticItemType.staticItem(staticItem)
         }
     }
 }
 
-/*
-typealias TitleContentsCellFactory = ViewFactory<TitleContents, TitleContentsCollectionViewCell>
-typealias TitleContentsHeaderViewFactory = TitledSupplementaryViewFactory<TitleContents>
+struct StaticItemCellViewFactory: ReusableViewFactoryProtocol {
+    typealias TitleViewFactory = ViewFactory<Title, TitleCollectionViewCell>
+    typealias TitleContentsViewFactory = ViewFactory<TitleContents, TitleContentsCollectionViewCell>
+    let titleCellFactory: TitleViewFactory
+    let titleContentsCellFactory: TitleContentsViewFactory
+    
+    init(titleCellFactory: TitleViewFactory, titleContentsCellFactory: TitleContentsViewFactory) {
+        self.titleCellFactory = titleCellFactory
+        self.titleContentsCellFactory = titleContentsCellFactory
+    }
+    
+    init() {
+        let titleCellFactory = TitleViewFactory(reuseIdentifier: TitleCollectionViewCell.reuseIdentifier()) { (cell, model: Title?, type, collectionView, indexPath) -> TitleCollectionViewCell in
+            cell.update(title: model)
+            return cell
+        }
+        let titleContentsCellFactory = TitleContentsViewFactory(reuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier()) { (cell, model: TitleContents?, type, collectionView, indexPath) -> TitleContentsCollectionViewCell in
+            cell.update(titleContents: model)
+            return cell
+        }
+        self.init(titleCellFactory: titleCellFactory, titleContentsCellFactory: titleContentsCellFactory)
+    }
+    
+    func reuseIdentiferFor(item: StaticItemType?, type: ReusableViewType, indexPath: IndexPath) -> String {
+        return item!.reuseIdentifier
+    }
+    
+    func configure(view: UICollectionViewCell, item: StaticItemType?, type: ReusableViewType, parentView: UICollectionView, indexPath: IndexPath) -> UICollectionViewCell {
+        guard let model = item else {
+            return view
+        }
+        switch model {
+        case let .title(titleModel):
+            let cell = view as! TitleCollectionViewCell
+            return titleCellFactory.configure(view: cell, item: titleModel, type: type, parentView: parentView, indexPath: indexPath)
+        case let .titleContents(titleContentsModel):
+            let cell = view as! TitleContentsCollectionViewCell
+            return titleContentsCellFactory.configure(view: cell, item: titleContentsModel, type: type, parentView: parentView, indexPath: indexPath)
+        default:
+            fatalError()
+        }
+    }
+    
+}
 
-typealias ConfigurationSource = DataSource<Section<TitleContents>>
-*/
+typealias ClientCellFactory = ViewFactory<StaticItem, TitleCollectionViewCell>
+typealias TitleContentsHeaderViewFactory = TitledSupplementaryViewFactory<StaticItemType>
 
-typealias ClientCellFactory = ViewFactory<ClientConfigurationType, TitleContentsCollectionViewCell>
-typealias TitleContentsHeaderViewFactory = TitledSupplementaryViewFactory<ClientConfigurationType>
+typealias ConfigurationDataSource = DataSource<Section<StaticItemType>>
 
-typealias ConfigurationDataSource = DataSource<Section<ClientConfigurationType>>
+protocol DataSourceUpdater {
+    // if indexPath is nil then no update occurred
+    func update(dataSource: inout ConfigurationDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath?
+}
+
+protocol ClientPropertyUpdater: DataSourceUpdater {
+    
+    func indexPath(for clientProperty: ClientProperty) -> IndexPath?
+    // if indexPath is nil, then no update occurred
+    func update(dataSource: inout ConfigurationDataSource, for clientProperty: ClientProperty, with client: PubNub, isTappable: Bool) -> IndexPath?
+}
+
+
+extension ClientPropertyUpdater {
+    func update(dataSource: inout ConfigurationDataSource, for clientProperty: ClientProperty, with client: PubNub, isTappable: Bool = false) -> IndexPath? {
+        guard let propertyIndexPath = indexPath(for: clientProperty) else {
+            return nil
+        }
+        let staticItemType = clientProperty.generateStaticItemType(client: client, isTappable: isTappable)
+        return update(dataSource: &dataSource, at: propertyIndexPath, with: staticItemType, isTappable: isTappable)
+    }
+}
 
 public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     
-    //let configurationDataSource = MainConsoleDataSource()
-    /*
-    var consoleDataSourceProvider: DataSourceProvider<FetchedResultsController<Result>, ResultCellFactory, ResultHeaderViewFactory>!
+    struct ConsoleUpdater: ClientPropertyUpdater {
+        internal func update(dataSource: inout ConfigurationDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath? {
+            dataSource[indexPath] = item
+            return indexPath
+        }
+
+        func indexPath(for clientProperty: ClientProperty) -> IndexPath? {
+            switch clientProperty {
+            case .pubKey:
+                return IndexPath(item: 0, section: 0)
+            case .subKey:
+                return IndexPath(item: 1, section: 0)
+            case .channels:
+                return IndexPath(row: 0, section: 1)
+            case .channelGroups:
+                return IndexPath(item: 1, section: 1)
+            case .authKey:
+                return nil
+            }
+        }
+    }
     
-    var consoleDelegateProvider: FetchedResultsDelegateProvider<ResultCellFactory>!
-    
-    var fetchedResultsController: FetchedResultsController<Result>!
-    */
-    var configurationDataSourceProvider: DataSourceProvider<ConfigurationDataSource, ClientCellFactory, TitleContentsHeaderViewFactory>!
+    let consoleUpdater = ConsoleUpdater()
+
+    var configurationDataSourceProvider: DataSourceProvider<ConfigurationDataSource, StaticItemCellViewFactory, TitleContentsHeaderViewFactory>!
     let console: SwiftConsole
     let consoleCollectionView: ConsoleCollectionView
     let configurationCollectionView: UICollectionView
-    
-    
-    let channelsIndexPath = IndexPath(item: 0, section: 1)
-    let channelGroupsIndexPath = IndexPath(item: 1, section: 1)
     
     public required init(console: SwiftConsole) {
         self.console = console
@@ -220,29 +310,30 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         consoleCollectionView.reloadData()
         
         configurationCollectionView.register(TitleContentsCollectionViewCell.self, forCellWithReuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier())
+        configurationCollectionView.register(TitleCollectionViewCell.self, forCellWithReuseIdentifier: TitleCollectionViewCell.reuseIdentifier())
         
-        let section0 = Section(items: ClientConfigurationType.pubKey(console.client), ClientConfigurationType.subKey(console.client))
-        let section1 = Section(items: ClientConfigurationType.channels(console.client), ClientConfigurationType.channelGroups(console.client))
-        
-        let configurationCellFactory = ClientCellFactory(reuseIdentifier: TitleContentsCollectionViewCell.reuseIdentifier()) { (cell, model: ClientConfigurationType?, type, collectionView, indexPath) -> TitleContentsCollectionViewCell in
-            cell.update(titleContents: model)
-            return cell
-        }
-        
-        let headerFactory = TitledSupplementaryViewFactory { (header, model: ClientConfigurationType?, kind, collectionView, indexPath) -> TitledSupplementaryView in
-            if let creationDate = model?.title {
-                header.label.text = creationDate
-            } else {
-                header.label.text = "No date"
-            }
+        let headerFactory = TitledSupplementaryViewFactory { (header, model: StaticItemType?, kind, collectionView, indexPath) -> TitledSupplementaryView in
+            
+            header.label.text = "Section \(indexPath.section)"
             header.backgroundColor = .darkGray
+            header.label.textColor = .white
             return header
         }
+        
+        let pubKeyItemType = ClientProperty.pubKey.generateStaticItemType(client: console.client)
+        let subKeyItemType = ClientProperty.subKey.generateStaticItemType(client: console.client)
+        let channelsItemType = ClientProperty.channels.generateStaticItemType(client: console.client, isTappable: true)
+        let channelGroupsItemType = ClientProperty.channelGroups.generateStaticItemType(client: console.client, isTappable: true)
+        
+        let section0 = Section(items: pubKeyItemType, subKeyItemType)
+        let section1 = Section(items: channelsItemType, channelGroupsItemType)
+        
+        let cellFactory = StaticItemCellViewFactory()
         
         let dataSource: ConfigurationDataSource = DataSource(sections: section0, section1)
         
         
-        configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: configurationCellFactory, supplementaryFactory: headerFactory)
+        configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
         
         configurationCollectionView.delegate = self
         
@@ -260,8 +351,17 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     // MARK: - UI Updates
     
     func updateSubscribablesCells(client: PubNub) {
-        configurationCollectionView.performBatchUpdates({ 
-            self.configurationCollectionView.reloadItems(at: [self.channelsIndexPath, self.channelGroupsIndexPath])
+        configurationCollectionView.performBatchUpdates({
+            //var dataSource = self.configurationDataSourceProvider.dataSource
+            let client = self.console.client
+            var updatedIndexPaths = [IndexPath]()
+            if let updatedChannelsItemIndexPath = self.consoleUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channels, with: client, isTappable: true) {
+                updatedIndexPaths.append(updatedChannelsItemIndexPath)
+            }
+            if let updatedChannelGroupsItemIndexPath = self.consoleUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channelGroups, with: client, isTappable: true) {
+                updatedIndexPaths.append(updatedChannelGroupsItemIndexPath)
+            }
+            self.configurationCollectionView.reloadItems(at: updatedIndexPaths)
             })
     }
     

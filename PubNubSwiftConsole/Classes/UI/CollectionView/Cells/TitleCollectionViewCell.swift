@@ -10,15 +10,22 @@ import UIKit
 import PubNub
 
 protocol Tappable {
-    
+    var isTappable: Bool {get}
 }
 
-protocol StaticItem {
+extension Tappable {
+    var isTappable: Bool {
+        return false
+    }
+}
+
+protocol StaticItem: Tappable {
     
 }
 
 protocol PubNubStaticItemGenerator {
-    func generateStaticItem(client: PubNub) -> StaticItem
+    func generateStaticItem(client: PubNub, isTappable: Bool) -> StaticItem
+    func generateStaticItemType(client: PubNub, isTappable: Bool) -> StaticItemType
 }
 
 protocol Title: StaticItem {
@@ -27,13 +34,14 @@ protocol Title: StaticItem {
 
 struct TitleItem: Title {
     var title: String
+    var isTappable: Bool = false
 }
 
 class TitleCollectionViewCell: UICollectionViewCell {
     
     private let titleLabel: UILabel
     internal let stackView: UIStackView
-    private var isHighlightable: Bool = false
+    private var isTappable: Bool = false
     
     override init(frame: CGRect) {
         let title = UILabel(frame: .zero)
@@ -70,7 +78,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
         titleLabel.text = nil
         isHighlighted = false
-        isHighlightable = false
+        isTappable = false
         contentView.backgroundColor = .red
         contentView.setNeedsLayout()
     }
@@ -83,7 +91,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         set {
             print(#function)
             super.isHighlighted = newValue
-            if isHighlightable {
+            if isTappable {
                 contentView.backgroundColor = (newValue ? .lightGray : .red)
             }
         }
@@ -93,7 +101,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         guard let actualTitle = title else {
             return
         }
-        isHighlightable = ((actualTitle is Tappable) ? true : false)
+        isTappable = ((actualTitle.isTappable) ? true : false)
         update(title: actualTitle.title)
     }
     

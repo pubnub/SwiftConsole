@@ -15,6 +15,7 @@ protocol TitleContents: Title {
 struct TitleContentsItem: TitleContents {
     var title: String
     var contents: String?
+    var isTappable: Bool = false
 }
 
 class TitleContentsCollectionViewCell: TitleCollectionViewCell {
@@ -33,17 +34,22 @@ class TitleContentsCollectionViewCell: TitleCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /*
     func update(title: String, contents: String?) {
         super.update(title: title)
         contentsLabel.text = contents
         contentView.setNeedsLayout()
     }
+ */
+    
+    func update(contents: String?) {
+        contentsLabel.text = contents
+        contentView.setNeedsLayout()
+    }
     
     func update(titleContents: TitleContents?) {
-        guard let actualTitleContents = titleContents else {
-            return
-        }
-        update(title: actualTitleContents.title, contents: actualTitleContents.contents)
+        super.update(title: titleContents)
+        update(contents: titleContents?.contents)
     }
     
     class override var size: CGSize {
