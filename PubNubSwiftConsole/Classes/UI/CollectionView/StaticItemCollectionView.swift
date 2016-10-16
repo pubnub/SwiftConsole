@@ -98,6 +98,16 @@ typealias StaticSection = Section<StaticItemType>
 typealias StaticDataSource = DataSource<StaticSection>
 typealias StaticDataSourceProvider = DataSourceProvider<StaticDataSource, StaticItemCellViewFactory, TitleContentsHeaderViewFactory>
 
+protocol StaticItemGetter {
+    func staticItem(from dataSource: StaticDataSource, at indexPath: IndexPath) -> StaticItem
+}
+
+extension StaticItemGetter {
+    func staticItem(from dataSource: StaticDataSource, at indexPath: IndexPath) -> StaticItem {
+        return dataSource[indexPath].staticItem
+    }
+}
+
 protocol StaticDataSourceUpdater {
     // if indexPath is nil then no update occurred
     func update(dataSource: inout StaticDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath?

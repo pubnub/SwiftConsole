@@ -36,11 +36,15 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     
     // MARK: - Views
     
-    public func consoleViewController() -> NavigationController {
-        return NavigationController(pubNubViewController: ConsoleViewController(console: self))
+    public static func consoleViewController(console: SwiftConsole) -> NavigationController {
+        return NavigationController(pubNubViewController: ConsoleViewController(console: console))
     }
     
-    public func clientCreationViewController() -> NavigationController {
+    public func consoleViewController() -> NavigationController {
+        return SwiftConsole.consoleViewController(console: self)
+    }
+    
+    public static func clientCreationViewController() -> NavigationController {
         return NavigationController(pubNubViewController: ClientCreationViewController())
     }
     

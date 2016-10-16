@@ -90,6 +90,8 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         clientCollectionView.dataSource = clientCreationDataSourceProvider.collectionViewDataSource
         
         
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Create", style: .plain, target: self, action: #selector(clientCreationItemTapped(sender:)))
+        
         clientCollectionView.reloadData()
     }
 
@@ -97,6 +99,23 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
         
+    }
+    
+    // MARK: - UINavigation Actions
+    
+    func clientCreationItemTapped(sender: UIBarButtonItem) {
+        let publishItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .pubKey) as! TitleContents
+        let subscribeItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .subKey) as! TitleContents
+        let originItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .origin) as! TitleContents
+        let authKeyItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .authKey) as! TitleContents
+        let config = PNConfiguration(publishKey: publishItem.contents!, subscribeKey: subscribeItem.contents!)
+        config.authKey = authKeyItem.contents
+        config.origin = originItem.contents!
+        
+        let client = PubNub.clientWithConfiguration(config)
+        let swiftConsole = SwiftConsole(client: client)
+        let consoleView = ConsoleViewController(console: swiftConsole)
+        navigationController?.pushViewController(consoleView, animated: true)
     }
     
     // MARK: - UICollectionViewDelegate

@@ -88,9 +88,22 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     }
 }
 
-protocol ClientPropertyUpdater: StaticDataSourceUpdater {
-    
+protocol ClientPropertyGetter: StaticItemGetter {
     func indexPath(for clientProperty: ClientProperty) -> IndexPath?
+    func staticItem(from dataSource: StaticDataSource, for clientProperty: ClientProperty) -> StaticItem
+}
+
+extension ClientPropertyGetter {
+    func staticItem(from dataSource: StaticDataSource, for clientProperty: ClientProperty) -> StaticItem {
+        guard let indexPath = indexPath(for: clientProperty) else {
+            fatalError()
+        }
+        return staticItem(from: dataSource, at: indexPath)
+    }
+}
+
+protocol ClientPropertyUpdater: StaticDataSourceUpdater, ClientPropertyGetter {
+    
     // if indexPath is nil, then no update occurred
     func update(dataSource: inout StaticDataSource, for clientProperty: ClientProperty, with client: PubNub, isTappable: Bool) -> IndexPath?
     // below only works with title contents

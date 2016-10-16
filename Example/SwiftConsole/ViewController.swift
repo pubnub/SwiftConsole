@@ -38,11 +38,7 @@ class ViewController: UIViewController {
     }
     
     func clientCreationButtonTapped(sender: UIButton) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            return
-        }
-        let console = appDelegate.console
-        let clientCreationViewController = console.clientCreationViewController()
+        let clientCreationViewController = SwiftConsole.clientCreationViewController()
         clientCreationViewController.modalPresentationStyle = .overFullScreen
         clientCreationViewController.modalTransitionStyle = .coverVertical
         present(clientCreationViewController, animated: true)
