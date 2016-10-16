@@ -8,11 +8,14 @@
 
 import UIKit
 import PubNubSwiftConsole
+import PubNub
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, ClientCreationViewControllerDelegate {
     
     @IBOutlet weak var consoleButton: UIButton?
     @IBOutlet weak var clientCreationButton: UIButton?
+    
+    var createdSwiftConsole: SwiftConsole?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,7 +44,22 @@ class ViewController: UIViewController {
         let clientCreationViewController = SwiftConsole.clientCreationViewController()
         clientCreationViewController.modalPresentationStyle = .overFullScreen
         clientCreationViewController.modalTransitionStyle = .coverVertical
+        let clientVC = clientCreationViewController.topViewController as! ClientCreationViewController
+        clientVC.delegate = self
         present(clientCreationViewController, animated: true)
+    }
+    
+    // MARK: - ClientCreationViewControllerDelegate
+    
+    func clientCreation(_ clientCreationViewController: ClientCreationViewController, createdClient: PubNub) {
+        let swiftConsole = SwiftConsole(client: createdClient)
+        createdSwiftConsole = swiftConsole
+        let consoleViewController = ConsoleViewController(console: swiftConsole)
+        clientCreationViewController.navigationController?.pushViewController(consoleViewController, animated: true)
+    }
+    
+    func clientCreation(_ clientCreationViewController: ClientCreationViewController, failedWithError: Error) {
+        
     }
 
 }

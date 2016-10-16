@@ -10,7 +10,14 @@ import UIKit
 import PubNub
 import JSQDataSourcesKit
 
+public protocol ClientCreationViewControllerDelegate: NSObjectProtocol {
+    func clientCreation(_ clientCreationViewController: ClientCreationViewController, createdClient: PubNub)
+    func clientCreation(_ clientCreationViewController: ClientCreationViewController, failedWithError: Error)
+}
+
 public class ClientCreationViewController: ViewController, UICollectionViewDelegate {
+    
+    public weak var delegate: ClientCreationViewControllerDelegate?
     
     struct ClientCreationUpdater: ClientPropertyUpdater {
         internal func update(dataSource: inout StaticDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath? {
@@ -113,9 +120,15 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         config.origin = originItem.contents!
         
         let client = PubNub.clientWithConfiguration(config)
+        
+        delegate?.clientCreation(self, createdClient: client)
+        
+        
+        /*
         let swiftConsole = SwiftConsole(client: client)
         let consoleView = ConsoleViewController(console: swiftConsole)
         navigationController?.pushViewController(consoleView, animated: true)
+ */
     }
     
     // MARK: - UICollectionViewDelegate

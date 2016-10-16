@@ -80,7 +80,11 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
             fatalError("no managed object model")
         }
         let container = NSPersistentContainer(name: "SwiftConsole", managedObjectModel: model)
+        print("container: \(container.persistentStoreDescriptions)")
         //let container = NSPersistentContainer(name: "SwiftConsole")
+        for description in container.persistentStoreDescriptions {
+            print(description)
+        }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
