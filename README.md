@@ -20,6 +20,15 @@ it, simply add the following line to your Podfile:
 pod "SwiftConsole"
 ```
 
+## To do
+
+* Add subscribe button
+* Errors for client creation
+* Move data source updating into an internal object
+* Add publishing
+* Add stream filtering input
+* Fix up predicate for collection view (or hard code better predicate)
+
 ## Author
 
 Jordan Zucker, jordan.zucker@gmail.com

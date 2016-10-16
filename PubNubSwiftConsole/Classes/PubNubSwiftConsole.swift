@@ -82,9 +82,14 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
         let container = NSPersistentContainer(name: "SwiftConsole", managedObjectModel: model)
         print("container: \(container.persistentStoreDescriptions)")
         //let container = NSPersistentContainer(name: "SwiftConsole")
-        for description in container.persistentStoreDescriptions {
-            print(description)
+        /*
+        for storeDescription in container.persistentStoreDescriptions {
+            print(storeDescription)
         }
+        guard var storeDescription = container.persistentStoreDescriptions[0] as? NSPersistentStoreDescription else {
+            fatalError()
+        }
+ */
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
