@@ -24,6 +24,19 @@ public func modalPublishViewController(client: PubNub) -> PublishViewController 
 }
  */
 
+class PersistentContainer: NSPersistentContainer {
+    override required init(name: String, managedObjectModel model: NSManagedObjectModel) {
+        super.init(name: name, managedObjectModel: model)
+        guard var storeDescription = persistentStoreDescriptions.first else {
+            fatalError()
+        }
+        print("description: \(storeDescription)")
+        // Hack to make sure the store is always fresh
+        storeDescription.type = NSInMemoryStoreType
+        print("updatedDescriptions: \(persistentStoreDescriptions)")
+    }
+}
+
 public class SwiftConsole: NSObject, PNObjectEventListener {
     
     let client: PubNub
@@ -50,7 +63,7 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     
     // MARK: - Core Data stack
     
-    lazy var persistentContainer: NSPersistentContainer = {
+    lazy var persistentContainer: PersistentContainer = {
         /*
         NSBundle *podBundle = [NSBundle bundleForClass:self.classForCoder];
         NSURL *dataModelBundleURL = [podBundle URLForResource:@"DataModel" withExtension:@"bundle"];
@@ -79,7 +92,7 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
         guard let model = NSManagedObjectModel.mergedModel(from: [dataModelBundle]) else {
             fatalError("no managed object model")
         }
-        let container = NSPersistentContainer(name: "SwiftConsole", managedObjectModel: model)
+        let container = PersistentContainer(name: "SwiftConsole", managedObjectModel: model)
         print("container: \(container.persistentStoreDescriptions)")
         //let container = NSPersistentContainer(name: "SwiftConsole")
         /*
