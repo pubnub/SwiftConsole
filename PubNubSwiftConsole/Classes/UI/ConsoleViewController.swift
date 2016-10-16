@@ -166,12 +166,16 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
             }
             switch clientProperty {
             case .subscribe:
-                let alertController = UIAlertController(title: "Subscribe", message: "Enter a value", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Subscribe", message: "Enter a value, comma delimited", preferredStyle: .alert)
                 alertController.addTextField(configurationHandler: { (textField) in
                     textField.placeholder = "Channel or group name ..."
                 })
                 let channelSubscribe = UIAlertAction(title: "Subscribe as channel", style: .default, handler: { (action) in
                     print(action)
+                    guard let textFieldInput = alertController.textFields?[0].text else {
+                        return
+                    }
+                    print("textFieldInput")
                 })
                 let channelGroupSubscribe = UIAlertAction(title: "Subscribe as channel group", style: .default, handler: { (action) in
                     print(action)
