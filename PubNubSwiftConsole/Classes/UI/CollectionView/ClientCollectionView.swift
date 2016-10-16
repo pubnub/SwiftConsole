@@ -16,6 +16,7 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     case channels = "Channels"
     case channelGroups = "Channel Groups"
     case authKey = "PAM Key"
+    case origin = "Origin"
     
     var title: String {
         return rawValue
@@ -32,20 +33,56 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
         }
     }
     
-    func generateStaticItem(client: PubNub, isTappable: Bool = false) -> StaticItem {
+    var defaultContents: String? {
         switch self {
-        case .pubKey:
-            return TitleContentsItem(title: title, contents: client.currentConfiguration().publishKey, isTappable: isTappable)
-        case .subKey:
-            return TitleContentsItem(title: title, contents: client.currentConfiguration().subscribeKey, isTappable: isTappable)
-        case .channels:
-            return TitleContentsItem(title: title, contents: client.channelsString(), isTappable: isTappable)
-        case .channelGroups:
-            return TitleContentsItem(title: title, contents: client.channelGroupsString(), isTappable: isTappable)
+        case .pubKey, .subKey:
+            return "demo-36"
+        case .origin:
+            return "pubsub.pubnub.com"
         case .authKey:
-            return TitleContentsItem(title: title, contents: client.currentConfiguration().authKey, isTappable: isTappable)
+            return nil
+        case .channels, .channelGroups:
+            return nil
         }
     }
+    
+    func generateStaticItem(contents: String?, isTappable: Bool = false) -> StaticItem {
+        return TitleContentsItem(title: title, contents: contents, isTappable: isTappable)
+    }
+    
+    func generateDefaultStaticItem(isTappable: Bool = false) -> StaticItem {
+        return generateStaticItem(contents: defaultContents, isTappable: isTappable)
+    }
+    
+    func generateDefaultStaticItemType(isTappable: Bool = false) -> StaticItemType {
+        return generateStaticItemType(contents: defaultContents, isTappable: isTappable)
+    }
+    
+    func generateStaticItemType(contents: String?, isTappable: Bool = false) -> StaticItemType {
+        return StaticItemType(staticItem: generateStaticItem(contents: contents, isTappable: isTappable))
+    }
+    
+    func generateStaticItem(client: PubNub, isTappable: Bool = false) -> StaticItem {
+        return generateStaticItem(contents: generateContents(client: client), isTappable: isTappable)
+    }
+    
+    func generateContents(client: PubNub) -> String? {
+        switch self {
+        case .pubKey:
+            return client.currentConfiguration().publishKey
+        case .subKey:
+            return client.currentConfiguration().subscribeKey
+        case .channels:
+            return client.channelsString()
+        case .channelGroups:
+            return client.channelGroupsString()
+        case .authKey:
+            return client.currentConfiguration().authKey
+        case .origin:
+            return client.currentConfiguration().origin
+        }
+    }
+    
     func generateStaticItemType(client: PubNub, isTappable: Bool = false) -> StaticItemType {
         return StaticItemType(staticItem: generateStaticItem(client: client, isTappable: isTappable))
     }
@@ -56,6 +93,8 @@ protocol ClientPropertyUpdater: StaticDataSourceUpdater {
     func indexPath(for clientProperty: ClientProperty) -> IndexPath?
     // if indexPath is nil, then no update occurred
     func update(dataSource: inout StaticDataSource, for clientProperty: ClientProperty, with client: PubNub, isTappable: Bool) -> IndexPath?
+    // below only works with title contents
+    func update(dataSource: inout StaticDataSource, for clientProperty: ClientProperty, with contents: String?, isTappable: Bool) -> IndexPath?
 }
 
 extension ClientPropertyUpdater {
@@ -64,6 +103,13 @@ extension ClientPropertyUpdater {
             return nil
         }
         let staticItemType = clientProperty.generateStaticItemType(client: client, isTappable: isTappable)
+        return update(dataSource: &dataSource, at: propertyIndexPath, with: staticItemType, isTappable: isTappable)
+    }
+    func update(dataSource: inout StaticDataSource, for clientProperty: ClientProperty, with contents: String?, isTappable: Bool = false) -> IndexPath? {
+        guard let propertyIndexPath = indexPath(for: clientProperty) else {
+            return nil
+        }
+        let staticItemType = clientProperty.generateStaticItemType(contents: contents, isTappable: isTappable)
         return update(dataSource: &dataSource, at: propertyIndexPath, with: staticItemType, isTappable: isTappable)
     }
 }

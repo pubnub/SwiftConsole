@@ -8,6 +8,47 @@
 
 import UIKit
 
+enum ConsoleSegment: Int {
+    case all, messages, presence
+    
+    var title: String {
+        switch self {
+        case .all:
+            return "All"
+        case .messages:
+            return "Messages"
+        case .presence:
+            return "Presence Events"
+        }
+    }
+    
+    static var defaultValue: ConsoleSegment {
+        return .all
+    }
+    
+    static var defaultSegments: [ConsoleSegment] {
+        return [.all, .messages, .presence]
+    }
+    
+    static var defaultSegmentItems: [String] {
+        return defaultSegments.map {
+            $0.title
+        }
+    }
+    
+    //@“self.entity = %@ and subentityProperty = %@“ or even @“relationship.entity = %@ and relationship.onlysomedestinationsubentitiesAttribute = %@“
+    var consolePredicate: NSPredicate? {
+        switch self {
+        case .all:
+            return nil
+        case .messages:
+            return NSPredicate(format: "self.entity == %@", argumentArray: [MessageResult.entity()])
+        case .presence:
+            return NSPredicate(format: "self.entity = %@", argumentArray: [PresenceEventResult.self])
+        }
+    }
+}
+
 class SegmentedControlView: /*UICollectionViewCell*/ UICollectionReusableView {
     
     private let segmentedControl: UISegmentedControl

@@ -40,6 +40,10 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
         return NavigationController(pubNubViewController: ConsoleViewController(console: self))
     }
     
+    public func clientCreationViewController() -> NavigationController {
+        return NavigationController(pubNubViewController: ClientCreationViewController())
+    }
+    
     // MARK: - Core Data stack
     
     lazy var persistentContainer: NSPersistentContainer = {

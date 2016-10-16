@@ -29,10 +29,27 @@ protocol PubNubStaticItemGenerator {
 }
 
 protocol Title: StaticItem {
+    //init(title: String, isTappable: Bool)
     var title: String { get }
+    func updatedTitleItem(with title: String?) -> Title?
+}
+
+extension Title {
+    func updatedTitleItem(with title: String?) -> Title? {
+        guard let actualTitle = title else {
+            return nil
+        }
+        return TitleItem(title: actualTitle, isTappable: isTappable)
+    }
 }
 
 struct TitleItem: Title {
+    /*
+    init(title: String, isTappable: Bool = false) {
+        self.title = title
+        self.isTappable = isTappable
+    }
+ */
     var title: String
     var isTappable: Bool = false
 }

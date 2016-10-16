@@ -14,6 +14,17 @@ enum StaticItemType {
     case title(Title)
     case titleContents(TitleContents)
     
+    var staticItem: StaticItem {
+        switch self {
+        case let .title(aTitle):
+            return aTitle
+        case let .titleContents(aTitleContents):
+            return aTitleContents
+        case let .staticItem(aStaticItem):
+            return aStaticItem
+        }
+    }
+    
     var reuseIdentifier: String {
         switch self {
         case .title(_):
@@ -90,6 +101,20 @@ typealias StaticDataSourceProvider = DataSourceProvider<StaticDataSource, Static
 protocol StaticDataSourceUpdater {
     // if indexPath is nil then no update occurred
     func update(dataSource: inout StaticDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath?
+}
+
+class StaticItemCollectionViewFlowLayout: UICollectionViewFlowLayout {
+    override required init() {
+        super.init()
+        itemSize = TitleContentsCollectionViewCell.size
+        minimumLineSpacing = 20.0
+        minimumInteritemSpacing = 20.0
+        estimatedItemSize = TitleContentsCollectionViewCell.size
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
 
 class StaticItemCollectionView: UICollectionView {

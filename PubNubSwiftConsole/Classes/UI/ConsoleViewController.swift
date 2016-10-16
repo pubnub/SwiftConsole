@@ -29,7 +29,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
                 return IndexPath(row: 0, section: 1)
             case .channelGroups:
                 return IndexPath(item: 1, section: 1)
-            case .authKey:
+            case .authKey, .origin:
                 return nil
             }
         }
@@ -46,13 +46,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         self.console = console
         self.consoleCollectionView = ConsoleCollectionView(console: console)
         let bounds = UIScreen.main.bounds
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = TitleContentsCollectionViewCell.size
-        layout.minimumLineSpacing = 20.0
-        layout.minimumInteritemSpacing = 20.0
-        layout.estimatedItemSize = TitleContentsCollectionViewCell.size
+        let layout = StaticItemCollectionViewFlowLayout()
         //layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
-        //self.configurationCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         self.clientCollectionView = ClientCollectionView(frame: .zero, collectionViewLayout: layout)
         super.init()
     }
@@ -117,6 +112,12 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         
         console.client.addListener(self)
         clientCollectionView.reloadData()
+        
+        /*
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+            self.consoleCollectionView.predicate = ConsoleSegment.messages.consolePredicate
+        }
+ */
     }
 
     override open func didReceiveMemoryWarning() {

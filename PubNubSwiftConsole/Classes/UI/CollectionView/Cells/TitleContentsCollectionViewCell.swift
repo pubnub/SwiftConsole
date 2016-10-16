@@ -10,6 +10,16 @@ import UIKit
 
 protocol TitleContents: Title {
     var contents: String? { get }
+    func updatedTitleContentsItem(with contents: String?) -> TitleContents
+}
+
+extension TitleContents {
+    func updatedTitleContentsItem(with contents: String?) -> TitleContents {
+        guard let actualContents = contents else {
+            return TitleContentsItem(title: title, contents: nil, isTappable: isTappable)
+        }
+        return TitleContentsItem(title: title, contents: actualContents, isTappable: isTappable)
+    }
 }
 
 struct TitleContentsItem: TitleContents {
