@@ -49,8 +49,10 @@ class ConsoleCollectionView: UICollectionView {
         }
         
         didSet {
-            fetchedResultsController.fetchRequest.predicate = predicate
-            fetch()
+            performBatchUpdates({
+                self.fetchedResultsController.fetchRequest.predicate = self.predicate
+                self.fetch()
+                })
         }
     }
     
