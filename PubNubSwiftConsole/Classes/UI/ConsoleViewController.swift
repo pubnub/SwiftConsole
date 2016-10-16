@@ -29,6 +29,10 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
                 return IndexPath(row: 0, section: 1)
             case .channelGroups:
                 return IndexPath(item: 1, section: 1)
+            case .subscribe:
+                return IndexPath(item: 0, section: 2)
+            case .unsubscribe:
+                return IndexPath(item: 1, section: 2)
             case .authKey, .origin:
                 return nil
             }
@@ -94,13 +98,16 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         
         let pubKeyItemType = ClientProperty.pubKey.generateStaticItemType(client: console.client)
         let subKeyItemType = ClientProperty.subKey.generateStaticItemType(client: console.client)
-        let channelsItemType = ClientProperty.channels.generateStaticItemType(client: console.client, isTappable: true)
-        let channelGroupsItemType = ClientProperty.channelGroups.generateStaticItemType(client: console.client, isTappable: true)
+        let channelsItemType = ClientProperty.channels.generateStaticItemType(client: console.client)
+        let channelGroupsItemType = ClientProperty.channelGroups.generateStaticItemType(client: console.client)
+        let subscribeItemType = ClientProperty.subscribe.generateStaticItemType(client: console.client, isTappable: true)
+        let unsubscribeItemType = ClientProperty.unsubscribe.generateStaticItemType(client: console.client, isTappable: true)
         
         let section0 = Section(items: pubKeyItemType, subKeyItemType)
         let section1 = Section(items: channelsItemType, channelGroupsItemType)
+        let section2 = Section(items: subscribeItemType, unsubscribeItemType)
         
-        let dataSource = DataSource(sections: section0, section1)
+        let dataSource = DataSource(sections: section0, section1, section2)
         
         configurationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
         //configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
@@ -146,7 +153,46 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
         case collectionView as ConsoleCollectionView:
+            return
+            
+        case collectionView as ClientCollectionView:
             print("console collection view tapped")
+            let selectedItem = consoleUpdater.staticItem(from: configurationDataSourceProvider.dataSource, at: indexPath)
+            guard selectedItem.isTappable == true else {
+                return
+            }
+            guard let clientProperty = ClientProperty(staticItem: selectedItem) else {
+                return
+            }
+            switch clientProperty {
+            case .subscribe:
+                let alertController = UIAlertController(title: "Subscribe", message: "Enter a value", preferredStyle: .alert)
+                alertController.addTextField(configurationHandler: { (textField) in
+                    textField.placeholder = "Channel or group name ..."
+                })
+                let channelSubscribe = UIAlertAction(title: "Subscribe as channel", style: .default, handler: { (action) in
+                    print(action)
+                })
+                let channelGroupSubscribe = UIAlertAction(title: "Subscribe as channel group", style: .default, handler: { (action) in
+                    print(action)
+                })
+                let cancelAction = UIAlertAction(title: "Cancel", style: .default)
+                alertController.addAction(channelSubscribe)
+                alertController.addAction(channelGroupSubscribe)
+                alertController.addAction(cancelAction)
+                present(alertController, animated: true)
+            case .unsubscribe:
+                let alertController = UIAlertController(title: "Unsubscribe", message: "Choose an option", preferredStyle: .alert)
+                let unsubscribeFromAll = UIAlertAction(title: "Unsubscribe from all", style: .default, handler: { (action) in
+                    
+                })
+                let cancelAction = UIAlertAction(title: "Cancel", style: .default)
+                alertController.addAction(unsubscribeFromAll)
+                alertController.addAction(cancelAction)
+                present(alertController, animated: true)
+            default:
+                return
+            }
         default:
             print("other collection view tapped")
         }

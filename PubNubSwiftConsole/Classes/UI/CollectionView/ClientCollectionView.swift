@@ -17,6 +17,8 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     case channelGroups = "Channel Groups"
     case authKey = "PAM Key"
     case origin = "Origin"
+    case subscribe = "Subscribe"
+    case unsubscribe = "Unsubscribe"
     
     var title: String {
         return rawValue
@@ -43,11 +45,18 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
             return nil
         case .channels, .channelGroups:
             return nil
+        default:
+            return nil
         }
     }
     
     func generateStaticItem(contents: String?, isTappable: Bool = false) -> StaticItem {
-        return TitleContentsItem(title: title, contents: contents, isTappable: isTappable)
+        switch self {
+        case .pubKey, .subKey, .origin, .authKey, .channels, .channelGroups:
+            return TitleContentsItem(title: title, contents: contents, isTappable: isTappable)
+        case .subscribe, .unsubscribe:
+            return TitleItem(title: title, isTappable: isTappable)
+        }
     }
     
     func generateDefaultStaticItem(isTappable: Bool = false) -> StaticItem {
@@ -80,6 +89,8 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
             return client.currentConfiguration().authKey
         case .origin:
             return client.currentConfiguration().origin
+        case .subscribe, .unsubscribe:
+            return nil
         }
     }
     
@@ -90,13 +101,13 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
 
 protocol ClientPropertyGetter: StaticItemGetter {
     func indexPath(for clientProperty: ClientProperty) -> IndexPath?
-    func staticItem(from dataSource: StaticDataSource, for clientProperty: ClientProperty) -> StaticItem
+    func staticItem(from dataSource: StaticDataSource, for clientProperty: ClientProperty) -> StaticItem?
 }
 
 extension ClientPropertyGetter {
-    func staticItem(from dataSource: StaticDataSource, for clientProperty: ClientProperty) -> StaticItem {
+    func staticItem(from dataSource: StaticDataSource, for clientProperty: ClientProperty) -> StaticItem? {
         guard let indexPath = indexPath(for: clientProperty) else {
-            fatalError()
+            return nil
         }
         return staticItem(from: dataSource, at: indexPath)
     }
