@@ -59,7 +59,18 @@ class TitleContentsCollectionViewCell: TitleCollectionViewCell {
     
     func update(titleContents: TitleContents?) {
         super.update(title: titleContents)
+        if isTappable {
+            titleLabel.textColor = .gray
+            contentsLabel.textColor = .black
+        }
         update(contents: titleContents?.contents)
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        contentsLabel.text = nil
+        contentsLabel.textColor = .black
+        titleLabel.textColor = .black
     }
     
     class override var size: CGSize {

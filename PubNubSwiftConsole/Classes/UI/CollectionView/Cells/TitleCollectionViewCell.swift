@@ -29,7 +29,6 @@ protocol PubNubStaticItemGenerator {
 }
 
 protocol Title: StaticItem {
-    //init(title: String, isTappable: Bool)
     var title: String { get }
     func updatedTitleItem(with title: String?) -> Title?
 }
@@ -44,21 +43,15 @@ extension Title {
 }
 
 struct TitleItem: Title {
-    /*
-    init(title: String, isTappable: Bool = false) {
-        self.title = title
-        self.isTappable = isTappable
-    }
- */
     var title: String
     var isTappable: Bool = false
 }
 
 class TitleCollectionViewCell: UICollectionViewCell {
     
-    private let titleLabel: UILabel
+    internal let titleLabel: UILabel
     internal let stackView: UIStackView
-    private var isTappable: Bool = false
+    private(set) var isTappable: Bool = false
     
     override init(frame: CGRect) {
         let title = UILabel(frame: .zero)
@@ -66,7 +59,8 @@ class TitleCollectionViewCell: UICollectionViewCell {
         self.stackView = UIStackView(arrangedSubviews: [title])
         self.titleLabel = title
         super.init(frame: frame)
-        contentView.backgroundColor = .red
+        titleLabel.textColor = .black
+        contentView.backgroundColor = defaultBackgroundColor
         contentView.addSubview(self.stackView)
         stackView.forceAutoLayout()
         stackView.axis = .vertical
@@ -96,7 +90,8 @@ class TitleCollectionViewCell: UICollectionViewCell {
         titleLabel.text = nil
         isHighlighted = false
         isTappable = false
-        contentView.backgroundColor = .red
+        contentView.backgroundColor = defaultBackgroundColor
+        titleLabel.textColor = .black
         contentView.setNeedsLayout()
     }
     
@@ -106,10 +101,16 @@ class TitleCollectionViewCell: UICollectionViewCell {
         }
         set {
             super.isHighlighted = newValue
-            if isTappable {
-                contentView.backgroundColor = (newValue ? .lightGray : .red)
-            }
+            contentView.backgroundColor = highlightedBackgroundColor
         }
+    }
+    
+    var defaultBackgroundColor: UIColor {
+        return .white
+    }
+    
+    var highlightedBackgroundColor: UIColor {
+        return (isTappable ? .lightGray : defaultBackgroundColor)
     }
     
     func update(title: Title?) {
