@@ -491,6 +491,7 @@
 			baseConfigurationReference = AC9159341710769286AB23FC /* Pods-SwiftConsole_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = BSKYS9EZN8;
 				INFOPLIST_FILE = SwiftConsole/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -506,6 +507,7 @@
 			baseConfigurationReference = CBC56B337D3616192532B33C /* Pods-SwiftConsole_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = BSKYS9EZN8;
 				INFOPLIST_FILE = SwiftConsole/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -520,6 +522,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 338630B55A4BC2A5892D158B /* Pods-SwiftConsole_Tests.debug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = BSKYS9EZN8;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -541,6 +544,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 12A0C340875FD30A0DC50E15 /* Pods-SwiftConsole_Tests.release.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = BSKYS9EZN8;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
