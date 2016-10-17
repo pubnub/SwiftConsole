@@ -35,6 +35,8 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
                 return IndexPath(row: 0, section: 1)
             case .origin:
                 return IndexPath(item: 1, section: 1)
+            case .uuid:
+                return IndexPath(item: 0, section: 2)
             default:
                 fatalError("\(clientProperty)")
             }
@@ -83,11 +85,13 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         let subKeyItemType = ClientProperty.subKey.generateDefaultStaticItemType(isTappable: true)
         let authKeyItemType = ClientProperty.authKey.generateDefaultStaticItemType(isTappable: true)
         let originItemType = ClientProperty.origin.generateDefaultStaticItemType(isTappable: true)
+        let uuidItemType = ClientProperty.uuid.generateDefaultStaticItemType(isTappable: true)
         
         let section0 = Section(items: pubKeyItemType, subKeyItemType)
         let section1 = Section(items: authKeyItemType, originItemType)
+        let section2 = Section(items: uuidItemType)
         
-        let dataSource = DataSource(sections: section0, section1)
+        let dataSource = DataSource(sections: section0, section1, section2)
         
         clientCreationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
         //configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
@@ -162,6 +166,7 @@ extension UIAlertController {
         let alertController = UIAlertController(title: "Update \(titleContents.title)", message: "Enter something to update", preferredStyle: .alert)
         alertController.addTextField { (textField) in
             textField.placeholder = "Enter values ..."
+            textField.text = titleContents.contents
         }
         let okAction = UIAlertAction(title: "OK", style: .default) { (alert) in
             let textFieldInput = alertController.textFields?[0].text

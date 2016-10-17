@@ -19,6 +19,9 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     case origin = "Origin"
     case subscribe = "Subscribe"
     case unsubscribe = "Unsubscribe"
+    case uuid = "UUID"
+    case streamFilter = "Stream Filter"
+    
     
     var title: String {
         return rawValue
@@ -41,9 +44,11 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
             return "demo-36"
         case .origin:
             return "pubsub.pubnub.com"
+        case .uuid:
+            return UUID().uuidString
         case .authKey:
             return nil
-        case .channels, .channelGroups:
+        case .channels, .channelGroups, .streamFilter:
             return nil
         default:
             return nil
@@ -52,7 +57,7 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     
     func generateStaticItem(contents: String?, isTappable: Bool = false) -> StaticItem {
         switch self {
-        case .pubKey, .subKey, .origin, .authKey, .channels, .channelGroups:
+        case .pubKey, .subKey, .origin, .authKey, .channels, .channelGroups, .uuid, .streamFilter:
             return TitleContentsItem(title: title, contents: contents, isTappable: isTappable)
         case .subscribe, .unsubscribe:
             return TitleItem(title: title, isTappable: isTappable)
@@ -89,8 +94,12 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
             return client.currentConfiguration().authKey
         case .origin:
             return client.currentConfiguration().origin
+        case .uuid:
+            return client.uuid()
         case .subscribe, .unsubscribe:
             return nil
+        case .streamFilter:
+            return client.filterExpression
         }
     }
     

@@ -37,11 +37,9 @@ class TextViewCollectionViewCell: UICollectionViewCell {
     
     override var isHighlighted: Bool {
         get {
-            print(#function)
             return super.isHighlighted
         }
         set {
-            print(#function)
             super.isHighlighted = newValue
             textView.backgroundColor = (newValue ? .lightGray : .white)
         }

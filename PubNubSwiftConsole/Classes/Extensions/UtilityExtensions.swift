@@ -34,6 +34,10 @@ extension UINavigationItem {
             self.prompt = nil
         }
     }
+    
+    func setPrompt(with error: PromptError, for duration: Double = 3.0) {
+        setPrompt(with: error.prompt, for: duration)
+    }
 }
 
 extension UIControl {
@@ -64,17 +68,18 @@ extension UIView {
     }
 }
 
-protocol AlertControllerError: LocalizedError, CustomNSError {
+protocol AlertControllerError: Error {
     /// Title for the UIAlertController
     var alertTitle: String { get }
     var alertMessage: String { get }
 }
 
-protocol PromptError: LocalizedError, CustomNSError {
+protocol PromptError: Error {
     var prompt: String { get }
 }
 
 extension PromptError {
+    /*
     public static var errorDomain: String {
         return "CookingBrowser"
     }
@@ -88,9 +93,11 @@ extension PromptError {
     public var errorDescription: String? {
         return prompt
     }
+ */
 }
 
 extension AlertControllerError {
+    /*
     public static var errorDomain: String {
         return "CookingBrowser"
     }
@@ -104,6 +111,7 @@ extension AlertControllerError {
     public var errorDescription: String? {
         return alertMessage
     }
+ */
 }
 
 extension UIAlertController {

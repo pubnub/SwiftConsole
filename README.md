@@ -26,8 +26,9 @@ pod "SwiftConsole"
 * Errors for client creation
 * Move data source updating into an internal object
 * Add publishing
-* Add stream filtering input
 * Fix up predicate for collection view (or hard code better predicate)
+* Clean up log entries (collection view cells)
+* Validate error handling
 
 ## Author
 

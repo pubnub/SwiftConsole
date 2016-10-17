@@ -124,6 +124,22 @@ enum PubNubSubscribableStringParsingError: Error, CustomStringConvertible {
     }
 }
 
+extension PubNubSubscribableStringParsingError: PromptError {
+    var prompt: String {
+        return description
+    }
+}
+
+extension PubNubSubscribableStringParsingError: AlertControllerError {
+    var alertTitle: String {
+        return "String parsing error"
+    }
+    
+    var alertMessage: String {
+        return description
+    }
+}
+
 enum PubNubPublishError: Error, CustomStringConvertible {
     case nilMessage
     case nilChannel

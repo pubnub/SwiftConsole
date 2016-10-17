@@ -102,11 +102,9 @@ class TitleCollectionViewCell: UICollectionViewCell {
     
     override var isHighlighted: Bool {
         get {
-            print(#function)
             return super.isHighlighted
         }
         set {
-            print(#function)
             super.isHighlighted = newValue
             if isTappable {
                 contentView.backgroundColor = (newValue ? .lightGray : .red)

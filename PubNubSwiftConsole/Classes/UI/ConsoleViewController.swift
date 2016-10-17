@@ -30,10 +30,12 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
             case .channelGroups:
                 return IndexPath(item: 1, section: 1)
             case .subscribe:
-                return IndexPath(item: 0, section: 2)
+                return IndexPath(item: 0, section: 3)
             case .unsubscribe:
-                return IndexPath(item: 1, section: 2)
-            case .authKey, .origin:
+                return IndexPath(item: 1, section: 3)
+            case .streamFilter:
+                return IndexPath(item: 0, section: 2)
+            case .authKey, .origin, .uuid:
                 return nil
             }
         }
@@ -102,12 +104,14 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         let channelGroupsItemType = ClientProperty.channelGroups.generateStaticItemType(client: console.client)
         let subscribeItemType = ClientProperty.subscribe.generateStaticItemType(client: console.client, isTappable: true)
         let unsubscribeItemType = ClientProperty.unsubscribe.generateStaticItemType(client: console.client, isTappable: true)
+        let streamFilterType = ClientProperty.streamFilter.generateStaticItemType(client: console.client, isTappable: true)
         
         let section0 = Section(items: pubKeyItemType, subKeyItemType)
         let section1 = Section(items: channelsItemType, channelGroupsItemType)
-        let section2 = Section(items: subscribeItemType, unsubscribeItemType)
+        let section2 = Section(items: streamFilterType)
+        let section3 = Section(items: subscribeItemType, unsubscribeItemType)
         
-        let dataSource = DataSource(sections: section0, section1, section2)
+        let dataSource = DataSource(sections: section0, section1, section2, section3)
         
         configurationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
         //configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
@@ -166,33 +170,71 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
             }
             switch clientProperty {
             case .subscribe:
-                let alertController = UIAlertController(title: "Subscribe", message: "Enter a value, comma delimited", preferredStyle: .alert)
-                alertController.addTextField(configurationHandler: { (textField) in
-                    textField.placeholder = "Channel or group name ..."
-                })
-                let channelSubscribe = UIAlertAction(title: "Subscribe as channel", style: .default, handler: { (action) in
-                    print(action)
-                    guard let textFieldInput = alertController.textFields?[0].text else {
-                        return
+                let alertController = UIAlertController.subscribeAlertController(with: { (action, input) -> (Void) in
+                    do {
+                        guard let subscribablesArray = try PubNub.stringToSubscribablesArray(input) else {
+                            return
+                        }
+                        switch action {
+                        case .channels:
+                            self.console.client.subscribeToChannels(subscribablesArray, withPresence: true)
+                        case .channelGroups:
+                            self.console.client.subscribeToChannelGroups(subscribablesArray, withPresence: true)
+                        }
+                    } catch let userError as AlertControllerError {
+                        // TODO: Implement error handling
+                        let errorAlertController = UIAlertController.alertController(error: userError)
+                        self.present(errorAlertController, animated: true)
+                    } catch {
+                        fatalError(error.localizedDescription)
                     }
-                    print("textFieldInput")
                 })
-                let channelGroupSubscribe = UIAlertAction(title: "Subscribe as channel group", style: .default, handler: { (action) in
-                    print(action)
-                })
-                let cancelAction = UIAlertAction(title: "Cancel", style: .default)
-                alertController.addAction(channelSubscribe)
-                alertController.addAction(channelGroupSubscribe)
-                alertController.addAction(cancelAction)
                 present(alertController, animated: true)
             case .unsubscribe:
-                let alertController = UIAlertController(title: "Unsubscribe", message: "Choose an option", preferredStyle: .alert)
-                let unsubscribeFromAll = UIAlertAction(title: "Unsubscribe from all", style: .default, handler: { (action) in
+                let alertController = UIAlertController.unsubscribeAlertController(with: { (action, input) -> (Void) in
                     
+                    guard action != .all else {
+                        self.console.client.unsubscribeFromAll()
+                        return
+                    }
+                    do {
+                        guard let subscribablesArray = try PubNub.stringToSubscribablesArray(input) else {
+                            return
+                        }
+                        switch action {
+                        case .channels:
+                            self.console.client.unsubscribeFromChannels(subscribablesArray, withPresence: true)
+                        case .channelGroups:
+                            self.console.client.unsubscribeFromChannelGroups(subscribablesArray, withPresence: true)
+                        default:
+                            fatalError("Not expecting this kind of action")
+                        }
+                    } catch let userError as AlertControllerError {
+                        // TODO: Implement error handling
+                        let errorAlertController = UIAlertController.alertController(error: userError)
+                        self.present(errorAlertController, animated: true)
+                    } catch {
+                        fatalError(error.localizedDescription)
+                    }
                 })
-                let cancelAction = UIAlertAction(title: "Cancel", style: .default)
-                alertController.addAction(unsubscribeFromAll)
-                alertController.addAction(cancelAction)
+                present(alertController, animated: true)
+            case .streamFilter:
+                let alertController = UIAlertController.streamFilterAlertController(withCurrent: console.client.filterExpression, handler: { (action, input) -> (Void) in
+                    defer {
+                        print("ran defer \(#function)")
+                        self.clientCollectionView.performBatchUpdates({ 
+                            guard let updatedIndexPath = self.consoleUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .streamFilter, with: self.console.client, isTappable: true) else {
+                                return
+                            }
+                            self.clientCollectionView.reloadItems(at: [updatedIndexPath])
+                            })
+                    }
+                    guard let actualInput = input else {
+                        self.console.client.filterExpression = nil
+                        return
+                    }
+                    self.console.client.filterExpression = actualInput
+                })
                 present(alertController, animated: true)
             default:
                 return
@@ -222,11 +264,140 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     
     @objc(client:didReceiveStatus:)
     public func client(_ client: PubNub, didReceive status: PNStatus) {
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \(#function)")
         guard (status.operation == .subscribeOperation) || (status.operation == .unsubscribeOperation) else {
             return
         }
         updateSubscribablesCells(client: client)
     }
+    
+}
+
+extension UIAlertAction {
+    static func cancelAlertAction(style: UIAlertActionStyle = .default) -> UIAlertAction {
+        return UIAlertAction(title: "Cancel", style: style)
+    }
+}
+
+
+
+extension UIAlertController {
+    typealias AlertActionHandler = ((UIAlertAction) -> Swift.Void)
+    typealias UnsubscribeActionHandler = (UnsubscribeAction, String?) -> (Swift.Void)
+    typealias SubscribeActionHandler = (SubscribeAction, String?) -> (Swift.Void)
+    typealias StreamFilterActionHandler = (StreamFilterAction, String?) -> (Swift.Void)
+    
+    // TODO: This could all be replaced with generics
+    
+    enum SubscribeAction: String {
+        case channels = "Subscribe as channels"
+        case channelGroups = "Subscribe as channel groups"
+        
+        static func alertActionHandler(action type: SubscribeAction, withInput textField: UITextField, handler: SubscribeActionHandler? = nil) -> AlertActionHandler {
+            return { (action) in
+                guard let actualTitle = action.title, let actionType = SubscribeAction(rawValue: actualTitle), type == actionType else {
+                    fatalError()
+                }
+                handler?(actionType, textField.text)
+            }
+        }
+        
+        func alertAction(withInput textField: UITextField, handler: SubscribeActionHandler? = nil) -> UIAlertAction {
+            let subscribeHandler = SubscribeAction.alertActionHandler(action: self, withInput: textField, handler: handler)
+            return UIAlertAction(title: rawValue, style: .default, handler: subscribeHandler)
+        }
+    }
+    
+    enum UnsubscribeAction: String {
+        case channels = "Unsubscribe as channels"
+        case channelGroups = "Unsubscribe as channel groups"
+        case all = "Unsubscribe from all"
+        
+        static func alertActionHandler(action type: UnsubscribeAction, withInput textField: UITextField, handler: UnsubscribeActionHandler? = nil) -> AlertActionHandler {
+            return { (action) in
+                guard let actualTitle = action.title, let actionType = UnsubscribeAction(rawValue: actualTitle), type == actionType else {
+                    fatalError()
+                }
+                handler?(actionType, textField.text)
+            }
+        }
+        
+        func alertAction(withInput textField: UITextField, handler: UnsubscribeActionHandler? = nil) -> UIAlertAction {
+            let unsubscribeHandler = UnsubscribeAction.alertActionHandler(action: self, withInput: textField, handler: handler)
+            return UIAlertAction(title: rawValue, style: .default, handler: unsubscribeHandler)
+        }
+    }
+    
+    enum StreamFilterAction: String {
+        case setNew = "Set as new stream filter"
+        case remove = "Remove filter"
+        
+        static func alertActionHandler(action type: StreamFilterAction, withInput textField: UITextField, handler: StreamFilterActionHandler? = nil) -> AlertActionHandler {
+            return { (action) in
+                guard let actualTitle = action.title, let actionType = StreamFilterAction(rawValue: actualTitle), type == actionType else {
+                    fatalError()
+                }
+                handler?(actionType, textField.text)
+            }
+        }
+        
+        func alertAction(withInput textField: UITextField, handler: StreamFilterActionHandler? = nil) -> UIAlertAction {
+            let streamFilterHandler = StreamFilterAction.alertActionHandler(action: self, withInput: textField, handler: handler)
+            return UIAlertAction(title: rawValue, style: .default, handler: streamFilterHandler)
+        }
+    }
+    
+    static func streamFilterAlertController(withCurrent streamFilter: String? = nil, handler: StreamFilterActionHandler? = nil) -> UIAlertController {
+        let alertController = UIAlertController(title: "Stream filter", message: "Enter a string (setting a blank string removes the current stream filter string", preferredStyle: .alert)
+        alertController.addTextField(configurationHandler: { (textField) in
+            textField.placeholder = (streamFilter ?? "Enter stream filter ...")
+        })
+        guard let inputTextField = alertController.textFields?[0] else {
+            fatalError("Didn't find textField")
+        }
+        let setStreamFilterAction = StreamFilterAction.setNew.alertAction(withInput: inputTextField, handler: handler)
+        let removeStreamFilterAction = StreamFilterAction.remove.alertAction(withInput: inputTextField, handler: handler)
+        let cancelAction = UIAlertAction.cancelAlertAction()
+        alertController.addAction(setStreamFilterAction)
+        alertController.addAction(removeStreamFilterAction)
+        alertController.addAction(cancelAction)
+        return alertController
+    }
+    
+    static func subscribeAlertController(with handler: SubscribeActionHandler? = nil) -> UIAlertController {
+        let alertController = UIAlertController(title: "Subscribe", message: "Enter a value, comma delimited", preferredStyle: .alert)
+        alertController.addTextField(configurationHandler: { (textField) in
+            textField.placeholder = "Channel or group name ..."
+        })
+        guard let inputTextField = alertController.textFields?[0] else {
+            fatalError("Didn't find textField")
+        }
+        let subscribeToChannelsAction = SubscribeAction.channels.alertAction(withInput: inputTextField, handler: handler)
+        let subscribeToChannelGroupsAction = SubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
+        let cancelAction = UIAlertAction.cancelAlertAction()
+        alertController.addAction(subscribeToChannelsAction)
+        alertController.addAction(subscribeToChannelGroupsAction)
+        alertController.addAction(cancelAction)
+        return alertController
+    }
+    
+    static func unsubscribeAlertController(with handler: UnsubscribeActionHandler? = nil) -> UIAlertController {
+        let alertController = UIAlertController(title: "Unsubscribe", message: "Enter a value, comma delimited (Unsubscribe from all ignores input text)", preferredStyle: .alert)
+        alertController.addTextField(configurationHandler: { (textField) in
+            textField.placeholder = "Channel or group name ..."
+        })
+        guard let inputTextField = alertController.textFields?[0] else {
+            fatalError("Didn't find textField")
+        }
+        let unsubscribeFromChannelsAction = UnsubscribeAction.channels.alertAction(withInput: inputTextField, handler: handler)
+        let unsubscribeFromChannelGroupsAction = UnsubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
+        let unsubscribeFromAllAction = UnsubscribeAction.all.alertAction(withInput: inputTextField, handler: handler)
+        let cancelAction = UIAlertAction.cancelAlertAction()
+        alertController.addAction(unsubscribeFromChannelsAction)
+        alertController.addAction(unsubscribeFromChannelGroupsAction)
+        alertController.addAction(unsubscribeFromAllAction)
+        alertController.addAction(cancelAction)
+        return alertController
+    }
+    
     
 }
