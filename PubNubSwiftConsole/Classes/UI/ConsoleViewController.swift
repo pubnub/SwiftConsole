@@ -284,6 +284,7 @@ extension UIAlertController {
     typealias UnsubscribeActionHandler = (UnsubscribeAction, String?) -> (Swift.Void)
     typealias SubscribeActionHandler = (SubscribeAction, String?) -> (Swift.Void)
     typealias StreamFilterActionHandler = (StreamFilterAction, String?) -> (Swift.Void)
+    typealias PublishActionHandler = (PublishAction, String?) -> (Swift.Void)
     
     // TODO: This could all be replaced with generics
     
@@ -303,6 +304,24 @@ extension UIAlertController {
         func alertAction(withInput textField: UITextField, handler: SubscribeActionHandler? = nil) -> UIAlertAction {
             let subscribeHandler = SubscribeAction.alertActionHandler(action: self, withInput: textField, handler: handler)
             return UIAlertAction(title: rawValue, style: .default, handler: subscribeHandler)
+        }
+    }
+    
+    enum PublishAction: String {
+        case publish = "Publish"
+        
+        static func alertActionHandler(action type: PublishAction, withInput textField: UITextField, handler: PublishActionHandler? = nil) -> AlertActionHandler {
+            return { (action) in
+                guard let actualTitle = action.title, let actionType = PublishAction(rawValue: actualTitle), type == actionType else {
+                    fatalError()
+                }
+                handler?(actionType, textField.text)
+            }
+        }
+        
+        func alertAction(withInput textField: UITextField, handler: PublishActionHandler? = nil) -> UIAlertAction {
+            let publishHandler = PublishAction.alertActionHandler(action: self, withInput: textField, handler: handler)
+            return UIAlertAction(title: rawValue, style: .default, handler: publishHandler)
         }
     }
     
@@ -398,5 +417,19 @@ extension UIAlertController {
         return alertController
     }
     
+    static func publishAlertController(withCurrent message: String, handler: PublishActionHandler? = nil) -> UIAlertController {
+        let alertController = UIAlertController(title: "Enter a channel", message: "Publish: \(message)", preferredStyle: .alert)
+        alertController.addTextField(configurationHandler: { (textField) in
+            textField.placeholder = "Enter channel name ..."
+        })
+        guard let inputTextField = alertController.textFields?[0] else {
+            fatalError("Didn't find textField")
+        }
+        let publishAction = PublishAction.publish.alertAction(withInput: inputTextField, handler: handler)
+        let cancelAction = UIAlertAction.cancelAlertAction()
+        alertController.addAction(publishAction)
+        alertController.addAction(cancelAction)
+        return alertController
+    }
     
 }
