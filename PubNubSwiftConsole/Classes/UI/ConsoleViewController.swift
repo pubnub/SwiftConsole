@@ -13,7 +13,7 @@ import JSQDataSourcesKit
 
 public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     
-    struct ConsoleUpdater: ClientPropertyUpdater {
+    struct ClientUpdater: ClientPropertyUpdater {
         internal func update(dataSource: inout StaticDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath? {
             dataSource[indexPath] = item
             return indexPath
@@ -41,7 +41,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         }
     }
     
-    let consoleUpdater = ConsoleUpdater()
+    let clientUpdater = ClientUpdater()
 
     var configurationDataSourceProvider: StaticDataSourceProvider!
     let console: SwiftConsole
@@ -114,7 +114,6 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         let dataSource = DataSource(sections: section0, section1, section2, section3)
         
         configurationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
-        //configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
         
         clientCollectionView.delegate = self
         
@@ -142,10 +141,10 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         clientCollectionView.performBatchUpdates({
             let client = self.console.client
             var updatedIndexPaths = [IndexPath]()
-            if let updatedChannelsItemIndexPath = self.consoleUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channels, with: client, isTappable: true) {
+            if let updatedChannelsItemIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channels, with: client, isTappable: true) {
                 updatedIndexPaths.append(updatedChannelsItemIndexPath)
             }
-            if let updatedChannelGroupsItemIndexPath = self.consoleUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channelGroups, with: client, isTappable: true) {
+            if let updatedChannelGroupsItemIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channelGroups, with: client, isTappable: true) {
                 updatedIndexPaths.append(updatedChannelGroupsItemIndexPath)
             }
             self.clientCollectionView.reloadItems(at: updatedIndexPaths)
@@ -161,7 +160,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
             
         case collectionView as ClientCollectionView:
             print("console collection view tapped")
-            let selectedItem = consoleUpdater.staticItem(from: configurationDataSourceProvider.dataSource, at: indexPath)
+            let selectedItem = clientUpdater.staticItem(from: configurationDataSourceProvider.dataSource, at: indexPath)
             guard selectedItem.isTappable == true else {
                 return
             }
@@ -223,7 +222,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
                     defer {
                         print("ran defer \(#function)")
                         self.clientCollectionView.performBatchUpdates({ 
-                            guard let updatedIndexPath = self.consoleUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .streamFilter, with: self.console.client, isTappable: true) else {
+                            guard let updatedIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .streamFilter, with: self.console.client, isTappable: true) else {
                                 return
                             }
                             self.clientCollectionView.reloadItems(at: [updatedIndexPath])
