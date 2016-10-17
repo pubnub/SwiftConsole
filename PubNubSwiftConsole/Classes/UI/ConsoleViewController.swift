@@ -11,20 +11,6 @@ import CoreData
 import PubNub
 import JSQDataSourcesKit
 
-extension UIImage {
-    public convenience init?(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) {
-        let rect = CGRect(origin: .zero, size: size)
-        UIGraphicsBeginImageContextWithOptions(rect.size, true, 1.0)
-        color.setFill()
-        UIRectFill(rect)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        guard let cgImage = image?.cgImage else { return nil }
-        self.init(cgImage: cgImage)
-    }
-}
-
 public class ConsoleViewController: ViewController, UICollectionViewDelegate, UITextFieldDelegate {
     
     struct ClientUpdater: ClientPropertyUpdater {
@@ -93,7 +79,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
     
     internal lazy var customAccessoryView: PublishInputAccessoryView = {
         let bounds = UIScreen.main.bounds
-        let frame = CGRect(x: 0, y: 0, width: bounds.width, height: 100.0)
+        let frame = CGRect(x: 0, y: 0, width: bounds.width, height: 50.0)
         let publishView = PublishInputAccessoryView(target: self, action: #selector(publishButtonTapped(sender:)), frame: frame)
         publishView.delegate = self
         return publishView
@@ -177,6 +163,15 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         clientCollectionView.delegate = self
         
         clientCollectionView.dataSource = configurationDataSourceProvider.collectionViewDataSource
+        
+        func createKeyboardDismissRecognizer() -> UITapGestureRecognizer {
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard(sender:)))
+            tapGestureRecognizer.cancelsTouchesInView = false
+            return tapGestureRecognizer
+        }
+        
+        clientCollectionView.addGestureRecognizer(createKeyboardDismissRecognizer())
+        consoleCollectionView.addGestureRecognizer(createKeyboardDismissRecognizer())
         
         
         console.client.addListener(self)
@@ -346,6 +341,16 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
     }
  */
 
+    // MARK: - UIScrollViewDelegate
+    /*
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        dismissKeyboard(sender: scrollView)
+    }
+ */
+    
+    public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        dismissKeyboard(sender: scrollView)
+    }
     
     // MARK: - PNObjectEventListener
     
@@ -360,9 +365,13 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
     // MARK: - UITextFieldDelegate
     
     public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
+        dismissKeyboard(sender: textField)
         publish()
         return true
+    }
+    
+    func dismissKeyboard(sender: Any) {
+        inputAccessoryView?.resignFirstResponder()
     }
     
 }
