@@ -11,7 +11,21 @@ import CoreData
 import PubNub
 import JSQDataSourcesKit
 
-public class ConsoleViewController: ViewController, UICollectionViewDelegate {
+extension UIImage {
+    public convenience init?(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) {
+        let rect = CGRect(origin: .zero, size: size)
+        UIGraphicsBeginImageContextWithOptions(rect.size, true, 1.0)
+        color.setFill()
+        UIRectFill(rect)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        guard let cgImage = image?.cgImage else { return nil }
+        self.init(cgImage: cgImage)
+    }
+}
+
+public class ConsoleViewController: ViewController, UICollectionViewDelegate, UITextFieldDelegate {
     
     struct ClientUpdater: ClientPropertyUpdater {
         internal func update(dataSource: inout StaticDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath? {
@@ -47,6 +61,51 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     let console: SwiftConsole
     let consoleCollectionView: ConsoleCollectionView
     let clientCollectionView: ClientCollectionView
+    
+    class PublishInputAccessoryView: UITextField {
+        
+        required init(target: Any, action: Selector, frame: CGRect) {
+            super.init(frame: frame)
+            borderStyle = .line
+            backgroundColor = .green
+            clearButtonMode = .whileEditing
+            let publishFrame = CGRect(x: 0, y: 0, width: frame.width/5.0, height: frame.height)
+            placeholder = "Enter message ..."
+            let publishButton = UIButton(frame: publishFrame)
+            //let publishButton = UIButton(type: .system)
+            publishButton.setTitle("Publish", for: .normal)
+            let normalImage = UIImage(color: .red, size: publishFrame.size)
+            let highlightedImage = UIImage(color: .darkGray, size: publishFrame.size)
+            publishButton.setBackgroundImage(normalImage, for: .normal)
+            publishButton.setBackgroundImage(highlightedImage, for: .highlighted)
+            publishButton.addTarget(target, action: action, for: .touchUpInside)
+            rightView = publishButton
+            rightViewMode = .unlessEditing
+            returnKeyType = .send
+            
+        }
+        
+        required init?(coder aDecoder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+    }
+    
+    internal lazy var customAccessoryView: PublishInputAccessoryView = {
+        let bounds = UIScreen.main.bounds
+        let frame = CGRect(x: 0, y: 0, width: bounds.width, height: 100.0)
+        let publishView = PublishInputAccessoryView(target: self, action: #selector(publishButtonTapped(sender:)), frame: frame)
+        publishView.delegate = self
+        return publishView
+    }()
+    
+    public override var inputAccessoryView: UIView? {
+        return customAccessoryView
+    }
+    
+    public override var canBecomeFirstResponder: Bool {
+        return true
+    }
     
     public required init(console: SwiftConsole) {
         self.console = console
@@ -133,6 +192,35 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
     override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: - UI Actions
+    
+    func publishButtonTapped(sender: UIButton) {
+        publish()
+    }
+    
+    // MARK: - Publish Action
+    
+    func publish() {
+        // TODO: Should we show anything to the user if there is nothing to publish?
+        guard let publishTextField = inputAccessoryView as? PublishInputAccessoryView else {
+            fatalError("Expected to find text field")
+        }
+        publishTextField.resignFirstResponder()
+        guard let message = publishTextField.text else {
+            navigationItem.setPrompt(with: "There is nothing to publish")
+            return
+        }
+        let alertController = UIAlertController.publishAlertController(withCurrent: message) { (action, channel) -> (Void) in
+            // TODO: This should probably throw an error
+            guard let actualChannel = channel else {
+                self.navigationItem.setPrompt(with: "Must enter a channel to publish")
+                return
+            }
+            self.console.publish(message, toChannel: actualChannel)
+        }
+        present(alertController, animated: true)
     }
     
     // MARK: - UI Updates
@@ -269,167 +357,12 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate {
         updateSubscribablesCells(client: client)
     }
     
-}
-
-extension UIAlertAction {
-    static func cancelAlertAction(style: UIAlertActionStyle = .default) -> UIAlertAction {
-        return UIAlertAction(title: "Cancel", style: style)
-    }
-}
-
-
-
-extension UIAlertController {
-    typealias AlertActionHandler = ((UIAlertAction) -> Swift.Void)
-    typealias UnsubscribeActionHandler = (UnsubscribeAction, String?) -> (Swift.Void)
-    typealias SubscribeActionHandler = (SubscribeAction, String?) -> (Swift.Void)
-    typealias StreamFilterActionHandler = (StreamFilterAction, String?) -> (Swift.Void)
-    typealias PublishActionHandler = (PublishAction, String?) -> (Swift.Void)
+    // MARK: - UITextFieldDelegate
     
-    // TODO: This could all be replaced with generics
-    
-    enum SubscribeAction: String {
-        case channels = "Subscribe as channels"
-        case channelGroups = "Subscribe as channel groups"
-        
-        static func alertActionHandler(action type: SubscribeAction, withInput textField: UITextField, handler: SubscribeActionHandler? = nil) -> AlertActionHandler {
-            return { (action) in
-                guard let actualTitle = action.title, let actionType = SubscribeAction(rawValue: actualTitle), type == actionType else {
-                    fatalError()
-                }
-                handler?(actionType, textField.text)
-            }
-        }
-        
-        func alertAction(withInput textField: UITextField, handler: SubscribeActionHandler? = nil) -> UIAlertAction {
-            let subscribeHandler = SubscribeAction.alertActionHandler(action: self, withInput: textField, handler: handler)
-            return UIAlertAction(title: rawValue, style: .default, handler: subscribeHandler)
-        }
-    }
-    
-    enum PublishAction: String {
-        case publish = "Publish"
-        
-        static func alertActionHandler(action type: PublishAction, withInput textField: UITextField, handler: PublishActionHandler? = nil) -> AlertActionHandler {
-            return { (action) in
-                guard let actualTitle = action.title, let actionType = PublishAction(rawValue: actualTitle), type == actionType else {
-                    fatalError()
-                }
-                handler?(actionType, textField.text)
-            }
-        }
-        
-        func alertAction(withInput textField: UITextField, handler: PublishActionHandler? = nil) -> UIAlertAction {
-            let publishHandler = PublishAction.alertActionHandler(action: self, withInput: textField, handler: handler)
-            return UIAlertAction(title: rawValue, style: .default, handler: publishHandler)
-        }
-    }
-    
-    enum UnsubscribeAction: String {
-        case channels = "Unsubscribe as channels"
-        case channelGroups = "Unsubscribe as channel groups"
-        case all = "Unsubscribe from all"
-        
-        static func alertActionHandler(action type: UnsubscribeAction, withInput textField: UITextField, handler: UnsubscribeActionHandler? = nil) -> AlertActionHandler {
-            return { (action) in
-                guard let actualTitle = action.title, let actionType = UnsubscribeAction(rawValue: actualTitle), type == actionType else {
-                    fatalError()
-                }
-                handler?(actionType, textField.text)
-            }
-        }
-        
-        func alertAction(withInput textField: UITextField, handler: UnsubscribeActionHandler? = nil) -> UIAlertAction {
-            let unsubscribeHandler = UnsubscribeAction.alertActionHandler(action: self, withInput: textField, handler: handler)
-            return UIAlertAction(title: rawValue, style: .default, handler: unsubscribeHandler)
-        }
-    }
-    
-    enum StreamFilterAction: String {
-        case setNew = "Set as new stream filter"
-        case remove = "Remove filter"
-        
-        static func alertActionHandler(action type: StreamFilterAction, withInput textField: UITextField, handler: StreamFilterActionHandler? = nil) -> AlertActionHandler {
-            return { (action) in
-                guard let actualTitle = action.title, let actionType = StreamFilterAction(rawValue: actualTitle), type == actionType else {
-                    fatalError()
-                }
-                handler?(actionType, textField.text)
-            }
-        }
-        
-        func alertAction(withInput textField: UITextField, handler: StreamFilterActionHandler? = nil) -> UIAlertAction {
-            let streamFilterHandler = StreamFilterAction.alertActionHandler(action: self, withInput: textField, handler: handler)
-            return UIAlertAction(title: rawValue, style: .default, handler: streamFilterHandler)
-        }
-    }
-    
-    static func streamFilterAlertController(withCurrent streamFilter: String? = nil, handler: StreamFilterActionHandler? = nil) -> UIAlertController {
-        let alertController = UIAlertController(title: "Stream filter", message: "Enter a string (setting a blank string removes the current stream filter string", preferredStyle: .alert)
-        alertController.addTextField(configurationHandler: { (textField) in
-            textField.placeholder = (streamFilter ?? "Enter stream filter ...")
-        })
-        guard let inputTextField = alertController.textFields?[0] else {
-            fatalError("Didn't find textField")
-        }
-        let setStreamFilterAction = StreamFilterAction.setNew.alertAction(withInput: inputTextField, handler: handler)
-        let removeStreamFilterAction = StreamFilterAction.remove.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
-        alertController.addAction(setStreamFilterAction)
-        alertController.addAction(removeStreamFilterAction)
-        alertController.addAction(cancelAction)
-        return alertController
-    }
-    
-    static func subscribeAlertController(with handler: SubscribeActionHandler? = nil) -> UIAlertController {
-        let alertController = UIAlertController(title: "Subscribe", message: "Enter a value, comma delimited", preferredStyle: .alert)
-        alertController.addTextField(configurationHandler: { (textField) in
-            textField.placeholder = "Channel or group name ..."
-        })
-        guard let inputTextField = alertController.textFields?[0] else {
-            fatalError("Didn't find textField")
-        }
-        let subscribeToChannelsAction = SubscribeAction.channels.alertAction(withInput: inputTextField, handler: handler)
-        let subscribeToChannelGroupsAction = SubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
-        alertController.addAction(subscribeToChannelsAction)
-        alertController.addAction(subscribeToChannelGroupsAction)
-        alertController.addAction(cancelAction)
-        return alertController
-    }
-    
-    static func unsubscribeAlertController(with handler: UnsubscribeActionHandler? = nil) -> UIAlertController {
-        let alertController = UIAlertController(title: "Unsubscribe", message: "Enter a value, comma delimited (Unsubscribe from all ignores input text)", preferredStyle: .alert)
-        alertController.addTextField(configurationHandler: { (textField) in
-            textField.placeholder = "Channel or group name ..."
-        })
-        guard let inputTextField = alertController.textFields?[0] else {
-            fatalError("Didn't find textField")
-        }
-        let unsubscribeFromChannelsAction = UnsubscribeAction.channels.alertAction(withInput: inputTextField, handler: handler)
-        let unsubscribeFromChannelGroupsAction = UnsubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
-        let unsubscribeFromAllAction = UnsubscribeAction.all.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
-        alertController.addAction(unsubscribeFromChannelsAction)
-        alertController.addAction(unsubscribeFromChannelGroupsAction)
-        alertController.addAction(unsubscribeFromAllAction)
-        alertController.addAction(cancelAction)
-        return alertController
-    }
-    
-    static func publishAlertController(withCurrent message: String, handler: PublishActionHandler? = nil) -> UIAlertController {
-        let alertController = UIAlertController(title: "Enter a channel", message: "Publish: \(message)", preferredStyle: .alert)
-        alertController.addTextField(configurationHandler: { (textField) in
-            textField.placeholder = "Enter channel name ..."
-        })
-        guard let inputTextField = alertController.textFields?[0] else {
-            fatalError("Didn't find textField")
-        }
-        let publishAction = PublishAction.publish.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
-        alertController.addAction(publishAction)
-        alertController.addAction(cancelAction)
-        return alertController
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        publish()
+        return true
     }
     
 }

@@ -143,6 +143,22 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
         }
     }
     
+    // MARK: - Publish
+    
+    public func publish(_ message: Any, toChannel channel: String, withCompletion block: PNPublishCompletionBlock? = nil) {
+        client.publish(message, toChannel: channel) { (status) in
+            self.persistentContainer.performBackgroundTask { (context) in
+                let _ = ResultType.createCoreDataObject(result: status, in: context)
+                do {
+                    try context.save()
+                } catch {
+                    fatalError(error.localizedDescription)
+                }
+                block?(status)
+            }
+        }
+    }
+    
     // MARK: - PNObjectEventListener
     
     public func client(_ client: PubNub, didReceive status: PNStatus) {

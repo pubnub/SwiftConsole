@@ -95,5 +95,22 @@ class ConsoleCollectionView: UICollectionView {
     override func reloadData() {
         fetch()
     }
+    
+    // MARK: - First Responder touches
+    
+    public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        defer {
+            super.touchesBegan(touches, with: event)
+        }
+        guard let touch = touches.first else {
+            return
+        }
+        guard let inputView = inputAccessoryView else {
+            fatalError("Expected publish accessory view")
+        }
+        if inputView.isFirstResponder && touch.view != inputView {
+            resignFirstResponder()
+        }
+    }
 
 }
