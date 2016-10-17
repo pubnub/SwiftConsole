@@ -49,16 +49,24 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     
     // MARK: - Views
     
-    public static func consoleViewController(console: SwiftConsole) -> NavigationController {
-        return NavigationController(pubNubViewController: ConsoleViewController(console: console))
+    public static func navigationController(with rootViewController: ViewController) -> NavigationController {
+        return NavigationController(pubNubViewController: rootViewController)
     }
     
-    public func consoleViewController() -> NavigationController {
+    public static func navigationController(with rootViewControllerType: NavigationController.PubNubRootViewControllerType) -> NavigationController {
+        return NavigationController(rootViewControllerType: rootViewControllerType)
+    }
+    
+    public static func consoleViewController(console: SwiftConsole) -> ConsoleViewController {
+        return ConsoleViewController(console: console)
+    }
+    
+    public func consoleViewController() -> ConsoleViewController {
         return SwiftConsole.consoleViewController(console: self)
     }
     
-    public static func clientCreationViewController() -> NavigationController {
-        return NavigationController(pubNubViewController: ClientCreationViewController())
+    public static func clientCreationViewController() -> ClientCreationViewController {
+        return ClientCreationViewController()
     }
     
     // MARK: - Core Data stack

@@ -34,14 +34,14 @@ class ViewController: UIViewController, ClientCreationViewControllerDelegate {
             return
         }
         let console = appDelegate.console
-        let consoleViewController = console.consoleViewController()
+        let consoleViewController = SwiftConsole.navigationController(with: .console(console: console))
         consoleViewController.modalPresentationStyle = .overFullScreen
         consoleViewController.modalTransitionStyle = .coverVertical
         present(consoleViewController, animated: true)
     }
     
     func clientCreationButtonTapped(sender: UIButton) {
-        let clientCreationViewController = SwiftConsole.clientCreationViewController()
+        let clientCreationViewController = SwiftConsole.navigationController(with: .clientCreation)
         clientCreationViewController.modalPresentationStyle = .overFullScreen
         clientCreationViewController.modalTransitionStyle = .coverVertical
         let clientVC = clientCreationViewController.topViewController as! ClientCreationViewController

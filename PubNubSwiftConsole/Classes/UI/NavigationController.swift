@@ -27,41 +27,30 @@ open class NavigationController: UINavigationController, UINavigationControllerD
         self.isToolbarHidden = (!showsToolbar)
     }
     
-    /*
     public enum PubNubRootViewControllerType {
         case clientCreation
-        case console(client: PubNub)
-        case publish(client: PubNub)
+        case console(console: SwiftConsole)
         func create() -> ViewController {
             switch self {
             case .clientCreation:
                 return ClientCreationViewController()
-            case .console(let client):
-                return ConsoleViewController(client: client)
-            case .publish(let client):
-                return PublishViewController(client: client)
+            case let .console(console):
+                return ConsoleViewController(console: console)
             }
         }
     }
- */
     
-    /*
     public convenience init(rootViewControllerType: PubNubRootViewControllerType) {
         self.init(pubNubViewController: rootViewControllerType.create())
     }
     
-    open static func clientCreationNavigationController() -> NavigationController {
+    open static func createWithEmbeddedClientCreation() -> NavigationController {
         return NavigationController(rootViewControllerType: .clientCreation)
     }
     
-    open static func consoleNavigationController(_ client: PubNub) -> NavigationController {
-        return NavigationController(rootViewControllerType: .console(client: client))
+    open static func createWithEmbeddedConsole(console: SwiftConsole) -> NavigationController {
+        return NavigationController(rootViewControllerType: .console(console: console))
     }
-    
-    open static func publishNavigationController(_ client: PubNub) -> NavigationController {
-        return NavigationController(rootViewControllerType: .publish(client: client))
-    }
- */
     
     // MARK: - Toolbar Items
     
