@@ -12,6 +12,7 @@ import JSQDataSourcesKit
 
 class MessagesViewController: ViewController {
     
+    weak var refreshTimer: Timer?
     let console: SwiftConsole
     let consoleCollectionView: ConsoleCollectionView
     
@@ -28,6 +29,11 @@ class MessagesViewController: ViewController {
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
     }
 
     override func viewDidLoad() {
@@ -57,8 +63,12 @@ class MessagesViewController: ViewController {
         
         
         
+        refreshTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(refreshScreen), userInfo: nil, repeats: true)
         
-        
+    }
+    
+    func refreshScreen() {
+        consoleCollectionView.reloadData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
