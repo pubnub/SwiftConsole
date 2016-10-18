@@ -74,16 +74,18 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         setNeedsLayout() // is this necessary?
     }
     
+    /*
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
         let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
         let bounds = UIScreen.main.bounds
         attributes.size.width = bounds.width
         return attributes
     }
+ */
     
     static var size: CGSize {
         let bounds = UIScreen.main.bounds
-        return CGSize(width: bounds.width, height: 100.0)
+        return CGSize(width: bounds.width, height: 150.0)
     }
     
 }
