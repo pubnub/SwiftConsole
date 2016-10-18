@@ -170,10 +170,10 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     // MARK: - PNObjectEventListener
     
     public func client(_ client: PubNub, didReceive status: PNStatus) {
-        persistentContainer.performBackgroundTask { (context) in
-            let _ = ResultType.createCoreDataObject(result: status, in: context)
+        persistentContainer.viewContext.perform {
+            let _ = ResultType.createCoreDataObject(result: status, in: self.viewContext)
             do {
-                try context.save()
+                try self.viewContext.save()
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -181,10 +181,10 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     }
     
     public func client(_ client: PubNub, didReceiveMessage message: PNMessageResult) {
-        persistentContainer.performBackgroundTask { (context) in
-            let _ = ResultType.createCoreDataObject(result: message, in: context)
+        persistentContainer.viewContext.perform {
+            let _ = ResultType.createCoreDataObject(result: message, in: self.viewContext)
             do {
-                try context.save()
+                try self.viewContext.save()
             } catch {
                 fatalError(error.localizedDescription)
             }
@@ -192,10 +192,10 @@ public class SwiftConsole: NSObject, PNObjectEventListener {
     }
     
     public func client(_ client: PubNub, didReceivePresenceEvent event: PNPresenceEventResult) {
-        persistentContainer.performBackgroundTask { (context) in
-            let _ = ResultType.createCoreDataObject(result: event, in: context)
+        persistentContainer.viewContext.perform {
+            let _ = ResultType.createCoreDataObject(result: event, in: self.viewContext)
             do {
-                try context.save()
+                try self.viewContext.save()
             } catch {
                 fatalError(error.localizedDescription)
             }
