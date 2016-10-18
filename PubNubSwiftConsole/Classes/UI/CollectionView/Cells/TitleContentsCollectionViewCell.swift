@@ -44,14 +44,6 @@ class TitleContentsCollectionViewCell: TitleCollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    /*
-    func update(title: String, contents: String?) {
-        super.update(title: title)
-        contentsLabel.text = contents
-        contentView.setNeedsLayout()
-    }
- */
-    
     func update(contents: String?) {
         contentsLabel.text = contents
         contentView.setNeedsLayout()
@@ -59,9 +51,11 @@ class TitleContentsCollectionViewCell: TitleCollectionViewCell {
     
     func update(titleContents: TitleContents?) {
         super.update(title: titleContents)
+        titleLabel.textColor = .gray
         if isTappable {
-            titleLabel.textColor = .gray
             contentsLabel.textColor = .black
+        } else {
+            contentsLabel.textColor = .gray
         }
         update(contents: titleContents?.contents)
     }

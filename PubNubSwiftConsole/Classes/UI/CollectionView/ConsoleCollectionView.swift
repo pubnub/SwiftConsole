@@ -97,7 +97,7 @@ class ConsoleCollectionView: UICollectionView {
     }
     
     // MARK: - First Responder touches
-    
+    /*
     public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         defer {
             super.touchesBegan(touches, with: event)
@@ -112,5 +112,5 @@ class ConsoleCollectionView: UICollectionView {
             resignFirstResponder()
         }
     }
-
+*/
 }

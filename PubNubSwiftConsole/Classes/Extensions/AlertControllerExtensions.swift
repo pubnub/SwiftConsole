@@ -28,6 +28,7 @@ extension UIAlertController {
     enum SubscribeAction: String {
         case channels = "Subscribe as channels"
         case channelGroups = "Subscribe as channel groups"
+        case cancel = "Cancel"
         
         static func alertActionHandler(action type: SubscribeAction, withInput textField: UITextField, handler: SubscribeActionHandler? = nil) -> AlertActionHandler {
             return { (action) in
@@ -46,6 +47,7 @@ extension UIAlertController {
     
     enum PublishAction: String {
         case publish = "Publish"
+        case cancel = "Cancel"
         
         static func alertActionHandler(action type: PublishAction, withInput textField: UITextField, handler: PublishActionHandler? = nil) -> AlertActionHandler {
             return { (action) in
@@ -66,6 +68,7 @@ extension UIAlertController {
         case channels = "Unsubscribe as channels"
         case channelGroups = "Unsubscribe as channel groups"
         case all = "Unsubscribe from all"
+        case cancel = "Cancel"
         
         static func alertActionHandler(action type: UnsubscribeAction, withInput textField: UITextField, handler: UnsubscribeActionHandler? = nil) -> AlertActionHandler {
             return { (action) in
@@ -85,6 +88,7 @@ extension UIAlertController {
     enum StreamFilterAction: String {
         case setNew = "Set as new stream filter"
         case remove = "Remove filter"
+        case cancel = "Cancel"
         
         static func alertActionHandler(action type: StreamFilterAction, withInput textField: UITextField, handler: StreamFilterActionHandler? = nil) -> AlertActionHandler {
             return { (action) in
@@ -111,7 +115,7 @@ extension UIAlertController {
         }
         let setStreamFilterAction = StreamFilterAction.setNew.alertAction(withInput: inputTextField, handler: handler)
         let removeStreamFilterAction = StreamFilterAction.remove.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
+        let cancelAction = StreamFilterAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(setStreamFilterAction)
         alertController.addAction(removeStreamFilterAction)
         alertController.addAction(cancelAction)
@@ -128,7 +132,7 @@ extension UIAlertController {
         }
         let subscribeToChannelsAction = SubscribeAction.channels.alertAction(withInput: inputTextField, handler: handler)
         let subscribeToChannelGroupsAction = SubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
+        let cancelAction = SubscribeAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(subscribeToChannelsAction)
         alertController.addAction(subscribeToChannelGroupsAction)
         alertController.addAction(cancelAction)
@@ -146,7 +150,7 @@ extension UIAlertController {
         let unsubscribeFromChannelsAction = UnsubscribeAction.channels.alertAction(withInput: inputTextField, handler: handler)
         let unsubscribeFromChannelGroupsAction = UnsubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
         let unsubscribeFromAllAction = UnsubscribeAction.all.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
+        let cancelAction = UnsubscribeAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(unsubscribeFromChannelsAction)
         alertController.addAction(unsubscribeFromChannelGroupsAction)
         alertController.addAction(unsubscribeFromAllAction)
@@ -163,7 +167,7 @@ extension UIAlertController {
             fatalError("Didn't find textField")
         }
         let publishAction = PublishAction.publish.alertAction(withInput: inputTextField, handler: handler)
-        let cancelAction = UIAlertAction.cancelAlertAction()
+        let cancelAction = PublishAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(publishAction)
         alertController.addAction(cancelAction)
         return alertController

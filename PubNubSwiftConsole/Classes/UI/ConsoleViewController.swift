@@ -85,6 +85,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         return publishView
     }()
     
+    // TODO: Clean this up for publish accessory view
+    /*
     public override var inputAccessoryView: UIView? {
         return customAccessoryView
     }
@@ -92,6 +94,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
     public override var canBecomeFirstResponder: Bool {
         return true
     }
+ */
     
     public required init(console: SwiftConsole) {
         self.console = console
@@ -117,15 +120,14 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         // Do any additional setup after loading the view.
         view.addSubview(consoleCollectionView)
         consoleCollectionView.forceAutoLayout()
-        consoleCollectionView.backgroundColor = .red
+        consoleCollectionView.backgroundColor = .white
         
         view.addSubview(clientCollectionView)
         clientCollectionView.forceAutoLayout()
-        clientCollectionView.backgroundColor = .cyan
+        clientCollectionView.backgroundColor = .white
         
         let configurationYOffset = (UIApplication.shared.statusBarFrame.height ?? 0.0) + (navigationController?.navigationBar.frame.height ?? 0.0) + 5.0
         clientCollectionView.contentInset = UIEdgeInsets(top: configurationYOffset, left: 0.0, bottom: 0.0, right: 0.0)
-        //configurationCollectionView.contentOffset = CGPoint(x: 0, y: configurationYOffset)
         
         let views = [
             "consoleCollectionView": consoleCollectionView,
@@ -183,6 +185,12 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         }
  */
     }
+    
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        consoleCollectionView.contentInset = .zero
+        consoleCollectionView.contentOffset = .zero
+    }
 
     override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -224,10 +232,10 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         clientCollectionView.performBatchUpdates({
             let client = self.console.client
             var updatedIndexPaths = [IndexPath]()
-            if let updatedChannelsItemIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channels, with: client, isTappable: true) {
+            if let updatedChannelsItemIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channels, with: client, isTappable: false) {
                 updatedIndexPaths.append(updatedChannelsItemIndexPath)
             }
-            if let updatedChannelGroupsItemIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channelGroups, with: client, isTappable: true) {
+            if let updatedChannelGroupsItemIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .channelGroups, with: client, isTappable: false) {
                 updatedIndexPaths.append(updatedChannelGroupsItemIndexPath)
             }
             self.clientCollectionView.reloadItems(at: updatedIndexPaths)
@@ -253,6 +261,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             switch clientProperty {
             case .subscribe:
                 let alertController = UIAlertController.subscribeAlertController(with: { (action, input) -> (Void) in
+                    defer {
+                        collectionView.deselectItem(at: indexPath, animated: true)
+                    }
                     do {
                         guard let subscribablesArray = try PubNub.stringToSubscribablesArray(input) else {
                             return
@@ -262,6 +273,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                             self.console.client.subscribeToChannels(subscribablesArray, withPresence: true)
                         case .channelGroups:
                             self.console.client.subscribeToChannelGroups(subscribablesArray, withPresence: true)
+                        default:
+                            return
                         }
                     } catch let userError as AlertControllerError {
                         // TODO: Implement error handling
@@ -274,6 +287,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                 present(alertController, animated: true)
             case .unsubscribe:
                 let alertController = UIAlertController.unsubscribeAlertController(with: { (action, input) -> (Void) in
+                    defer {
+                        collectionView.deselectItem(at: indexPath, animated: true)
+                    }
                     
                     guard action != .all else {
                         self.console.client.unsubscribeFromAll()
@@ -303,6 +319,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             case .streamFilter:
                 let alertController = UIAlertController.streamFilterAlertController(withCurrent: console.client.filterExpression, handler: { (action, input) -> (Void) in
                     defer {
+                        collectionView.deselectItem(at: indexPath, animated: true)
+                    }
+                    defer {
                         print("ran defer \(#function)")
                         self.clientCollectionView.performBatchUpdates({ 
                             guard let updatedIndexPath = self.clientUpdater.update(dataSource: &self.configurationDataSourceProvider.dataSource, for: .streamFilter, with: self.console.client, isTappable: true) else {
@@ -325,21 +344,6 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             print("other collection view tapped")
         }
     }
-    /*
-    public func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
-        guard let cell = collectionView.cellForItem(at: indexPath) else {
-            fatalError()
-        }
-        cell.contentView.backgroundColor = .blue
-    }
-    
-    public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
-        guard let cell = collectionView.cellForItem(at: indexPath) else {
-            fatalError()
-        }
-        cell.contentView.backgroundColor = nil
-    }
- */
 
     // MARK: - UIScrollViewDelegate
     /*

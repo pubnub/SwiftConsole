@@ -59,6 +59,8 @@ class TitleCollectionViewCell: UICollectionViewCell {
         self.stackView = UIStackView(arrangedSubviews: [title])
         self.titleLabel = title
         super.init(frame: frame)
+        layer.borderColor = UIColor.red.cgColor
+        layer.borderWidth = 1
         titleLabel.textColor = .black
         contentView.backgroundColor = defaultBackgroundColor
         contentView.addSubview(self.stackView)
@@ -88,6 +90,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         titleLabel.text = nil
+        isSelected = false
         isHighlighted = false
         isTappable = false
         contentView.backgroundColor = defaultBackgroundColor
@@ -101,8 +104,22 @@ class TitleCollectionViewCell: UICollectionViewCell {
         }
         set {
             super.isHighlighted = newValue
-            contentView.backgroundColor = highlightedBackgroundColor
+            contentView.backgroundColor = (newValue ? highlightedBackgroundColor : defaultBackgroundColor)
         }
+    }
+    
+    override var isSelected: Bool {
+        get {
+            return super.isSelected
+        }
+        set {
+            super.isSelected = newValue
+            contentView.backgroundColor = (newValue ? selectedBackgroundColor : defaultBackgroundColor)
+        }
+    }
+    
+    var selectedBackgroundColor: UIColor {
+        return (isTappable ? .red : defaultBackgroundColor)
     }
     
     var defaultBackgroundColor: UIColor {

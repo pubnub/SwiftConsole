@@ -65,11 +65,8 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         // Do any additional setup after loading the view.
         view.addSubview(clientCollectionView)
         clientCollectionView.forceAutoLayout()
-        clientCollectionView.backgroundColor = .cyan
-        
-        //let configurationYOffset = (UIApplication.shared.statusBarFrame.height ?? 0.0) + (navigationController?.navigationBar.frame.height ?? 0.0) + 5.0
-        //clientCollectionView.contentInset = UIEdgeInsets(top: configurationYOffset, left: 0.0, bottom: 0.0, right: 0.0)
-        
+        clientCollectionView.backgroundColor = .white
+                
         let views = [
             "clientCollectionView": clientCollectionView,
             ]
@@ -94,7 +91,6 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         let dataSource = DataSource(sections: section0, section1, section2)
         
         clientCreationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
-        //configurationDataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
         
         clientCollectionView.delegate = self
         
@@ -127,12 +123,6 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         
         delegate?.clientCreation(self, createdClient: client)
         
-        
-        /*
-        let swiftConsole = SwiftConsole(client: client)
-        let consoleView = ConsoleViewController(console: swiftConsole)
-        navigationController?.pushViewController(consoleView, animated: true)
- */
     }
     
     // MARK: - UICollectionViewDelegate
@@ -142,17 +132,24 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
             fatalError()
         }
         print("\(titleContents)")
-        let alertController = UIAlertController.update(titleContents: titleContents) { (inputString) in
-            let updatedTitleContents = titleContents.updatedTitleContentsItem(with: inputString)
-            let updatedItemType = StaticItemType(staticItem: updatedTitleContents)
-            print("updatedTitleContents: \(updatedTitleContents)")
-            collectionView.performBatchUpdates({
-                guard let updatedIndexPath = self.clientCreationUpdater.update(dataSource: &self.clientCreationDataSourceProvider.dataSource, at: indexPath, with: updatedItemType, isTappable: true) else {
-                    return
-                }
-                collectionView.reloadItems(at: [updatedIndexPath])
+        let alertController = UIAlertController.titleContentsAlertController(withCurrent: titleContents) { (action, input) -> (Void) in
+            defer {
+                collectionView.deselectItem(at: indexPath, animated: true)
+            }
+            switch action {
+            case .ok:
+                let updatedTitleContents = titleContents.updatedTitleContentsItem(with: input)
+                let updatedItemType = StaticItemType(staticItem: updatedTitleContents)
+                print("updatedTitleContents: \(updatedTitleContents)")
+                collectionView.performBatchUpdates({
+                    guard let updatedIndexPath = self.clientCreationUpdater.update(dataSource: &self.clientCreationDataSourceProvider.dataSource, at: indexPath, with: updatedItemType, isTappable: true) else {
+                        return
+                    }
+                    collectionView.reloadItems(at: [updatedIndexPath])
                 })
-            
+            case .cancel:
+                return
+            }
         }
         present(alertController, animated: true)
         
@@ -161,19 +158,40 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
 }
 
 extension UIAlertController {
+    typealias TitleContentsActionHandler = (TitleContentsAction, String?) -> (Swift.Void)
+    enum TitleContentsAction: String {
+        case ok = "OK"
+        case cancel = "Cancel"
+        
+        static func alertActionHandler(action type: TitleContentsAction, withInput textField: UITextField, handler: TitleContentsActionHandler? = nil) -> AlertActionHandler {
+            return { (action) in
+                guard let actualTitle = action.title, let actionType = TitleContentsAction(rawValue: actualTitle), type == actionType else {
+                    fatalError()
+                }
+                handler?(actionType, textField.text)
+            }
+        }
+        
+        func alertAction(withInput textField: UITextField, handler: TitleContentsActionHandler? = nil) -> UIAlertAction {
+            let titleContentsHandler = TitleContentsAction.alertActionHandler(action: self, withInput: textField, handler: handler)
+            return UIAlertAction(title: rawValue, style: .default, handler: titleContentsHandler)
+        }
+    }
+    
     // seems like it could be a compiler bug with @escaping
-    static func update(titleContents: TitleContents, handler: /*@escaping*/((String?) -> Void)? = nil) -> UIAlertController {
+    static func titleContentsAlertController(withCurrent titleContents: TitleContents, handler: /*@escaping*/TitleContentsActionHandler? = nil) -> UIAlertController {
         let alertController = UIAlertController(title: "Update \(titleContents.title)", message: "Enter something to update", preferredStyle: .alert)
-        alertController.addTextField { (textField) in
+        alertController.addTextField(configurationHandler: { (textField) in
             textField.placeholder = "Enter values ..."
             textField.text = titleContents.contents
+        })
+        guard let inputTextField = alertController.textFields?[0] else {
+            fatalError("Didn't find textField")
         }
-        let okAction = UIAlertAction(title: "OK", style: .default) { (alert) in
-            let textFieldInput = alertController.textFields?[0].text
-            handler?(textFieldInput)
-        }
+        let okAction = TitleContentsAction.ok.alertAction(withInput: inputTextField, handler: handler)
+        let cancelAction = TitleContentsAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(okAction)
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+        alertController.addAction(cancelAction)
         return alertController
     }
 }
