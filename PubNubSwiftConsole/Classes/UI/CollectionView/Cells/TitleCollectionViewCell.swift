@@ -11,11 +11,15 @@ import PubNub
 
 protocol Tappable {
     var isTappable: Bool {get}
+    var overrideDefaultBackgroundColor: UIColor? {get}
 }
 
 extension Tappable {
     var isTappable: Bool {
         return false
+    }
+    var overrideDefaultBackgroundColor: UIColor? {
+        return nil
     }
 }
 
@@ -24,8 +28,8 @@ protocol StaticItem: Tappable {
 }
 
 protocol PubNubStaticItemGenerator {
-    func generateStaticItem(client: PubNub, isTappable: Bool) -> StaticItem
-    func generateStaticItemType(client: PubNub, isTappable: Bool) -> StaticItemType
+    func generateStaticItem(client: PubNub, isTappable: Bool, overrideDefaultBackgroundColor: UIColor?) -> StaticItem
+    func generateStaticItemType(client: PubNub, isTappable: Bool, overrideDefaultBackgroundColor: UIColor?) -> StaticItemType
 }
 
 protocol Title: StaticItem {
@@ -38,13 +42,14 @@ extension Title {
         guard let actualTitle = title else {
             return nil
         }
-        return TitleItem(title: actualTitle, isTappable: isTappable)
+        return TitleItem(title: actualTitle, isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor)
     }
 }
 
 struct TitleItem: Title {
     var title: String
     var isTappable: Bool = false
+    var overrideDefaultBackgroundColor: UIColor?
 }
 
 class TitleCollectionViewCell: UICollectionViewCell {
@@ -52,6 +57,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
     internal let titleLabel: UILabel
     internal let stackView: UIStackView
     private(set) var isTappable: Bool = false
+    private(set) var overrideDefaultBackgroundColor: UIColor?
     
     override init(frame: CGRect) {
         let title = UILabel(frame: .zero)
@@ -108,6 +114,10 @@ class TitleCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    var unselectedBackgroundColor: UIColor {
+        return (overrideDefaultBackgroundColor ?? defaultBackgroundColor)
+    }
+    
     override var isSelected: Bool {
         get {
             return super.isSelected
@@ -119,6 +129,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
     }
     
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        print("superview: \(self.superview)")
         let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
         let bounds = UIScreen.main.bounds
         if attributes.size.width > bounds.width {
@@ -152,6 +163,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         guard let actualTitle = title else {
             return
         }
+        overrideDefaultBackgroundColor = title?.overrideDefaultBackgroundColor
         isTappable = ((actualTitle.isTappable) ? true : false)
         update(title: actualTitle.title)
     }

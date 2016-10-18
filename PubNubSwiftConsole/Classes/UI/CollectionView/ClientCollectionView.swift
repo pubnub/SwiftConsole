@@ -55,29 +55,29 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
         }
     }
     
-    func generateStaticItem(contents: String?, isTappable: Bool = false) -> StaticItem {
+    func generateStaticItem(contents: String?, isTappable: Bool = false, overrideDefaultBackgroundColor: UIColor? = nil) -> StaticItem {
         switch self {
         case .pubKey, .subKey, .origin, .authKey, .channels, .channelGroups, .uuid, .streamFilter:
-            return TitleContentsItem(title: title, contents: contents, isTappable: isTappable)
+            return TitleContentsItem(title: title, contents: contents, isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor)
         case .subscribe, .unsubscribe:
-            return TitleItem(title: title, isTappable: isTappable)
+            return TitleItem(title: title, isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor)
         }
     }
     
-    func generateDefaultStaticItem(isTappable: Bool = false) -> StaticItem {
+    func generateDefaultStaticItem(isTappable: Bool = false, overrideDefaultBackgroundColor: UIColor? = nil) -> StaticItem {
         return generateStaticItem(contents: defaultContents, isTappable: isTappable)
     }
     
-    func generateDefaultStaticItemType(isTappable: Bool = false) -> StaticItemType {
-        return generateStaticItemType(contents: defaultContents, isTappable: isTappable)
+    func generateDefaultStaticItemType(isTappable: Bool = false, overrideDefaultBackgroundColor: UIColor? = nil) -> StaticItemType {
+        return generateStaticItemType(contents: defaultContents, isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor)
     }
     
-    func generateStaticItemType(contents: String?, isTappable: Bool = false) -> StaticItemType {
-        return StaticItemType(staticItem: generateStaticItem(contents: contents, isTappable: isTappable))
+    func generateStaticItemType(contents: String?, isTappable: Bool = false, overrideDefaultBackgroundColor: UIColor? = nil) -> StaticItemType {
+        return StaticItemType(staticItem: generateStaticItem(contents: contents, isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor))
     }
     
-    func generateStaticItem(client: PubNub, isTappable: Bool = false) -> StaticItem {
-        return generateStaticItem(contents: generateContents(client: client), isTappable: isTappable)
+    func generateStaticItem(client: PubNub, isTappable: Bool = false, overrideDefaultBackgroundColor: UIColor? = nil) -> StaticItem {
+        return generateStaticItem(contents: generateContents(client: client), isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor)
     }
     
     func generateContents(client: PubNub) -> String? {
@@ -103,8 +103,8 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
         }
     }
     
-    func generateStaticItemType(client: PubNub, isTappable: Bool = false) -> StaticItemType {
-        return StaticItemType(staticItem: generateStaticItem(client: client, isTappable: isTappable))
+    func generateStaticItemType(client: PubNub, isTappable: Bool = false, overrideDefaultBackgroundColor: UIColor? = nil) -> StaticItemType {
+        return StaticItemType(staticItem: generateStaticItem(client: client, isTappable: isTappable, overrideDefaultBackgroundColor: overrideDefaultBackgroundColor))
     }
 }
 
