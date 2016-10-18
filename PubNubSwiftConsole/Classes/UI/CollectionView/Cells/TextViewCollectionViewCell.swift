@@ -63,13 +63,6 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         setNeedsLayout() // is this necessary?
     }
     
-    /*
-    func update(result: Result) {
-        textView.text = result.textViewDisplayText
-        contentView.setNeedsLayout()
-    }
- */
-    
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
         let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
         let bounds = UIScreen.main.bounds

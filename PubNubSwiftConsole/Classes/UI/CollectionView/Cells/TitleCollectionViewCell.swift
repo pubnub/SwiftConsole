@@ -118,6 +118,24 @@ class TitleCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
+        let bounds = UIScreen.main.bounds
+        if attributes.size.width > bounds.width {
+            attributes.size.width = bounds.width
+        } else {
+            let widestWidth = bounds.width * 0.4
+            if widestWidth > attributes.size.width {
+                attributes.size.width = widestWidth
+            } else {
+                
+            }
+        }
+        attributes.size.width = (bounds.width * 0.4)
+        attributes.size.height += 30.0
+        return attributes
+    }
+    
     var selectedBackgroundColor: UIColor {
         return (isTappable ? .red : defaultBackgroundColor)
     }

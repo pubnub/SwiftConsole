@@ -67,6 +67,14 @@ class TitleContentsCollectionViewCell: TitleCollectionViewCell {
         titleLabel.textColor = .black
     }
     
+    /*
+    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
+        let bounds = UIScreen.main.bounds
+        return attributes
+    }
+ */
+    
     class override var size: CGSize {
         return CGSize(width: 75.0, height: 75.0)
     }
