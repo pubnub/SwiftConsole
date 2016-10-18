@@ -166,6 +166,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         
         let dataSource = DataSource(sections: section0, section1, section2)
         
+        //configurationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
         configurationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
         
         clientCollectionView.delegate = self

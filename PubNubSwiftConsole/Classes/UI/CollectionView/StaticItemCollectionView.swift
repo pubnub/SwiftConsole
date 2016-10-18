@@ -149,9 +149,15 @@ class StaticItemCollectionView: UICollectionView {
         }
     }
     
-    class func generateDataSourceProvider(dataSource: StaticDataSource, cellFactory: StaticItemCellViewFactory = StaticItemCellViewFactory()) -> StaticDataSourceProvider {
-        let headerFactory = generateHeaderFactory()
-        return DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: headerFactory)
+    class func generateFooterFactory() -> TitleContentsHeaderViewFactory {
+        return TitledSupplementaryViewFactory { (footer, model: StaticItemType?, kind, collectionView, indexPath) -> TitledSupplementaryView in
+            footer.backgroundColor = .darkGray
+            return footer
+        }
+    }
+    
+    class func generateDataSourceProvider(dataSource: StaticDataSource, cellFactory: StaticItemCellViewFactory = StaticItemCellViewFactory(), supplementaryFactory: TitleContentsHeaderViewFactory = StaticItemCollectionView.generateFooterFactory()) -> StaticDataSourceProvider {
+        return DataSourceProvider(dataSource: dataSource, cellFactory: cellFactory, supplementaryFactory: supplementaryFactory)
     }
 
 }
