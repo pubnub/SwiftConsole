@@ -11,7 +11,7 @@ import CoreData
 import PubNub
 import JSQDataSourcesKit
 
-public class ConsoleViewController: ViewController, UICollectionViewDelegate, UITextFieldDelegate {
+public class ConsoleViewController: ViewController, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITextFieldDelegate {
     
     struct ClientUpdater: ClientPropertyUpdater {
         internal func update(dataSource: inout StaticDataSource, at indexPath: IndexPath, with item: StaticItemType, isTappable: Bool) -> IndexPath? {
@@ -118,7 +118,10 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         //layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
         layout.sectionInset = UIEdgeInsets(top: 5.0, left: 0.0, bottom: 5.0, right: 0.0)
         layout.footerReferenceSize = CGSize(width: bounds.width, height: 2.0)
-        layout.estimatedItemSize = CGSize(width: (bounds.width * 0.75), height: 75.0)
+        let itemWidth = bounds.width * 0.75
+        layout.estimatedItemSize = .zero
+        layout.itemSize = CGSize(width: itemWidth, height: 30.0)
+        //layout.estimatedItemSize = CGSize(width: (bounds.width * 0.75), height: 75.0)
         self.clientCollectionView = ClientCollectionView(frame: .zero, collectionViewLayout: layout)
         super.init()
         clientCollectionView.register(TitledSupplementaryView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: TitledSupplementaryView.identifier)
@@ -152,7 +155,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             "messagesButton": messagesButton,
         ]
         
-        let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[clientCollectionView]-10-[messagesButton(50)]|", options: [], metrics: nil, views: views)
+        let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[clientCollectionView]-10-[messagesButton(50)]-10-|", options: [], metrics: nil, views: views)
         let horizontalButtonConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:[messagesButton(200)]", options: [], metrics: nil, views: views)
         let configurationHorizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|[clientCollectionView]|", options: [], metrics: nil, views: views)
         let buttonCenterXConstraint = NSLayoutConstraint(item: messagesButton, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1.0, constant: 0.0)
@@ -202,6 +205,16 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             self.consoleCollectionView.predicate = ConsoleSegment.messages.consolePredicate
         }
  */
+    }
+    
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        clientCollectionView.reloadData()
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        clientCollectionView.reloadData()
     }
 
     override open func didReceiveMemoryWarning() {
@@ -256,6 +269,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                 updatedIndexPaths.append(updatedChannelGroupsItemIndexPath)
             }
             self.clientCollectionView.reloadItems(at: updatedIndexPaths)
+            self.clientCollectionView.reloadData()
             })
     }
     
@@ -280,6 +294,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                 let alertController = UIAlertController.subscribeAlertController(with: { (action, input) -> (Void) in
                     defer {
                         collectionView.deselectItem(at: indexPath, animated: true)
+                        collectionView.reloadData()
                     }
                     do {
                         guard let subscribablesArray = try PubNub.stringToSubscribablesArray(input) else {
@@ -306,6 +321,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                 let alertController = UIAlertController.unsubscribeAlertController(with: { (action, input) -> (Void) in
                     defer {
                         collectionView.deselectItem(at: indexPath, animated: true)
+                        collectionView.reloadData()
                     }
                     
                     guard action != .all else {
@@ -337,6 +353,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                 let alertController = UIAlertController.streamFilterAlertController(withCurrent: console.client.filterExpression, handler: { (action, input) -> (Void) in
                     defer {
                         collectionView.deselectItem(at: indexPath, animated: true)
+                        collectionView.reloadData()
                     }
                     defer {
                         print("ran defer \(#function)")
@@ -345,6 +362,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                                 return
                             }
                             self.clientCollectionView.reloadItems(at: [updatedIndexPath])
+                            self.clientCollectionView.reloadData()
                             })
                     }
                     guard let actualInput = input else {
@@ -362,7 +380,46 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         }
     }
     
-    // MARK: - UICollectionViewFlowLayoutDelegate
+    // MARK: - UICollectionViewDelegateFlowLayout
+    
+    
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let bounds = UIScreen.main.bounds
+        let screenWidth = bounds.width
+        let titleContentsHeight = CGFloat(integerLiteral: 60)
+        let titleHeight = CGFloat(integerLiteral: 40)
+        switch indexPath.section {
+        case 0...1:
+            return CGSize(width: (screenWidth * 0.75), height: titleContentsHeight)
+        case 2:
+            return CGSize(width: (screenWidth/3.0), height: titleHeight)
+        default:
+            fatalError("unexpected section")
+        }
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout else {
+            fatalError("Only expecting flow layouts")
+        }
+        var standardInset = flowLayout.sectionInset
+        if section == 2 {
+            standardInset.left += 35.0
+            standardInset.right += 35.0
+        }
+        return standardInset
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout else {
+            fatalError("Only expecting flow layouts")
+        }
+        var spacing = flowLayout.minimumInteritemSpacing
+        if section == 2 {
+            spacing = 1.0
+        }
+        return spacing
+    }
 
     // MARK: - UIScrollViewDelegate
     /*

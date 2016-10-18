@@ -52,6 +52,9 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
     public required init() {
         let layout = StaticItemCollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 50.0, left: 0.0, bottom: 50.0, right: 0.0)
+        let bounds = UIScreen.main.bounds
+        layout.itemSize = CGSize(width: (bounds.width * 0.8), height: 75.0)
+        layout.estimatedItemSize = .zero
         self.clientCollectionView = ClientCollectionView(frame: .zero, collectionViewLayout: layout)
         super.init()
     }

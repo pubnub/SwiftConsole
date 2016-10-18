@@ -130,6 +130,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    /*
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
         let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
         /*
@@ -149,6 +150,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         attributes.size.height += 10.0
         return attributes
     }
+ */
     
     var selectedBackgroundColor: UIColor {
         return (isTappable ? .red : defaultBackgroundColor)

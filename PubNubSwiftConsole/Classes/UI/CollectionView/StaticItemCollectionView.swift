@@ -151,7 +151,7 @@ class StaticItemCollectionView: UICollectionView {
     
     class func generateFooterFactory() -> TitleContentsHeaderViewFactory {
         return TitledSupplementaryViewFactory { (footer, model: StaticItemType?, kind, collectionView, indexPath) -> TitledSupplementaryView in
-            footer.backgroundColor = .black
+            footer.backgroundColor = .lightGray
             return footer
         }
     }
