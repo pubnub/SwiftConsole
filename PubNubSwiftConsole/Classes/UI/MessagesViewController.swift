@@ -63,7 +63,7 @@ class MessagesViewController: ViewController {
         
         
         
-        refreshTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(refreshScreen), userInfo: nil, repeats: true)
+        //refreshTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(refreshScreen), userInfo: nil, repeats: true)
         
     }
     
