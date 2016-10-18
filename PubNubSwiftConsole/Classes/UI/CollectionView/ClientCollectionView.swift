@@ -43,7 +43,7 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
         case .pubKey, .subKey:
             return "IQT-demo"
         case .origin:
-            return "iqtdemo.pubnub.com"
+            return "iqttest.pubnub.com"
         case .uuid:
             return UUID().uuidString
         case .authKey:
