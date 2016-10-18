@@ -29,9 +29,11 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         textView.isScrollEnabled = false
         textView.isUserInteractionEnabled = false
         textView.textAlignment = .center
+        /*
         if UIDevice.current.isPad() {
             textView.font = .systemFont(ofSize: 25)
         }
+ */
         let views = [
             "textView": textView,
             ]
