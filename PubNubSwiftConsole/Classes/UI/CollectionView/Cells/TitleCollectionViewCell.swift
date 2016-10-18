@@ -57,7 +57,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
     internal let titleLabel: UILabel
     internal let stackView: UIStackView
     private(set) var isTappable: Bool = false
-    private(set) var overrideDefaultBackgroundColor: UIColor?
+    //private(set) var overrideDefaultBackgroundColor: UIColor?
     
     override init(frame: CGRect) {
         let title = UILabel(frame: .zero)
@@ -68,7 +68,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         layer.borderColor = UIColor.red.cgColor
         layer.borderWidth = 1
         titleLabel.textColor = .black
-        contentView.backgroundColor = defaultBackgroundColor
+        contentView.backgroundColor = .white
         contentView.addSubview(self.stackView)
         stackView.forceAutoLayout()
         stackView.axis = .vertical
@@ -89,7 +89,6 @@ class TitleCollectionViewCell: UICollectionViewCell {
     }
     
     func update(title: String) {
-        contentView.backgroundColor = unselectedBackgroundColor
         titleLabel.text = title
         contentView.setNeedsLayout()
     }
@@ -100,35 +99,40 @@ class TitleCollectionViewCell: UICollectionViewCell {
         isSelected = false
         isHighlighted = false
         isTappable = false
-        overrideDefaultBackgroundColor = nil
-        contentView.backgroundColor = defaultBackgroundColor
+        //overrideDefaultBackgroundColor = nil
+        selectedBackgroundView = nil
+        contentView.backgroundColor = .white
         titleLabel.textColor = .black
         contentView.setNeedsLayout()
     }
     
+    /*
     override var isHighlighted: Bool {
         get {
             return super.isHighlighted
         }
         set {
             super.isHighlighted = newValue
-            contentView.backgroundColor = (newValue ? highlightedBackgroundColor : defaultBackgroundColor)
+            if newValue {
+                contentView.backgroundColor = highlightedBackgroundColor
+            } else {
+                contentView.backgroundColor = (isSelected ? selectedBackgroundColor : unselectedBackgroundColor)
+            }
         }
     }
+ */
     
-    var unselectedBackgroundColor: UIColor {
-        return (overrideDefaultBackgroundColor ?? defaultBackgroundColor)
-    }
-    
+    /*
     override var isSelected: Bool {
         get {
             return super.isSelected
         }
         set {
             super.isSelected = newValue
-            contentView.backgroundColor = (newValue ? selectedBackgroundColor : defaultBackgroundColor)
+            //contentView.backgroundColor = (newValue ? selectedBackgroundColor : defaultBackgroundColor)
         }
     }
+ */
     
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
         print("superview: \(self.superview)")
@@ -151,6 +155,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         return attributes
     }
     
+    /*
     var selectedBackgroundColor: UIColor {
         return (isTappable ? .red : defaultBackgroundColor)
     }
@@ -160,15 +165,30 @@ class TitleCollectionViewCell: UICollectionViewCell {
     }
     
     var highlightedBackgroundColor: UIColor {
-        return (isTappable ? .lightGray : defaultBackgroundColor)
+        return (isTappable ? .lightGray : selectedBackgroundColor)
+    }
+ */
+    
+    func createSelectedBackgroundView() -> UIView {
+        let creatingView = UIView(frame: contentView.bounds)
+        creatingView.isUserInteractionEnabled = false
+        creatingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        creatingView.backgroundColor = .red
+        return creatingView
     }
     
     func update(title: Title?) {
         guard let actualTitle = title else {
             return
         }
-        overrideDefaultBackgroundColor = title?.overrideDefaultBackgroundColor
-        isTappable = ((actualTitle.isTappable) ? true : false)
+        //overrideDefaultBackgroundColor = title?.overrideDefaultBackgroundColor
+        isTappable = actualTitle.isTappable
+        contentView.backgroundColor = (actualTitle.overrideDefaultBackgroundColor ?? .white)
+        if isTappable {
+            selectedBackgroundView = createSelectedBackgroundView()
+        } else {
+            selectedBackgroundView = nil
+        }
         update(title: actualTitle.title)
     }
     
