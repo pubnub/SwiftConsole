@@ -89,6 +89,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
     }
     
     func update(title: String) {
+        contentView.backgroundColor = unselectedBackgroundColor
         titleLabel.text = title
         contentView.setNeedsLayout()
     }
@@ -99,6 +100,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
         isSelected = false
         isHighlighted = false
         isTappable = false
+        overrideDefaultBackgroundColor = nil
         contentView.backgroundColor = defaultBackgroundColor
         titleLabel.textColor = .black
         contentView.setNeedsLayout()

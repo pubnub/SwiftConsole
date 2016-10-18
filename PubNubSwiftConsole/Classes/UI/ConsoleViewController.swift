@@ -149,9 +149,10 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         let subKeyItemType = ClientProperty.subKey.generateStaticItemType(client: console.client)
         let channelsItemType = ClientProperty.channels.generateStaticItemType(client: console.client)
         let channelGroupsItemType = ClientProperty.channelGroups.generateStaticItemType(client: console.client)
-        let subscribeItemType = ClientProperty.subscribe.generateStaticItemType(client: console.client, isTappable: true)
-        let unsubscribeItemType = ClientProperty.unsubscribe.generateStaticItemType(client: console.client, isTappable: true)
-        let streamFilterType = ClientProperty.streamFilter.generateStaticItemType(client: console.client, isTappable: true)
+        let overrideBackgroundColor = UIColor.lightGray
+        let subscribeItemType = ClientProperty.subscribe.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
+        let unsubscribeItemType = ClientProperty.unsubscribe.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
+        let streamFilterType = ClientProperty.streamFilter.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
         
         let section0 = Section(items: pubKeyItemType, subKeyItemType)
         let section1 = Section(items: channelsItemType, channelGroupsItemType)
