@@ -133,6 +133,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
         print("superview: \(self.superview)")
         let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
+        /*
         let bounds = UIScreen.main.bounds
         if attributes.size.width > bounds.width {
             attributes.size.width = bounds.width
@@ -144,8 +145,9 @@ class TitleCollectionViewCell: UICollectionViewCell {
                 
             }
         }
-        attributes.size.width = (bounds.width * 0.4)
-        attributes.size.height += 30.0
+ */
+        attributes.size.width += 10.0
+        attributes.size.height += 10.0
         return attributes
     }
     

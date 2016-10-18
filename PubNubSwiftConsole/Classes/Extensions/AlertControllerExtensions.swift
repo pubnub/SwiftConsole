@@ -26,7 +26,7 @@ extension UIAlertController {
     // TODO: This could all be replaced with generics
     
     enum SubscribeAction: String {
-        case channels = "Subscribe as channels"
+        case channels = "Subscribe"
         case channelGroups = "Subscribe as channel groups"
         case cancel = "Cancel"
         
@@ -65,7 +65,7 @@ extension UIAlertController {
     }
     
     enum UnsubscribeAction: String {
-        case channels = "Unsubscribe as channels"
+        case channels = "Unsubscribe from channels"
         case channelGroups = "Unsubscribe as channel groups"
         case all = "Unsubscribe from all"
         case cancel = "Cancel"
@@ -134,7 +134,6 @@ extension UIAlertController {
         let subscribeToChannelGroupsAction = SubscribeAction.channelGroups.alertAction(withInput: inputTextField, handler: handler)
         let cancelAction = SubscribeAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(subscribeToChannelsAction)
-        alertController.addAction(subscribeToChannelGroupsAction)
         alertController.addAction(cancelAction)
         return alertController
     }
@@ -152,7 +151,6 @@ extension UIAlertController {
         let unsubscribeFromAllAction = UnsubscribeAction.all.alertAction(withInput: inputTextField, handler: handler)
         let cancelAction = UnsubscribeAction.cancel.alertAction(withInput: inputTextField, handler: handler)
         alertController.addAction(unsubscribeFromChannelsAction)
-        alertController.addAction(unsubscribeFromChannelGroupsAction)
         alertController.addAction(unsubscribeFromAllAction)
         alertController.addAction(cancelAction)
         return alertController

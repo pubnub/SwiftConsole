@@ -19,23 +19,28 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             return indexPath
         }
 
+        /*
+         let section0 = Section(items: originItemType, subKeyItemType, authKeyItemType, channelsItemType)
+         let section1 = Section(items: streamFilterType)
+         let section2 = Section(items: subscribeItemType, unsubscribeItemType)
+ */
         func indexPath(for clientProperty: ClientProperty) -> IndexPath? {
             switch clientProperty {
-            case .pubKey:
+            case .origin:
                 return IndexPath(item: 0, section: 0)
             case .subKey:
                 return IndexPath(item: 1, section: 0)
+            case .authKey:
+                return IndexPath(item: 2, section: 0)
             case .channels:
-                return IndexPath(row: 0, section: 1)
-            case .channelGroups:
-                return IndexPath(item: 1, section: 1)
-            case .subscribe:
-                return IndexPath(item: 0, section: 3)
-            case .unsubscribe:
-                return IndexPath(item: 1, section: 3)
+                return IndexPath(item: 3, section: 0)
             case .streamFilter:
+                return IndexPath(item: 0, section: 1)
+            case .subscribe:
                 return IndexPath(item: 0, section: 2)
-            case .authKey, .origin, .uuid:
+            case .unsubscribe:
+                return IndexPath(item: 1, section: 2)
+            default:
                 return nil
             }
         }
@@ -118,6 +123,7 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive(notification:)), name: .UIApplicationDidBecomeActive, object: nil)
         view.addSubview(consoleCollectionView)
         consoleCollectionView.forceAutoLayout()
         consoleCollectionView.backgroundColor = .white
@@ -145,21 +151,20 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         consoleCollectionView.delegate = self
         consoleCollectionView.reloadData()
         
-        let pubKeyItemType = ClientProperty.pubKey.generateStaticItemType(client: console.client)
+        let originItemType = ClientProperty.origin.generateStaticItemType(client: console.client)
         let subKeyItemType = ClientProperty.subKey.generateStaticItemType(client: console.client)
+        let authKeyItemType = ClientProperty.authKey.generateStaticItemType(client: console.client)
         let channelsItemType = ClientProperty.channels.generateStaticItemType(client: console.client)
-        let channelGroupsItemType = ClientProperty.channelGroups.generateStaticItemType(client: console.client)
         let overrideBackgroundColor = UIColor.lightGray
         let subscribeItemType = ClientProperty.subscribe.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
         let unsubscribeItemType = ClientProperty.unsubscribe.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
         let streamFilterType = ClientProperty.streamFilter.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
         
-        let section0 = Section(items: pubKeyItemType, subKeyItemType)
-        let section1 = Section(items: channelsItemType, channelGroupsItemType)
-        let section2 = Section(items: streamFilterType)
-        let section3 = Section(items: subscribeItemType, unsubscribeItemType)
+        let section0 = Section(items: originItemType, subKeyItemType, authKeyItemType, channelsItemType)
+        let section1 = Section(items: streamFilterType)
+        let section2 = Section(items: subscribeItemType, unsubscribeItemType)
         
-        let dataSource = DataSource(sections: section0, section1, section2, section3)
+        let dataSource = DataSource(sections: section0, section1, section2)
         
         configurationDataSourceProvider = ClientCollectionView.generateDataSourceProvider(dataSource: dataSource)
         
@@ -243,6 +248,11 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             })
     }
     
+    func didBecomeActive(notification: Notification) {
+        print("notification: \(notification)")
+        consoleCollectionView.fetch()
+    }
+    
     // MARK: - UICollectionViewDelegate
     
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -271,9 +281,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                         }
                         switch action {
                         case .channels:
-                            self.console.client.subscribeToChannels(subscribablesArray, withPresence: true)
+                            self.console.client.subscribeToChannels(subscribablesArray, withPresence: false)
                         case .channelGroups:
-                            self.console.client.subscribeToChannelGroups(subscribablesArray, withPresence: true)
+                            self.console.client.subscribeToChannelGroups(subscribablesArray, withPresence: false)
                         default:
                             return
                         }
@@ -302,9 +312,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
                         }
                         switch action {
                         case .channels:
-                            self.console.client.unsubscribeFromChannels(subscribablesArray, withPresence: true)
+                            self.console.client.unsubscribeFromChannels(subscribablesArray, withPresence: false)
                         case .channelGroups:
-                            self.console.client.unsubscribeFromChannelGroups(subscribablesArray, withPresence: true)
+                            self.console.client.unsubscribeFromChannelGroups(subscribablesArray, withPresence: false)
                         default:
                             fatalError("Not expecting this kind of action")
                         }

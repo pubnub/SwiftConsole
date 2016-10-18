@@ -27,16 +27,12 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         
         func indexPath(for clientProperty: ClientProperty) -> IndexPath? {
             switch clientProperty {
-            case .pubKey:
-                return IndexPath(item: 0, section: 0)
             case .subKey:
-                return IndexPath(item: 1, section: 0)
+                return IndexPath(item: 0, section: 1)
             case .authKey:
-                return IndexPath(row: 0, section: 1)
+                return IndexPath(row: 0, section: 2)
             case .origin:
-                return IndexPath(item: 1, section: 1)
-            case .uuid:
-                return IndexPath(item: 0, section: 2)
+                return IndexPath(item: 0, section: 0)
             default:
                 fatalError("\(clientProperty)")
             }
@@ -78,15 +74,14 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
         self.view.setNeedsLayout()
         
         
-        let pubKeyItemType = ClientProperty.pubKey.generateDefaultStaticItemType(isTappable: true)
         let subKeyItemType = ClientProperty.subKey.generateDefaultStaticItemType(isTappable: true)
         let authKeyItemType = ClientProperty.authKey.generateDefaultStaticItemType(isTappable: true)
         let originItemType = ClientProperty.origin.generateDefaultStaticItemType(isTappable: true)
         let uuidItemType = ClientProperty.uuid.generateDefaultStaticItemType(isTappable: true)
         
-        let section0 = Section(items: pubKeyItemType, subKeyItemType)
-        let section1 = Section(items: authKeyItemType, originItemType)
-        let section2 = Section(items: uuidItemType)
+        let section0 = Section(items: originItemType)
+        let section1 = Section(items: subKeyItemType)
+        let section2 = Section(items: authKeyItemType)
         
         let dataSource = DataSource(sections: section0, section1, section2)
         
@@ -111,11 +106,10 @@ public class ClientCreationViewController: ViewController, UICollectionViewDeleg
     // MARK: - UINavigation Actions
     
     func clientCreationItemTapped(sender: UIBarButtonItem) {
-        let publishItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .pubKey) as! TitleContents
         let subscribeItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .subKey) as! TitleContents
         let originItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .origin) as! TitleContents
         let authKeyItem = clientCreationUpdater.staticItem(from: clientCreationDataSourceProvider.dataSource, for: .authKey) as! TitleContents
-        let config = PNConfiguration(publishKey: publishItem.contents!, subscribeKey: subscribeItem.contents!)
+        let config = PNConfiguration(publishKey: subscribeItem.contents!, subscribeKey: subscribeItem.contents!)
         config.authKey = authKeyItem.contents
         config.origin = originItem.contents!
         
