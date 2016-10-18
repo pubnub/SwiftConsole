@@ -41,9 +41,9 @@ enum ClientProperty: String, PubNubStaticItemGenerator {
     var defaultContents: String? {
         switch self {
         case .pubKey, .subKey:
-            return "demo-36"
+            return "IQT-demo"
         case .origin:
-            return "pubsub.pubnub.com"
+            return "iqtdemo.pubnub.com"
         case .uuid:
             return UUID().uuidString
         case .authKey:
