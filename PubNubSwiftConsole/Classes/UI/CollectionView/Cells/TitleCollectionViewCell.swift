@@ -131,7 +131,6 @@ class TitleCollectionViewCell: UICollectionViewCell {
     }
     
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-        print("superview: \(self.superview)")
         let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
         /*
         let bounds = UIScreen.main.bounds

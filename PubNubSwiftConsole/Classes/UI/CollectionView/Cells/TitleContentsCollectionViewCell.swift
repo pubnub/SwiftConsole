@@ -61,6 +61,18 @@ class TitleContentsCollectionViewCell: TitleCollectionViewCell {
         update(contents: titleContents?.contents)
     }
     
+    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        let attributes = super.preferredLayoutAttributesFitting(layoutAttributes)
+        let bounds = UIScreen.main.bounds
+        let maximumWidth = bounds.width
+        if attributes.size.width > maximumWidth {
+            attributes.size.width = maximumWidth
+        } else {
+            attributes.size.width = (maximumWidth * 0.75)
+        }
+        return attributes
+    }
+    
     override func prepareForReuse() {
         super.prepareForReuse()
         contentsLabel.text = nil

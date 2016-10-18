@@ -8,6 +8,13 @@
 
 import UIKit
 
+extension UIDevice {
+    func isPad() -> Bool {
+        let deviceModel = UIDevice.current.model
+        return model.contains("iPad")
+    }
+}
+
 class TextViewCollectionViewCell: UICollectionViewCell {
     
     let textView: UITextView
@@ -21,6 +28,10 @@ class TextViewCollectionViewCell: UICollectionViewCell {
         textView.isSelectable = false
         textView.isScrollEnabled = false
         textView.isUserInteractionEnabled = false
+        textView.textAlignment = .center
+        if UIDevice.current.isPad() {
+            textView.font = .systemFont(ofSize: 25)
+        }
         let views = [
             "textView": textView,
             ]

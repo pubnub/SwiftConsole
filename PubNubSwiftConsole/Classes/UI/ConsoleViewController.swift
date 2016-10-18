@@ -20,8 +20,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         }
 
         /*
-         let section0 = Section(items: originItemType, subKeyItemType, authKeyItemType, channelsItemType)
-         let section1 = Section(items: streamFilterType)
+         let section0 = Section(items: originItemType, subKeyItemType, authKeyItemType)
+         let section1 = Section(items: channelsItemType, streamFilterType)
          let section2 = Section(items: subscribeItemType, unsubscribeItemType)
  */
         func indexPath(for clientProperty: ClientProperty) -> IndexPath? {
@@ -33,9 +33,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             case .authKey:
                 return IndexPath(item: 2, section: 0)
             case .channels:
-                return IndexPath(item: 3, section: 0)
-            case .streamFilter:
                 return IndexPath(item: 0, section: 1)
+            case .streamFilter:
+                return IndexPath(item: 1, section: 1)
             case .subscribe:
                 return IndexPath(item: 0, section: 2)
             case .unsubscribe:
@@ -50,8 +50,18 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
 
     var configurationDataSourceProvider: StaticDataSourceProvider!
     let console: SwiftConsole
-    let consoleCollectionView: ConsoleCollectionView
     let clientCollectionView: ClientCollectionView
+    let messagesButton: UIButton = {
+        let button = UIButton(type: .roundedRect)
+        let backgroundImage = UIImage(color: .gray)
+        button.setBackgroundImage(backgroundImage, for: .normal)
+        button.setTitle("View Messages", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.sizeToFit()
+        button.setNeedsLayout()
+        button.forceAutoLayout()
+        return button
+    }()
     
     class PublishInputAccessoryView: UITextField {
         
@@ -103,12 +113,15 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
     
     public required init(console: SwiftConsole) {
         self.console = console
-        self.consoleCollectionView = ConsoleCollectionView(console: console)
         let bounds = UIScreen.main.bounds
         let layout = StaticItemCollectionViewFlowLayout()
         //layout.headerReferenceSize = CGSize(width: bounds.width, height: 50.0)
+        layout.sectionInset = UIEdgeInsets(top: 5.0, left: 0.0, bottom: 5.0, right: 0.0)
+        layout.footerReferenceSize = CGSize(width: bounds.width, height: 2.0)
+        layout.estimatedItemSize = CGSize(width: (bounds.width * 0.75), height: 75.0)
         self.clientCollectionView = ClientCollectionView(frame: .zero, collectionViewLayout: layout)
         super.init()
+        clientCollectionView.register(TitledSupplementaryView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: TitledSupplementaryView.identifier)
     }
     
     public required init() {
@@ -123,10 +136,9 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive(notification:)), name: .UIApplicationDidBecomeActive, object: nil)
-        view.addSubview(consoleCollectionView)
-        consoleCollectionView.forceAutoLayout()
-        consoleCollectionView.backgroundColor = .white
+        view.backgroundColor = .white
+        view.addSubview(messagesButton)
+        messagesButton.addTarget(self, action: #selector(messagesButtonTapped(sender:)), for: .touchUpInside)
         
         view.addSubview(clientCollectionView)
         clientCollectionView.forceAutoLayout()
@@ -136,20 +148,20 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         clientCollectionView.contentInset = UIEdgeInsets(top: configurationYOffset, left: 0.0, bottom: 0.0, right: 0.0)
         
         let views = [
-            "consoleCollectionView": consoleCollectionView,
             "clientCollectionView": clientCollectionView,
+            "messagesButton": messagesButton,
         ]
         
-        let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[clientCollectionView(300)][consoleCollectionView]|", options: [], metrics: nil, views: views)
-        let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|[consoleCollectionView]|", options: [], metrics: nil, views: views)
+        let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[clientCollectionView]-10-[messagesButton(50)]|", options: [], metrics: nil, views: views)
+        let horizontalButtonConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:[messagesButton(200)]", options: [], metrics: nil, views: views)
         let configurationHorizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|[clientCollectionView]|", options: [], metrics: nil, views: views)
+        let buttonCenterXConstraint = NSLayoutConstraint(item: messagesButton, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+        NSLayoutConstraint.activate([buttonCenterXConstraint])
         NSLayoutConstraint.activate(configurationHorizontalConstraints)
         NSLayoutConstraint.activate(verticalConstraints)
-        NSLayoutConstraint.activate(horizontalConstraints)
+        NSLayoutConstraint.activate(horizontalButtonConstraints)
         self.view.setNeedsLayout()
         
-        consoleCollectionView.delegate = self
-        consoleCollectionView.reloadData()
         
         let originItemType = ClientProperty.origin.generateStaticItemType(client: console.client)
         let subKeyItemType = ClientProperty.subKey.generateStaticItemType(client: console.client)
@@ -160,8 +172,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         let unsubscribeItemType = ClientProperty.unsubscribe.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
         let streamFilterType = ClientProperty.streamFilter.generateStaticItemType(client: console.client, isTappable: true, overrideDefaultBackgroundColor: overrideBackgroundColor)
         
-        let section0 = Section(items: originItemType, subKeyItemType, authKeyItemType, channelsItemType)
-        let section1 = Section(items: streamFilterType)
+        let section0 = Section(items: originItemType, subKeyItemType, authKeyItemType)
+        let section1 = Section(items: channelsItemType, streamFilterType)
         let section2 = Section(items: subscribeItemType, unsubscribeItemType)
         
         let dataSource = DataSource(sections: section0, section1, section2)
@@ -180,7 +192,6 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         }
         
         clientCollectionView.addGestureRecognizer(createKeyboardDismissRecognizer())
-        consoleCollectionView.addGestureRecognizer(createKeyboardDismissRecognizer())
         
         
         console.client.addListener(self)
@@ -192,12 +203,6 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
         }
  */
     }
-    
-    public override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        consoleCollectionView.contentInset = .zero
-        consoleCollectionView.contentOffset = .zero
-    }
 
     override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -208,6 +213,11 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
     
     func publishButtonTapped(sender: UIButton) {
         publish()
+    }
+    
+    func messagesButtonTapped(sender: UIButton) {
+        let messagesViewController = MessagesViewController(console: console)
+        navigationController?.pushViewController(messagesViewController, animated: true)
     }
     
     // MARK: - Publish Action
@@ -247,11 +257,6 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             }
             self.clientCollectionView.reloadItems(at: updatedIndexPaths)
             })
-    }
-    
-    func didBecomeActive(notification: Notification) {
-        print("notification: \(notification)")
-        consoleCollectionView.fetch()
     }
     
     // MARK: - UICollectionViewDelegate
@@ -356,6 +361,8 @@ public class ConsoleViewController: ViewController, UICollectionViewDelegate, UI
             print("other collection view tapped")
         }
     }
+    
+    // MARK: - UICollectionViewFlowLayoutDelegate
 
     // MARK: - UIScrollViewDelegate
     /*
